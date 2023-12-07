@@ -15,6 +15,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
+      - run: npm install
       - run: npx nx run-many -t build --parallel=3
       - run: node devel/publish_libs.js
         env:
