@@ -2,22 +2,21 @@ const fs = require('fs');
 const { exec } = require('child_process');
 
 const main = async () => {
-    // get all libraries in libs/* folders
-    const entries = await fs.promises.readdir('libs');
-    const libraryNamesToPublish = [];
-    for (const entry of entries) {
-        // check whether it is a directory
-        const isDir = (await fs.promises.lstat(`libs/${entry}`)).isDirectory();
-        if (!isDir) continue;
-        // check whether there is a package.json file and a vite.config.ts file
-        const hasPackageJson = await fileExists(`libs/${entry}/package.json`);
-        const hasViteConfig = await fileExists(`libs/${entry}/vite.config.ts`);
-        if (!hasPackageJson || !hasViteConfig) continue;
-        // add the library name to the list
-        libraryNamesToPublish.push(entry);
-    }
+    // read file with list of libraries to publish
+    const forToPublishFname = 'libs/for_to_publish.txt';
+    const forToPublish = await fs.promises.readFile(forToPublishFname, 'utf-8');
+    const forToPublishLines = forToPublish.split('\n');
+    const libraryNamesToPublish = forToPublishLines.map(line => line.trim()).filter(line => line.length > 0).filter(line => !line.startsWith('#'));
 
     for (const libraryName of libraryNamesToPublish) {
+        // make sure the library has a vite.config.ts file
+        const libDir = `libs/${libraryName}`;
+        const hasViteConfig = await fileExists(`${libDir}/vite.config.ts`);
+        if (!hasViteConfig) {
+            console.warn(`Library ${libraryName} has no vite.config.ts file. Not publishing.`);
+            continue;
+        }
+        // check whether the library is up to date on npm
         const distDir = `dist/libs/${libraryName}`;
         const versionOnNpm = await getVersionOnNpm('@fi-sci/' + libraryName);
         const versionLocal = await getVersionLocal(distDir + '/package.json');

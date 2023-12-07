@@ -1,0 +1,11 @@
+# list of libs to publish on npm
+# parsed by the publish script
+# as part of the release process
+
+electrode-geometry
+misc
+modal-window
+splitter
+time-scroll-view
+time-selection
+timeseries-graph
