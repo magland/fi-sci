@@ -1,0 +1,20 @@
+{
+  "name": "@fi-sci/modal-window",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "dependencies": {
+    "@mui/icons-material": "^5.14.19",
+    "@mui/material": "^5.14.20"
+  }
+}

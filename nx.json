@@ -3,7 +3,7 @@
   "targetDefaults": {
     "build": {
       "cache": true,
-      "dependsOn": ["^build"],
+      "dependsOn": ["configure-react-library", "^build"],
       "inputs": ["production", "^production"]
     },
     "lint": {
@@ -21,6 +21,19 @@
     "@nx/vite:test": {
       "cache": true,
       "inputs": ["default", "^production"]
+    },
+    "@nx/jest:jest": {
+      "cache": true,
+      "inputs": ["default", "^production", "{workspaceRoot}/jest.preset.js"],
+      "options": {
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
     }
   },
   "namedInputs": {
@@ -30,7 +43,10 @@
       "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
       "!{projectRoot}/tsconfig.spec.json",
       "!{projectRoot}/.eslintrc.json",
-      "!{projectRoot}/eslint.config.js"
+      "!{projectRoot}/eslint.config.js",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/src/test-setup.[jt]s",
+      "!{projectRoot}/test-setup.[jt]s"
     ],
     "sharedGlobals": []
   },
@@ -47,9 +63,10 @@
       },
       "library": {
         "style": "css",
-        "linter": "eslint"
+        "linter": "eslint",
+        "unitTestRunner": "none"
       }
     }
   },
-  "nxCloudAccessToken": "YTFjMDg5ZDEtZDQyOS00ZDJhLWIxOGUtYzc2YTkxMTJlYjI0fHJlYWQtd3JpdGU="
+  "nxCloudAccessToken": "ZWRiZjgxNzItNmRjMS00ZGI0LThiMDQtMTYzODQ3MWM5NmM2fHJlYWQtd3JpdGU="
 }

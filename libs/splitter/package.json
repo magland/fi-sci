@@ -1,0 +1,19 @@
+{
+  "name": "@fi-sci/splitter",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "dependencies": {
+    "react-draggable": "^4.4.6"
+  }
+}

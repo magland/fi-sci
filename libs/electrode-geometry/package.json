@@ -1,0 +1,17 @@
+{
+  "name": "@fi-sci/electrode-geometry",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "configure-react-library": {
+      "factory": "./src/generators/configure-react-library/generator",
+      "schema": "./src/generators/configure-react-library/schema.json",
+      "description": "configure-react-library generator"
+    }
+  }
+}
