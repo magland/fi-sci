@@ -58,9 +58,12 @@ const getVersionLocal = async (packageJsonFname) => {
 
 const publishLibrary = async (libraryName, distDir) => {
     console.log(`Publishing library ${libraryName}...`);
-    const txt = '//registry.npmjs.org/:_authToken="${NPM_TOKEN}"';
+    const txt = '//registry.npmjs.org/:_authToken=${NPM_TOKEN}';
     await fs.promises.writeFile(`${distDir}/.npmrc`, txt);
-    await execAsync(`npm publish ${distDir} --access public`);
+    const cwd = process.cwd();
+    process.chdir(distDir);
+    await execAsync(`npm publish --access public`);
+    process.chdir(cwd);
 }
 
 const execAsync = async (command) => {
