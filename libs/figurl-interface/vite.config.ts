@@ -37,7 +37,12 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
+      // everythin of the form node_modules/*
+      external: [
+        'react', 'react-dom', 'react/jsx-runtime',
+        // exclude everything that does not start with "/"
+        /^(?!\/).*/
+      ],
     },
   },
 });

@@ -5,9 +5,13 @@
   "types": "./index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "import": "./index.mjs",
       "require": "./index.js"
     }
   },
-  "dependencies": {}
+  "dependencies": {},
+  "peerDependencies": {
+    "react": "*"
+  }
 }

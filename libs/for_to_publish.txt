@@ -3,6 +3,7 @@
 # as part of the release process
 
 electrode-geometry
+figurl-interface
 misc
 modal-window
 splitter

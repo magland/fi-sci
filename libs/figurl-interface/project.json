@@ -33,7 +33,7 @@
       "options": {
         "commands": [
           {
-            "command": "nx g @fi-sci/fi-sci-plugin:configure-react-library misc",
+            "command": "nx g @fi-sci/fi-sci-plugin:configure-react-library figurl-interface",
             "color": "blue"
           }
         ]
