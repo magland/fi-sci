@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import validateObject, { isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject";
+import { validateObject, isEqualTo, isNumber, isOneOf, isString, optional } from "@fi-sci/misc";
 import { FigurlResponse, isFigurlResponse } from "./FigurlRequestTypes";
 
 /// figurl Response

@@ -15,14 +15,20 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@fi-sci/context-time-selection": [
+        "libs/context-time-selection/src/index.ts"
+      ],
+      "@fi-sci/context-unit-selection": [
+        "libs/context-unit-selection/src/index.ts"
+      ],
       "@fi-sci/electrode-geometry": ["libs/electrode-geometry/src/index.ts"],
       "@fi-sci/fi-sci-plugin": ["libs/fi-sci-plugin/src/index.ts"],
       "@fi-sci/figurl-interface": ["libs/figurl-interface/src/index.ts"],
       "@fi-sci/misc": ["libs/misc/src/index.ts"],
       "@fi-sci/modal-window": ["libs/modal-window/src/index.ts"],
+      "@fi-sci/raster-plot": ["libs/raster-plot/src/index.ts"],
       "@fi-sci/splitter": ["libs/splitter/src/index.ts"],
       "@fi-sci/time-scroll-view": ["libs/time-scroll-view/src/index.ts"],
-      "@fi-sci/context-time-selection": ["libs/context-time-selection/src/index.ts"],
       "@fi-sci/timeseries-graph": ["libs/timeseries-graph/src/index.ts"]
     }
   },

@@ -6,6 +6,7 @@ import { Add } from '@mui/icons-material';
 import TimeseriesGraphExample from './TimeseriesGraphExample';
 import ModalWindowExample from './ModalWindowExample';
 import ElectrodeGeometryWidgetExample from './ElectrodeGeometryWidgetExample';
+import RasterPlotExample from './RasterPlotExample';
 
 export function App() {
   const { width, height } = useWindowDimensions();
@@ -19,6 +20,9 @@ export function App() {
             of React widgets in the @fi-sci repo.
           </p>
         </div>
+      </Section>
+      <Section label="RasterPlot" width={width}>
+        <RasterPlotExample width={0} />
       </Section>
       <Section label="TimeseriesGraph" width={width}>
         <TimeseriesGraphExample width={0} />

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FigurlRequest, isFigurlRequest } from "./FigurlRequestTypes";
-import validateObject, { isEqualTo, isOneOf, isString } from "./validateObject";
+import { validateObject, isEqualTo, isOneOf, isString } from "@fi-sci/misc";
 
 export type FigurlRequestMessage = {
     type: 'figurlRequest',

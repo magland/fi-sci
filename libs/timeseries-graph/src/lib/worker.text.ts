@@ -191,6 +191,10 @@ const paintPanel = (context, props) => {
             applyMarkerAttributes(context, dim.attributes);
             const radius = dim.attributes['radius'] ?? 2;
             const shape = dim.attributes['shape'] ?? 'circle';
+            if (typeof radius !== 'number')
+                throw Error('Unexpected type of radius');
+            if (typeof shape !== 'string')
+                throw Error('Unexpected type of shape');
             if (shape === 'circle') {
                 dim.pixelTimes.forEach((t, ii) => {
                     context.beginPath();
@@ -240,12 +244,24 @@ const computePlotSeries = (resolvedSeries) => {
     return plotSeries;
 };
 const applyLineAttributes = (context, attributes) => {
-    context.strokeStyle = attributes['color'] ?? 'black';
-    context.lineWidth = attributes['width'] ?? 1.1; // 1.1 hack--but fixes the 'disappearing lines' issue
-    attributes['dash'] && context.setLineDash(attributes['dash']);
+    const strokeStyle = attributes['color'] ?? 'black';
+    const lineWidth = attributes['width'] ?? 1.1; // 1.1 hack--but fixes the 'disappearing lines' issue
+    const dash = attributes['dash'] ?? undefined;
+    if (typeof strokeStyle === 'string') {
+        context.strokeStyle = strokeStyle;
+    }
+    if (typeof lineWidth === 'number') {
+        context.lineWidth = lineWidth;
+    }
+    if ((dash) && (typeof dash === 'object')) {
+        context.setLineDash(dash);
+    }
 };
 const applyMarkerAttributes = (context, attributes) => {
-    context.fillStyle = attributes['color'] ?? 'black';
+    const fillStyle = attributes['color'] ?? 'black';
+    if (typeof fillStyle === 'string') {
+        context.fillStyle = fillStyle;
+    }
 };
 function sleepMsec(msec) {
     return new Promise((resolve) => {

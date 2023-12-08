@@ -1,6 +1,6 @@
 {
-  "name": "@fi-sci/time-scroll-view",
-  "version": "0.0.3",
+  "name": "@fi-sci/raster-plot",
+  "version": "0.0.1",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -14,12 +14,9 @@
     "react": "*"
   },
   "dependencies": {
-    "@fi-sci/splitter": "~0.0.2",
     "@fi-sci/context-time-selection": "~0.0.2",
-    "react-draggable": "^4.4.6",
-    "react-icons": "^4.12.0",
-    "@mui/material": "^5.14.20",
-    "@fi-sci/misc": "~0.0.6",
-    "mathjs": "^12.1.0"
+    "@fi-sci/time-scroll-view": "~0.0.3",
+    "@fi-sci/context-unit-selection": "~0.0.1",
+    "@fi-sci/misc": "~0.0.6"
   }
 }

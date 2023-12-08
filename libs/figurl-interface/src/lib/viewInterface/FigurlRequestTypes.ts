@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isArrayOf, isBoolean, isEqualTo, isJSONObject, isNumber, isOneOf, isString, optional } from "./validateObject"
-import validateObject from "./validateObject"
+import { validateObject, isArrayOf, isBoolean, isEqualTo, isJSONObject, isNumber, isOneOf, isString, optional } from "@fi-sci/misc"
 
 // getFigureData
 

@@ -1,6 +1,6 @@
 {
-  "name": "@fi-sci/misc",
-  "version": "0.0.6",
+  "name": "@fi-sci/context-unit-selection",
+  "version": "0.0.1",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {

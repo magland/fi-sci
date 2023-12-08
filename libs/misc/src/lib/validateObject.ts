@@ -102,10 +102,10 @@ export const isObjectOf = (keyTestFunction: (x: any) => boolean, valueTestFuncti
 
 export const isJSONObject = (x: any): x is JSONObject => {
     if (!isObject(x)) return false
-    return isJSOFCerializable(x)
+    return isJSONSerializable(x)
 }
 export const isJSONValue = (x: any): x is JSONValue => {
-    return isJSOFCerializable(x)
+    return isJSONSerializable(x)
 }
 export const tryParseJsonObject = (x: string): JSONObject | null => {
     let a: any
@@ -118,7 +118,7 @@ export const tryParseJsonObject = (x: string): JSONObject | null => {
     if (!isJSONObject(a)) return null
     return a;
 }
-export const isJSOFCerializable = (obj: any): boolean => {
+export const isJSONSerializable = (obj: any): boolean => {
     if (typeof(obj) === 'string') return true
     if (typeof(obj) === 'number') return true
     if (!isObject(obj)) return false
@@ -138,7 +138,7 @@ export const isJSOFCerializable = (obj: any): boolean => {
         }
         if (obj[property] !== null) {
             if (typeof obj[property] === "object") {
-                if (!isJSOFCerializable(obj[property])) {
+                if (!isJSONSerializable(obj[property])) {
                     return false;
                 }
             }
