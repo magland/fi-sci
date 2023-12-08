@@ -37,8 +37,9 @@ const main = async () => {
             }
         }
         if (!allDependenciesAreCompatible) {
-            console.warn(`Library ${libraryName} has a dependency that is not compatible with the version on npm. Not publishing.`);
-            continue;
+            // we abort in this case to draw attention to the issue in the CI
+            // that way, if CI succeeds we know that everythin has been published correctly
+            throw Error(`Library ${libraryName} has a dependency that is not compatible with the version on npm. Aborting.`);
         }
         const libDistDir = `dist/libs/${libraryName}`;
         await publishLibrary(libraryName, libDistDir);
