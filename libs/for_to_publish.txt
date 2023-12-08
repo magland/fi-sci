@@ -2,11 +2,13 @@
 # parsed by the publish script
 # as part of the release process
 
+context-time-selection
+context-unit-selection
 electrode-geometry
 figurl-interface
 misc
 modal-window
+raster-plot
 splitter
 time-scroll-view
-context-time-selection
 timeseries-graph
