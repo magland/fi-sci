@@ -10,7 +10,7 @@ import { ToolbarItem, ViewToolbar } from './ViewToolbar';
 import { useTimeTicks } from './timeTicks';
 import TSV2AxesLayer from './TSV2AxesLayer';
 import TSV2CursorLayer from './TSV2CursorLayer';
-import { useTimeSelection } from '@fi-sci/time-selection'
+import { useTimeSelection } from '@fi-sci/context-time-selection'
 
 type Props = {
     width: number

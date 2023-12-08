@@ -14,7 +14,7 @@
     "react": "*"
   },
   "dependencies": {
-    "@fi-sci/time-selection": "~0.0.2",
+    "@fi-sci/context-time-selection": "~0.0.2",
     "@fi-sci/time-scroll-view": "~0.0.3"
   }
 }

@@ -1,7 +1,7 @@
 {
-  "name": "time-selection",
+  "name": "context-time-selection",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/time-selection/src",
+  "sourceRoot": "libs/context-time-selection/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -9,7 +9,7 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["libs/time-selection/**/*.{ts,tsx,js,jsx}"]
+        "lintFilePatterns": ["libs/context-time-selection/**/*.{ts,tsx,js,jsx}"]
       }
     },
     "build": {
@@ -17,7 +17,7 @@
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "dist/libs/time-selection"
+        "outputPath": "dist/libs/context-time-selection"
       },
       "configurations": {
         "development": {
@@ -33,7 +33,7 @@
       "options": {
         "commands": [
           {
-            "command": "nx g @fi-sci/fi-sci-plugin:configure-react-library time-selection",
+            "command": "nx g @fi-sci/fi-sci-plugin:configure-react-library context-time-selection",
             "color": "blue"
           }
         ]

@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { clearDivFocus, setDivFocus } from './divRefHandling';
 import useTimeScrollPan, { PanUpdateProperties } from './useTimeScrollPan';
-import { useTimeSelection } from '@fi-sci/time-selection';
+import { useTimeSelection } from '@fi-sci/context-time-selection';
 
 type ClickReader = (e: React.MouseEvent) => { mouseX: number, fraction: number }
 const useClickReader = (leftMargin: number, panelWidthPx: number): ClickReader => {

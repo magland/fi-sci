@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react'
 import { TimeseriesGraphViewData } from './TimeseriesGraphViewData'
-import { useTimeSelection } from '@fi-sci/time-selection'
+import { useTimeSelection } from '@fi-sci/context-time-selection'
 import { Opts } from './WorkerTypes'
 import { TimeScrollView, useTimeScrollView } from "@fi-sci/time-scroll-view"
 

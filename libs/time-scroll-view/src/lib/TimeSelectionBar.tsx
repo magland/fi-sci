@@ -1,4 +1,4 @@
-import { useTimeSelection } from "@fi-sci/time-selection"
+import { useTimeSelection } from "@fi-sci/context-time-selection"
 import React, { FunctionComponent, useCallback, useMemo, useState } from "react"
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable"
 

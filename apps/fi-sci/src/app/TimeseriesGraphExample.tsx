@@ -1,4 +1,4 @@
-import { SetupTimeSelection } from "@fi-sci/time-selection";
+import { SetupTimeSelection } from "@fi-sci/context-time-selection";
 import { TimeseriesGraphView, TimeseriesGraphViewData } from "@fi-sci/timeseries-graph";
 import { FunctionComponent } from "react";
 

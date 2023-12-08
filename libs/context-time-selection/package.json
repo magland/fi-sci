@@ -1,5 +1,5 @@
 {
-  "name": "@fi-sci/time-selection",
+  "name": "@fi-sci/context-time-selection",
   "version": "0.0.2",
   "main": "./index.js",
   "types": "./index.d.ts",

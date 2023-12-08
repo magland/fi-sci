@@ -6,7 +6,7 @@ import * as path from 'path';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 
 export default defineConfig({
-  cacheDir: '../../node_modules/.vite/time-selection',
+  cacheDir: '../../node_modules/.vite/context-time-selection',
 
   plugins: [
     react(),
@@ -29,7 +29,7 @@ export default defineConfig({
     lib: {
       // Could also be a dictionary or array of multiple entry points.
       entry: 'src/index.ts',
-      name: 'time-selection',
+      name: 'context-time-selection',
       fileName: 'index',
       // Change this to the formats you want to support.
       // Don't forget to update your package.json as well.

@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@fi-sci/splitter": "~0.0.2",
-    "@fi-sci/time-selection": "~0.0.2",
+    "@fi-sci/context-time-selection": "~0.0.2",
     "react-draggable": "^4.4.6",
     "react-icons": "^4.12.0",
     "@mui/material": "^5.14.20",

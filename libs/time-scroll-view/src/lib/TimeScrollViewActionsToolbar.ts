@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Divider, ToolbarItem } from './ViewToolbar';
 import TimeWidgetToolbarEntries from './TimeWidgetToolbarEntries';
-import { useTimeSelection } from '@fi-sci/time-selection';
+import { useTimeSelection } from '@fi-sci/context-time-selection';
 
 export type OptionalToolbarActions = {
     aboveDefault?: ToolbarItem[]

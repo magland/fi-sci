@@ -8,5 +8,5 @@ misc
 modal-window
 splitter
 time-scroll-view
-time-selection
+context-time-selection
 timeseries-graph
