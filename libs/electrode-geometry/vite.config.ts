@@ -40,8 +40,8 @@ export default defineConfig({
       // everythin of the form node_modules/*
       external: [
         'react', 'react-dom', 'react/jsx-runtime',
-        // exclude everything that does not start with "/"
-        /^(?!\/).*/
+        // exclude everything that does not start with "/" or "."
+        /^[^\\/\\.]/,
       ],
     },
   },
