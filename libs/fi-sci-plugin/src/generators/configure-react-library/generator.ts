@@ -19,6 +19,7 @@ export async function configureReactLibraryGenerator(
     console.warn(`vite.config.ts not found for project ${options.name}`);
     return
   }
+  console.info(`Found vite.config.ts for project ${options.name}`);
 
   const rootPackageJson = JSON.parse(tree.read('package.json').toString('utf-8'));
 
@@ -70,7 +71,7 @@ export async function configureReactLibraryGenerator(
           return '*';
         }
         const libPackageJson = JSON.parse(tree.read(libPackageJsonFname).toString('utf-8'));
-        return '^' + libPackageJson.version; // note that we add the ^ here
+        return appropriateVersionPrefix(libPackageJson.version) + libPackageJson.version; // note that we add the ^ here
       }
       else {
         // not found, so we'll give a warning and just use *
@@ -88,6 +89,7 @@ export async function configureReactLibraryGenerator(
 
     pkgJson.peerDependencies = peerDependencies;
     pkgJson.dependencies = dependencies;
+
     return pkgJson;
   });
   // await formatFiles(tree);
@@ -156,6 +158,22 @@ function visitAllFiles(
       callback(filePath);
     }
   });
+}
+
+const appropriateVersionPrefix = (version: string): string => {
+  if (version.startsWith('0.')) {
+    return '~';
+  }
+  else if (startsWithDigit(version)) {
+    return '^';
+  }
+  else {
+    return '';
+  }
+}
+
+const startsWithDigit = (s: string): boolean => {
+  return /^\d/.test(s);
 }
 
 export default configureReactLibraryGenerator;
