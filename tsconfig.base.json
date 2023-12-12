@@ -27,6 +27,7 @@
       "@fi-sci/misc": ["libs/misc/src/index.ts"],
       "@fi-sci/modal-window": ["libs/modal-window/src/index.ts"],
       "@fi-sci/raster-plot": ["libs/raster-plot/src/index.ts"],
+      "@fi-sci/remote-h5-file": ["libs/remote-h5-file/src/index.ts"],
       "@fi-sci/splitter": ["libs/splitter/src/index.ts"],
       "@fi-sci/time-scroll-view": ["libs/time-scroll-view/src/index.ts"],
       "@fi-sci/timeseries-graph": ["libs/timeseries-graph/src/index.ts"]
