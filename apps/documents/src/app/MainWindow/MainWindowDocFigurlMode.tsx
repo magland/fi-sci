@@ -17,7 +17,7 @@ const useMarkdownContent = () => {
 			setMarkdownContent(undefined)
 			let resp: Response
 			try {
-				resp = await fetch('./documents/index.md')
+				resp = await fetch('/fi-sci/documents/index.md')
 			}
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			catch(err: any) {
