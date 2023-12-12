@@ -32,7 +32,7 @@ class RemoteH5WorkerWrapper {
   #runningRequest: RRequest | undefined = undefined
   constructor() {
     // this.#worker = new Worker(new URL('./RemoteH5Worker.js', import.meta.url), { type: 'module' })
-    this.#worker = createWorker('https://cdn.jsdelivr.net/gh/magland/remote-h5-worker@0.1.0/dist/RemoteH5Worker.js');
+    this.#worker = createWorker('https://cdn.jsdelivr.net/gh/magland/remote-h5-worker@0.1.2/dist/RemoteH5Worker.js');
   }
   get numRunningRequests() {
     return this.#runningRequest ? 1 : 0
