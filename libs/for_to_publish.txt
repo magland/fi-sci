@@ -9,6 +9,7 @@ figurl-interface
 misc
 modal-window
 raster-plot
+remote-h5-file
 splitter
 time-scroll-view
 timeseries-graph
