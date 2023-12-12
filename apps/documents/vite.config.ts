@@ -18,6 +18,8 @@ export default defineConfig({
 
   plugins: [react(), nxViteTsPaths()],
 
+  base: "https://magland.github.io/fi-sci",
+
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
