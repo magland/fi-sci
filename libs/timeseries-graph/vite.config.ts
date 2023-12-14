@@ -39,9 +39,7 @@ export default defineConfig({
       // External packages that should not be bundled into your library.
       // everythin of the form node_modules/*
       external: [
-        'react',
-        'react-dom',
-        'react/jsx-runtime',
+        'react', 'react-dom', 'react/jsx-runtime',
         // exclude everything that does not start with "/" or "."
         /^[^\\/\\.]/,
       ],
