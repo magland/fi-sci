@@ -87,7 +87,10 @@ export type DatasetDataType =
   | Uint32Array;
 
 export class RemoteNH5FileClient {
-  constructor(private url: string, private header: NH5Header, private dataPosition: number) {}
+  #fetchCache: FetchCache;
+  constructor(private url: string, private header: NH5Header, private dataPosition: number) {
+    this.#fetchCache = new FetchCache();
+  }
   async getGroup(path: string): Promise<RemoteNH5Group | undefined> {
     const g = this.header.groups.find((g) => g.path === path);
     if (!g) return undefined;
@@ -137,6 +140,17 @@ export class RemoteNH5FileClient {
   ): Promise<DatasetDataType | undefined> {
     const d = this.header.datasets.find((d) => d.path === path);
     if (!d) return undefined;
+
+    const k = `${path}|${o.slice ? JSON.stringify(o.slice) : ''}`;
+    if (this.#fetchCache.has(k)) {
+      return this.#fetchCache.get(k);
+    }
+    if (this.#fetchCache.retrieving(k)) {
+      await this.#fetchCache.wait(k);
+      return this.#fetchCache.get(k);
+    }
+    this.#fetchCache.setRetrieving(k);
+
     const dtype = d.dtype;
     const shape = d.shape;
     const position = d.position;
@@ -164,15 +178,18 @@ export class RemoteNH5FileClient {
       },
     });
     const buffer = await response.arrayBuffer();
-    if (dtype === 'int8') return new Int8Array(buffer);
-    else if (dtype === 'uint8') return new Uint8Array(buffer);
-    else if (dtype === 'int16') return new Int16Array(buffer);
-    else if (dtype === 'uint16') return new Uint16Array(buffer);
-    else if (dtype === 'int32') return new Int32Array(buffer);
-    else if (dtype === 'uint32') return new Uint32Array(buffer);
-    else if (dtype === 'float32') return new Float32Array(buffer);
-    else if (dtype === 'float64') return new Float64Array(buffer);
+    let ret: DatasetDataType;
+    if (dtype === 'int8') ret = new Int8Array(buffer);
+    else if (dtype === 'uint8') ret = new Uint8Array(buffer);
+    else if (dtype === 'int16') ret = new Int16Array(buffer);
+    else if (dtype === 'uint16') ret = new Uint16Array(buffer);
+    else if (dtype === 'int32') ret = new Int32Array(buffer);
+    else if (dtype === 'uint32') ret = new Uint32Array(buffer);
+    else if (dtype === 'float32') ret = new Float32Array(buffer);
+    else if (dtype === 'float64') ret = new Float64Array(buffer);
     else throw Error(`Unexpected dtype: ${dtype}`);
+    this.#fetchCache.set(k, ret);
+    return ret;
   }
   static async create(url: string) {
     const { header, dataPosition } = await getRemoteNH5Header(url);
@@ -218,3 +235,41 @@ const getRemoteNH5Header = async (url: string) => {
   const dataPosition = headerJsonStartPos + headerLength;
   return { header, dataPosition };
 };
+
+class FetchCache {
+  #cache: { [key: string]: any } = {};
+  #retrieving: { [key: string]: boolean } = {};
+  #waiters: { [key: string]: (() => void)[] } = {};
+  has(key: string) {
+    return key in this.#cache;
+  }
+  get(key: string) {
+    return this.#cache[key];
+  }
+  set(key: string, value: any) {
+    this.#cache[key] = value;
+    if (key in this.#waiters) {
+      for (const w of this.#waiters[key]) {
+        w();
+      }
+      delete this.#waiters[key];
+    }
+    if (key in this.#retrieving) {
+      delete this.#retrieving[key];
+    }
+  }
+  retrieving(key: string) {
+    return !!this.#retrieving[key];
+  }
+  setRetrieving(key: string) {
+    this.#retrieving[key] = true;
+  }
+  async wait(key: string) {
+    return new Promise<void>((resolve, reject) => {
+      if (!(key in this.#waiters)) {
+        this.#waiters[key] = [];
+      }
+      this.#waiters[key].push(resolve);
+    });
+  }
+}

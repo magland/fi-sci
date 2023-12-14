@@ -35,6 +35,18 @@ class SpikeSortingAnalysisClient {
     return this.d.unitLocationsViewData;
   }
 
+  async getUnitSpikeAmplitudes(unitId: number | string) {
+    const subsampledSpikeTrain = await this.d.nh5File.getDatasetData(
+      `/units/unit_${unitId}/subsampled_spike_train`,
+      {}
+    );
+    const subsampledSpikeAmplitudes = await this.d.nh5File.getDatasetData(
+      `/units/unit_${unitId}/subsampled_spike_amplitudes`,
+      {}
+    );
+    return { times: subsampledSpikeTrain as any as number[], amplitudes: subsampledSpikeAmplitudes as any as number[] };
+  }
+
   // static create
   static async create(nh5File: RemoteNH5FileClient) {
     const rootGroup = await nh5File.getGroup('/');
@@ -82,14 +94,14 @@ class SpikeSortingAnalysisClient {
   }
 }
 
-const getAutocorrelogramsViewData = async (h5File: RemoteNH5FileClient, unitIds: (string | number)[]) => {
-  const autocorrelogramsGroup = await h5File.getGroup('/autocorrelograms');
+const getAutocorrelogramsViewData = async (nh5File: RemoteNH5FileClient, unitIds: (string | number)[]) => {
+  const autocorrelogramsGroup = await nh5File.getGroup('/autocorrelograms');
   if (!autocorrelogramsGroup) throw Error('Unable to get autocorrelograms group');
-  const binEdgesSecDataset = await h5File.getDatasetData('/autocorrelograms/bin_edges_sec', {});
+  const binEdgesSecDataset = await nh5File.getDatasetData('/autocorrelograms/bin_edges_sec', {});
   if (!binEdgesSecDataset) throw Error('Unable to get bin_edges_sec dataset');
-  const binCountsDataset = await h5File.getDataset('/autocorrelograms/bin_counts');
+  const binCountsDataset = await nh5File.getDataset('/autocorrelograms/bin_counts');
   if (!binCountsDataset) throw Error('Unable to get bin_counts dataset');
-  const binCountsData = await h5File.getDatasetData('/autocorrelograms/bin_counts', {});
+  const binCountsData = await nh5File.getDatasetData('/autocorrelograms/bin_counts', {});
   if (!binCountsData) throw Error('Unable to get bin_counts dataset');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const binCountsDataReshaped = reshape2D(binCountsData as any as number[], binCountsDataset.shape);

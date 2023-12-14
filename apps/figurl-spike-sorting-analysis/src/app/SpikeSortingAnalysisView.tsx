@@ -11,6 +11,7 @@ import { AutocorrelogramsView } from './view-autocorrelograms';
 import { AverageWaveformsView } from './view-average-waveforms';
 import { UnitLocationsView } from './view-unit-locations';
 import { UnitsTableView } from './view-units-table';
+import SpikeAmplitudesView from './SpikeAmplitudesView/SpikeAmplitudesView';
 
 type SpikeSortingAnalysisViewProps = {
   width: number;
@@ -145,6 +146,15 @@ const RightContent: FunctionComponent<ContentProps> = ({ width, height, client }
 const RightContent2: FunctionComponent<ContentProps> = ({ width, height, client }) => {
   return (
     <Splitter width={width} height={height} direction="vertical" initialPosition={height / 2}>
+      <TopContent width={0} height={0} client={client} />
+      <BottomContent width={0} height={0} client={client} />
+    </Splitter>
+  );
+};
+
+const TopContent: FunctionComponent<ContentProps> = ({ width, height, client }) => {
+  return (
+    <Splitter width={width} height={height} initialPosition={width / 2}>
       {client.autocorrelogramsViewData ? (
         <AutocorrelogramsView width={0} height={0} data={client.autocorrelogramsViewData} />
       ) : (
@@ -157,6 +167,17 @@ const RightContent2: FunctionComponent<ContentProps> = ({ width, height, client 
       )}
     </Splitter>
   );
+};
+
+const BottomContent: FunctionComponent<ContentProps> = ({ width, height, client }) => {
+  const spikeAmplitudesClient = useMemo(() => {
+    return {
+      getUnitSpikeAmplitudes: async (unitId: number | string) => {
+        return await client.getUnitSpikeAmplitudes(unitId);
+      },
+    };
+  }, [client]);
+  return <SpikeAmplitudesView width={width} height={height} client={spikeAmplitudesClient} />;
 };
 
 export default SpikeSortingAnalysisView;

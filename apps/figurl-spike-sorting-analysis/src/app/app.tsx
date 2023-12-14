@@ -10,6 +10,7 @@ import SpikeSortingAnalysisView from './SpikeSortingAnalysisView';
 import { UnitSelectionContext, defaultUnitSelection, unitSelectionReducer } from '@fi-sci/context-unit-selection';
 
 import './app.css';
+import { SetupTimeSelection } from '@fi-sci/context-time-selection';
 
 export function App() {
   const [data, setData] = useState<any>(null);
@@ -44,9 +45,11 @@ export function App() {
   }
 
   return (
-    <UnitSelectionContext.Provider value={{ unitSelection, unitSelectionDispatch }}>
-      <SpikeSortingAnalysisView width={width} height={height} data={data} />
-    </UnitSelectionContext.Provider>
+    <SetupTimeSelection>
+      <UnitSelectionContext.Provider value={{ unitSelection, unitSelectionDispatch }}>
+        <SpikeSortingAnalysisView width={width} height={height} data={data} />
+      </UnitSelectionContext.Provider>
+    </SetupTimeSelection>
   );
 }
 
