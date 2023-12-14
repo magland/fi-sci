@@ -1,26 +1,26 @@
 {
-    "tasks": [
-        {
-            "label": "build fi-sci",
-            "type": "shell",
-            "command": "nx run fi-sci:build",
-        },
-        {
-            "label": "serve fi-sci",
-            "type": "shell",
-            "command": "nx run fi-sci:serve",
-        },
-        {
-            "label": "generate nx react library",
-            "type": "shell",
-            "command": "nx g @nx/react:library --importPath=@fi-sci/${input:libraryName} --directory=libs/${input:libraryName} --publishable",
-        }
-    ],
-    "inputs": [
-        {
-            "id": "libraryName",
-            "type": "promptString",
-            "description": "Library name"
-        }
-    ]
+  "tasks": [
+    {
+      "label": "build fi-sci",
+      "type": "shell",
+      "command": "nx run fi-sci:build"
+    },
+    {
+      "label": "serve fi-sci",
+      "type": "shell",
+      "command": "nx run fi-sci:serve"
+    },
+    {
+      "label": "generate nx react library",
+      "type": "shell",
+      "command": "nx g @nx/react:library --importPath=@fi-sci/${input:libraryName} --directory=libs/${input:libraryName} --publishable"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "libraryName",
+      "type": "promptString",
+      "description": "Library name"
+    }
+  ]
 }

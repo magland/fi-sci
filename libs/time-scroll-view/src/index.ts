@@ -1,4 +1,3 @@
-import TimeScrollView, { useTimeScrollView } from "./lib/TimeScrollView"
+import TimeScrollView, { useTimeScrollView } from './lib/TimeScrollView';
 
-export { TimeScrollView, useTimeScrollView }
-
+export { TimeScrollView, useTimeScrollView };

@@ -4,27 +4,26 @@ import TimeWidgetToolbarEntries from './TimeWidgetToolbarEntries';
 import { useTimeSelection } from '@fi-sci/context-time-selection';
 
 export type OptionalToolbarActions = {
-    aboveDefault?: ToolbarItem[]
-    belowDefault?: ToolbarItem[]
-}
+  aboveDefault?: ToolbarItem[];
+  belowDefault?: ToolbarItem[];
+};
 
 const useActionToolbar = (props?: OptionalToolbarActions) => {
-    const { aboveDefault, belowDefault } = props || {}
-    const { zoomTimeSelection, panTimeSelectionPct } = useTimeSelection()
+  const { aboveDefault, belowDefault } = props || {};
+  const { zoomTimeSelection, panTimeSelectionPct } = useTimeSelection();
 
-    const timeControlActions = useMemo(() => {
-        const preToolbarEntries = aboveDefault ? [...aboveDefault, Divider] : []
-        const postToolbarEntries = belowDefault ? [Divider, ...belowDefault] : []
-        const timeControls = TimeWidgetToolbarEntries({zoomTimeSelection, panTimeSelectionPct})
-        const actions: ToolbarItem[] = [
-            ...preToolbarEntries,
-            ...timeControls,
-            ...postToolbarEntries
-        ]
-        return actions
-    }, [zoomTimeSelection, panTimeSelectionPct, aboveDefault, belowDefault])
+  const timeControlActions = useMemo(() => {
+    const preToolbarEntries = aboveDefault ? [...aboveDefault, Divider] : [];
+    const postToolbarEntries = belowDefault ? [Divider, ...belowDefault] : [];
+    const timeControls = TimeWidgetToolbarEntries({
+      zoomTimeSelection,
+      panTimeSelectionPct,
+    });
+    const actions: ToolbarItem[] = [...preToolbarEntries, ...timeControls, ...postToolbarEntries];
+    return actions;
+  }, [zoomTimeSelection, panTimeSelectionPct, aboveDefault, belowDefault]);
 
-    return timeControlActions
-}
+  return timeControlActions;
+};
 
-export default useActionToolbar
+export default useActionToolbar;

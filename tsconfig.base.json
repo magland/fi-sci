@@ -15,12 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@fi-sci/context-time-selection": [
-        "libs/context-time-selection/src/index.ts"
-      ],
-      "@fi-sci/context-unit-selection": [
-        "libs/context-unit-selection/src/index.ts"
-      ],
+      "@fi-sci/context-time-selection": ["libs/context-time-selection/src/index.ts"],
+      "@fi-sci/context-unit-selection": ["libs/context-unit-selection/src/index.ts"],
       "@fi-sci/electrode-geometry": ["libs/electrode-geometry/src/index.ts"],
       "@fi-sci/fi-sci-plugin": ["libs/fi-sci-plugin/src/index.ts"],
       "@fi-sci/figurl-interface": ["libs/figurl-interface/src/index.ts"],

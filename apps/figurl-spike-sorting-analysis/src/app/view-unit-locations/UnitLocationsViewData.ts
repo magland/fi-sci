@@ -1,14 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  isArrayOf,
-  isBoolean,
-  isEqualTo,
-  isNumber,
-  isOneOf,
-  isString,
-  optional,
-  validateObject,
-} from '@fi-sci/misc';
+import { isArrayOf, isBoolean, isEqualTo, isNumber, isOneOf, isString, optional, validateObject } from '@fi-sci/misc';
 
 export type UnitLocationsViewData = {
   type: 'UnitLocations';

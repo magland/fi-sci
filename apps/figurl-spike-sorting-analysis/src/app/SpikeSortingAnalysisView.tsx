@@ -52,9 +52,7 @@ const useNH5File = (url: string | null) => {
   return nh5File;
 };
 
-const SpikeSortingAnalysisView: FunctionComponent<
-  SpikeSortingAnalysisViewProps
-> = ({ width, height, data }) => {
+const SpikeSortingAnalysisView: FunctionComponent<SpikeSortingAnalysisViewProps> = ({ width, height, data }) => {
   const [analysisFileUrl, setAnalysisFileUrl] = useState<string | null>(null);
   useEffect(() => {
     getFileDataUrl(data.analysisFile)
@@ -87,11 +85,7 @@ type ViewChildProps = {
   client: SpikeSortingAnalysisClient;
 };
 
-const ViewChild: FunctionComponent<ViewChildProps> = ({
-  width,
-  height,
-  client,
-}) => {
+const ViewChild: FunctionComponent<ViewChildProps> = ({ width, height, client }) => {
   const unitsTableViewData = useMemo(() => {
     const unitIds: (string | number)[] = client.unitIds;
     const columns: UTColumn[] = [];
@@ -134,12 +128,8 @@ type ContentProps = {
   client: SpikeSortingAnalysisClient;
 };
 
-const RightContent: FunctionComponent<ContentProps> = ({
-  width,
-  height,
-  client,
-}) => {
-  const unitLocationsWidth = 100
+const RightContent: FunctionComponent<ContentProps> = ({ width, height, client }) => {
+  const unitLocationsWidth = 100;
   const widths = useMemo(
     () => (width >= unitLocationsWidth + 300 ? [unitLocationsWidth, width - unitLocationsWidth] : [0, width]),
     [width]
@@ -152,33 +142,16 @@ const RightContent: FunctionComponent<ContentProps> = ({
   );
 };
 
-const RightContent2: FunctionComponent<ContentProps> = ({
-  width,
-  height,
-  client,
-}) => {
+const RightContent2: FunctionComponent<ContentProps> = ({ width, height, client }) => {
   return (
-    <Splitter
-      width={width}
-      height={height}
-      direction="vertical"
-      initialPosition={height / 2}
-    >
+    <Splitter width={width} height={height} direction="vertical" initialPosition={height / 2}>
       {client.autocorrelogramsViewData ? (
-        <AutocorrelogramsView
-          width={0}
-          height={0}
-          data={client.autocorrelogramsViewData}
-        />
+        <AutocorrelogramsView width={0} height={0} data={client.autocorrelogramsViewData} />
       ) : (
         <span />
       )}
       {client.averageWaveformsViewData ? (
-        <AverageWaveformsView
-          width={0}
-          height={0}
-          data={client.averageWaveformsViewData}
-        />
+        <AverageWaveformsView width={0} height={0} data={client.averageWaveformsViewData} />
       ) : (
         <span />
       )}

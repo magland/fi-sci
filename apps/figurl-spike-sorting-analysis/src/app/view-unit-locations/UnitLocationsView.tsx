@@ -14,23 +14,17 @@ type UnitLocationsViewProps = {
   height: number;
 };
 
-const UnitLocationsView: FunctionComponent<UnitLocationsViewProps> = (
-  props: UnitLocationsViewProps
-) => {
+const UnitLocationsView: FunctionComponent<UnitLocationsViewProps> = (props: UnitLocationsViewProps) => {
   const { data, width, height } = props;
 
-  const [toolbarOptions, setToolbarOptions] =
-    useState<UnitsTableBottomToolbarOptions>({
-      ...defaultUnitsTableBottomToolbarOptions,
-      onlyShowSelected: false,
-    });
+  const [toolbarOptions, setToolbarOptions] = useState<UnitsTableBottomToolbarOptions>({
+    ...defaultUnitsTableBottomToolbarOptions,
+    onlyShowSelected: false,
+  });
   const bottomToolbarHeight = 30;
 
   const channelIds = Object.keys(data.channelLocations);
-  const electrodes = computeElectrodesFromIdsAndLocations(
-    channelIds,
-    data.channelLocations
-  );
+  const electrodes = computeElectrodesFromIdsAndLocations(channelIds, data.channelLocations);
 
   const divStyle: React.CSSProperties = useMemo(
     () => ({
@@ -62,10 +56,7 @@ const UnitLocationsView: FunctionComponent<UnitLocationsViewProps> = (
           overflow: 'hidden',
         }}
       >
-        <UnitsTableBottomToolbar
-          options={toolbarOptions}
-          setOptions={setToolbarOptions}
-        />
+        <UnitsTableBottomToolbar options={toolbarOptions} setOptions={setToolbarOptions} />
       </div>
     </div>
   );

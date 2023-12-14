@@ -1,4 +1,4 @@
-import ModalWindow, { useModalWindow } from "./lib/ModalWindow";
+import ModalWindow, { useModalWindow } from './lib/ModalWindow';
 
 export { useModalWindow };
 

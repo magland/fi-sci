@@ -5,6 +5,7 @@ This is an example document that will get rendered by the documents app, and hos
 Here's how we can embed a figurl view:
 
 https://figurl.org/f?v=npm://@fi-sci/figurl-sortingview@12/dist&d=sha1://3f5dbe1b337a1b783c53dd3ddb6cf9d6dff72dd6&label=Autocorrelograms%20example
+
 <!--
 height: 350
 -->
@@ -34,4 +35,3 @@ Here's an example table:
 Here's an example image:
 
 ![Example image](https://figurl.org/figurl/examples/figurl.png)
-

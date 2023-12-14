@@ -34,5 +34,5 @@ export default defineConfig({
 
   // added by jfm - this is important for hosting the app on github pages
   // it's also important to remove <base href="/" /> from index.html
-  base: './'
+  base: './',
 });

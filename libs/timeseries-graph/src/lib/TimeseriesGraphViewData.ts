@@ -1,24 +1,24 @@
 export type LegendOpts = {
-    location: 'northwest' | 'northeast'
-}
+  location: 'northwest' | 'northeast';
+};
 
 export type GridlineOpts = {
-    hideX: boolean
-    hideY: boolean
-}
+  hideX: boolean;
+  hideY: boolean;
+};
 
 export type Dataset = {
-    name: string
-    data: {[key: string]: number[]}
-}
+  name: string;
+  data: { [key: string]: number[] };
+};
 
 export type Series = {
-    type: string
-    dataset: string
-    title?: string
-    encoding: {[key: string]: string}
-    attributes: {[key: string]: string | number | number[]}
-}
+  type: string;
+  dataset: string;
+  title?: string;
+  encoding: { [key: string]: string };
+  attributes: { [key: string]: string | number | number[] };
+};
 
 // export type TimeseriesGraphDataAttributes = {
 //     type: 'neurosift.TimeseriesGraphData'
@@ -45,12 +45,12 @@ export type Series = {
 // }
 
 export type TimeseriesGraphViewData = {
-    type: 'TimeseriesGraph',
-    datasets: Dataset[],
-    series: Series[]
-    timeOffset?: number
-    legendOpts?: LegendOpts
-    yRange?: [number, number]
-    gridlineOpts?: GridlineOpts
-    hideToolbar?: boolean
-}
+  type: 'TimeseriesGraph';
+  datasets: Dataset[];
+  series: Series[];
+  timeOffset?: number;
+  legendOpts?: LegendOpts;
+  yRange?: [number, number];
+  gridlineOpts?: GridlineOpts;
+  hideToolbar?: boolean;
+};

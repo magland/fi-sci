@@ -1,315 +1,384 @@
-import { matrix } from "mathjs"
-import { useMemo } from 'react'
-import { LayoutMode, PixelSpaceElectrode } from './sharedDrawnComponents/ElectrodeGeometry'
-import { AffineTransform } from './sharedDrawnComponents/AffineTransform'
-import { BaseCanvas, TransformationMatrix, Vec2, transformPoints } from "../../figurl-canvas"
-
+import { matrix } from 'mathjs';
+import { useMemo } from 'react';
+import { LayoutMode, PixelSpaceElectrode } from './sharedDrawnComponents/ElectrodeGeometry';
+import { AffineTransform } from './sharedDrawnComponents/AffineTransform';
+import { BaseCanvas, TransformationMatrix, Vec2, transformPoints } from '../../figurl-canvas';
 
 export type WaveformColors = {
-    base: string
-}
+  base: string;
+};
 // const defaultWaveformColors: WaveformColors = {
 //     base: 'black'
 // }
 
 export type WaveformPoint = {
-    amplitude: number,
-    time: number
-}
+  amplitude: number;
+  time: number;
+};
 
 export type WaveformProps = {
-    electrodes: PixelSpaceElectrode[]
-    waveforms: {
-        electrodeIndices: number[]
-        waveform: number[][]
-        waveformStdDev?: number[][]
-        waveformPercentiles?: number[][][]
-        waveformColors: WaveformColors
-    }[]
-    waveformWidth: number
-    oneElectrodeWidth: number
-    oneElectrodeHeight: number
-    yScale: number
-    horizontalStretchFactor: number
-    width: number
-    height: number
-    layoutMode?: LayoutMode
-    affineTransform?: AffineTransform
-    useUnitColors: boolean
-}
+  electrodes: PixelSpaceElectrode[];
+  waveforms: {
+    electrodeIndices: number[];
+    waveform: number[][];
+    waveformStdDev?: number[][];
+    waveformPercentiles?: number[][][];
+    waveformColors: WaveformColors;
+  }[];
+  waveformWidth: number;
+  oneElectrodeWidth: number;
+  oneElectrodeHeight: number;
+  yScale: number;
+  horizontalStretchFactor: number;
+  width: number;
+  height: number;
+  layoutMode?: LayoutMode;
+  affineTransform?: AffineTransform;
+  useUnitColors: boolean;
+};
 
 type PixelSpacePath = {
-    pointsInPaintBox: Vec2[]
-    offsetFromParentCenter: Vec2
-    color: string
-}
+  pointsInPaintBox: Vec2[];
+  offsetFromParentCenter: Vec2;
+  color: string;
+};
 
 type PaintProps = {
-    waveformWidth: number
-    pixelSpacePaths: PixelSpacePath[]
-    pixelSpacePathsLower?: PixelSpacePath[]
-    pixelSpacePathsUpper?: PixelSpacePath[]
-    pixelSpacePathsPercentile1?: PixelSpacePath[]
-    pixelSpacePathsPercentile2?: PixelSpacePath[]
-    pixelSpacePathsPercentile3?: PixelSpacePath[]
-    pixelSpacePathsPercentile4?: PixelSpacePath[]
-    xMargin: number
-    affineTransform?: AffineTransform
-    useUnitColors: boolean
-}
+  waveformWidth: number;
+  pixelSpacePaths: PixelSpacePath[];
+  pixelSpacePathsLower?: PixelSpacePath[];
+  pixelSpacePathsUpper?: PixelSpacePath[];
+  pixelSpacePathsPercentile1?: PixelSpacePath[];
+  pixelSpacePathsPercentile2?: PixelSpacePath[];
+  pixelSpacePathsPercentile3?: PixelSpacePath[];
+  pixelSpacePathsPercentile4?: PixelSpacePath[];
+  xMargin: number;
+  affineTransform?: AffineTransform;
+  useUnitColors: boolean;
+};
 
 const computePaths = (
-    transform: TransformationMatrix,
-    waveforms: {
-        electrodeIndices: number[]
-        waveform: number[][]
-        waveformStdDev?: number[][]
-        waveformPercentiles?: number[][][]
-        waveformColors: WaveformColors
-    }[],
-    electrodes: PixelSpaceElectrode[],
-    mode: 'normal' | 'lower' | 'upper' | 'percentile1' | 'percentile2' | 'percentile3' | 'percentile4',
-    horizontalStretchFactor: number
+  transform: TransformationMatrix,
+  waveforms: {
+    electrodeIndices: number[];
+    waveform: number[][];
+    waveformStdDev?: number[][];
+    waveformPercentiles?: number[][][];
+    waveformColors: WaveformColors;
+  }[],
+  electrodes: PixelSpaceElectrode[],
+  mode: 'normal' | 'lower' | 'upper' | 'percentile1' | 'percentile2' | 'percentile3' | 'percentile4',
+  horizontalStretchFactor: number
 ): PixelSpacePath[] => {
-    // const pointsPerWaveform = waveforms.length > 0 ? waveforms[0].waveform.length > 0 ? waveforms[0].waveform[0].length : 0 : 0 // assumed constant across all
-    // Flatten a list of waveforms (waveforms[i] = WaveformPoint[] = array of {time, amplitude}) to Vec2[] for vectorized point conversion
-    // const rawPoints = waveforms.map(waveform => waveform.map(pt => [pt.time, pt.amplitude])).flat(1)
-    // const pointsProjectedToElectrodeBox = transformPoints(transform, rawPoints)
+  // const pointsPerWaveform = waveforms.length > 0 ? waveforms[0].waveform.length > 0 ? waveforms[0].waveform[0].length : 0 : 0 // assumed constant across all
+  // Flatten a list of waveforms (waveforms[i] = WaveformPoint[] = array of {time, amplitude}) to Vec2[] for vectorized point conversion
+  // const rawPoints = waveforms.map(waveform => waveform.map(pt => [pt.time, pt.amplitude])).flat(1)
+  // const pointsProjectedToElectrodeBox = transformPoints(transform, rawPoints)
 
-    const ret: PixelSpacePath[] = []
-    electrodes.forEach((e, ii) => {
-        for (const W of waveforms) {
-            const jj = W.electrodeIndices.indexOf(ii)
-            if (jj >= 0) {
-                let ww: number[] | undefined
-                const wsd = W.waveformStdDev
-                const wp = W.waveformPercentiles // TODO: use these to draw a shaded area
-                if (mode === 'normal') {
-                    ww = W.waveform[jj]
-                }
-                else if (mode === 'lower') {
-                    ww = wsd ? W.waveform[jj].map((v, i) => (W.waveform[jj][i] - wsd[jj][i])) : undefined
-                }
-                else if (mode === 'upper') {
-                    ww = wsd ? W.waveform[jj].map((v, i) => (W.waveform[jj][i] + wsd[jj][i])) : undefined
-                }
-                else if (mode === 'percentile1') {
-                    ww = wp ? W.waveform[jj].map((v, i) => (wp[0][jj][i])) : undefined
-                }
-                else if (mode === 'percentile2') {
-                    ww = wp ? W.waveform[jj].map((v, i) => (wp[1][jj][i])) : undefined
-                }
-                else if (mode === 'percentile3') {
-                    ww = wp && (2 < wp.length) ? W.waveform[jj].map((v, i) => (wp[2][jj][i])) : undefined
-                }
-                else if (mode === 'percentile4') {
-                    ww = wp && (3 < wp.length) ? W.waveform[jj].map((v, i) => (wp[3][jj][i])) : undefined
-                }
-                if (ww) {
-                    const points: Vec2[] = ww.map((amplitude, time) => ([
-                        (ww?.length || 0) / 2 + (time - (ww?.length || 0) / 2) * horizontalStretchFactor,
-                        amplitude
-                    ]))
-                    const pointsProjectedToElectrodeBox = transformPoints(transform, points)
-                    ret.push({
-                        pointsInPaintBox: pointsProjectedToElectrodeBox,
-                        offsetFromParentCenter: [e.pixelX, e.pixelY],
-                        color: W.waveformColors.base
-                    })
-                }
-            }
+  const ret: PixelSpacePath[] = [];
+  electrodes.forEach((e, ii) => {
+    for (const W of waveforms) {
+      const jj = W.electrodeIndices.indexOf(ii);
+      if (jj >= 0) {
+        let ww: number[] | undefined;
+        const wsd = W.waveformStdDev;
+        const wp = W.waveformPercentiles; // TODO: use these to draw a shaded area
+        if (mode === 'normal') {
+          ww = W.waveform[jj];
+        } else if (mode === 'lower') {
+          ww = wsd ? W.waveform[jj].map((v, i) => W.waveform[jj][i] - wsd[jj][i]) : undefined;
+        } else if (mode === 'upper') {
+          ww = wsd ? W.waveform[jj].map((v, i) => W.waveform[jj][i] + wsd[jj][i]) : undefined;
+        } else if (mode === 'percentile1') {
+          ww = wp ? W.waveform[jj].map((v, i) => wp[0][jj][i]) : undefined;
+        } else if (mode === 'percentile2') {
+          ww = wp ? W.waveform[jj].map((v, i) => wp[1][jj][i]) : undefined;
+        } else if (mode === 'percentile3') {
+          ww = wp && 2 < wp.length ? W.waveform[jj].map((v, i) => wp[2][jj][i]) : undefined;
+        } else if (mode === 'percentile4') {
+          ww = wp && 3 < wp.length ? W.waveform[jj].map((v, i) => wp[3][jj][i]) : undefined;
         }
-    })
-    return ret
-}
+        if (ww) {
+          const points: Vec2[] = ww.map((amplitude, time) => [
+            (ww?.length || 0) / 2 + (time - (ww?.length || 0) / 2) * horizontalStretchFactor,
+            amplitude,
+          ]);
+          const pointsProjectedToElectrodeBox = transformPoints(transform, points);
+          ret.push({
+            pointsInPaintBox: pointsProjectedToElectrodeBox,
+            offsetFromParentCenter: [e.pixelX, e.pixelY],
+            color: W.waveformColors.base,
+          });
+        }
+      }
+    }
+  });
+  return ret;
+};
 
 const paint = (ctxt: CanvasRenderingContext2D, props: PaintProps) => {
-    const { pixelSpacePaths, pixelSpacePathsLower, pixelSpacePathsUpper, pixelSpacePathsPercentile1, pixelSpacePathsPercentile2, pixelSpacePathsPercentile3, pixelSpacePathsPercentile4, xMargin, waveformWidth, affineTransform, useUnitColors } = props
-    if (!pixelSpacePaths || pixelSpacePaths.length === 0) return
+  const {
+    pixelSpacePaths,
+    pixelSpacePathsLower,
+    pixelSpacePathsUpper,
+    pixelSpacePathsPercentile1,
+    pixelSpacePathsPercentile2,
+    pixelSpacePathsPercentile3,
+    pixelSpacePathsPercentile4,
+    xMargin,
+    waveformWidth,
+    affineTransform,
+    useUnitColors,
+  } = props;
+  if (!pixelSpacePaths || pixelSpacePaths.length === 0) return;
 
-    ctxt.resetTransform()
-    ctxt.clearRect(0, 0, ctxt.canvas.width, ctxt.canvas.height)
-    
-    ctxt.save()
-    if (affineTransform) {
-        const ff = affineTransform.forward
-		ctxt.transform(ff[0][0], ff[1][0], ff[0][1], ff[1][1], ff[0][2], ff[1][2])
-    }
+  ctxt.resetTransform();
+  ctxt.clearRect(0, 0, ctxt.canvas.width, ctxt.canvas.height);
 
-    ctxt.translate(xMargin, 0)
-    // ctxt.scale(1, yScale) // This would be a neat native way to adjust the vertical scaling, BUT it changes the pen aspect ratio.
-    // So it doesn't work, alas. Leaving this comment here as a warning to future generations.
-    const baseTransform = ctxt.getTransform()
+  ctxt.save();
+  if (affineTransform) {
+    const ff = affineTransform.forward;
+    ctxt.transform(ff[0][0], ff[1][0], ff[0][1], ff[1][1], ff[0][2], ff[1][2]);
+  }
 
-    // std dev shading
-    pixelSpacePathsLower && pixelSpacePathsUpper && pixelSpacePathsLower.forEach((p, ii) => {
-        const pLower = pixelSpacePathsLower[ii]
-        const pUpper = pixelSpacePathsUpper[ii]
+  ctxt.translate(xMargin, 0);
+  // ctxt.scale(1, yScale) // This would be a neat native way to adjust the vertical scaling, BUT it changes the pen aspect ratio.
+  // So it doesn't work, alas. Leaving this comment here as a warning to future generations.
+  const baseTransform = ctxt.getTransform();
 
-        ctxt.fillStyle = '#dddddd'
-        ctxt.strokeStyle = '#bbbbbb'
-        ctxt.lineWidth = 1
-        ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1])
-        ctxt.beginPath()
-        
-        ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1])
-        for (let j=0; j<pLower.pointsInPaintBox.length; j++) {
-            ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1])
-        }
-        for (let j=pUpper.pointsInPaintBox.length - 1; j>=0; j--) {
-            ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1])
-        }
+  // std dev shading
+  pixelSpacePathsLower &&
+    pixelSpacePathsUpper &&
+    pixelSpacePathsLower.forEach((p, ii) => {
+      const pLower = pixelSpacePathsLower[ii];
+      const pUpper = pixelSpacePathsUpper[ii];
 
-        ctxt.fill()
-        ctxt.stroke()
-        ctxt.setTransform(baseTransform)
-    })
+      ctxt.fillStyle = '#dddddd';
+      ctxt.strokeStyle = '#bbbbbb';
+      ctxt.lineWidth = 1;
+      ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1]);
+      ctxt.beginPath();
 
-    let pp1: PixelSpacePath[] | undefined
-    let pp2: PixelSpacePath[] | undefined
-    let pp3: PixelSpacePath[] | undefined
-    let pp4: PixelSpacePath[] | undefined
-    if (pixelSpacePathsPercentile1 && pixelSpacePathsPercentile2 && pixelSpacePathsPercentile3 && pixelSpacePathsPercentile4) {
-        pp1 = pixelSpacePathsPercentile1
-        pp2 = pixelSpacePathsPercentile2
-        pp3 = pixelSpacePathsPercentile3
-        pp4 = pixelSpacePathsPercentile4
-    }
-    else if (pixelSpacePathsPercentile1 && pixelSpacePathsPercentile2 && !pixelSpacePathsPercentile3 && !pixelSpacePathsPercentile4) {
-        pp1 = undefined
-        pp2 = pixelSpacePathsPercentile1
-        pp3 = pixelSpacePathsPercentile2
-        pp4 = undefined
-    }
-    else {
-        pp1 = undefined
-        pp2 = undefined
-        pp3 = undefined
-        pp4 = undefined
-    }
+      ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1]);
+      for (let j = 0; j < pLower.pointsInPaintBox.length; j++) {
+        ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1]);
+      }
+      for (let j = pUpper.pointsInPaintBox.length - 1; j >= 0; j--) {
+        ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1]);
+      }
 
-    // outer percentile
-    pp1 && pp1.length > 0 && pp4 && pp4.length > 0 && pp1.forEach((p, ii) => {
-        if (!pp1) throw Error('unexpected')
-        if (!pp4) throw Error('unexpected')
-        const pLower = pp1[ii]
-        const pUpper = pp4[ii]
+      ctxt.fill();
+      ctxt.stroke();
+      ctxt.setTransform(baseTransform);
+    });
 
-        ctxt.fillStyle = '#dddddd'
-        ctxt.strokeStyle = '#dddddd'
-        ctxt.lineWidth = 1
-        ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1])
-        ctxt.beginPath()
+  let pp1: PixelSpacePath[] | undefined;
+  let pp2: PixelSpacePath[] | undefined;
+  let pp3: PixelSpacePath[] | undefined;
+  let pp4: PixelSpacePath[] | undefined;
+  if (
+    pixelSpacePathsPercentile1 &&
+    pixelSpacePathsPercentile2 &&
+    pixelSpacePathsPercentile3 &&
+    pixelSpacePathsPercentile4
+  ) {
+    pp1 = pixelSpacePathsPercentile1;
+    pp2 = pixelSpacePathsPercentile2;
+    pp3 = pixelSpacePathsPercentile3;
+    pp4 = pixelSpacePathsPercentile4;
+  } else if (
+    pixelSpacePathsPercentile1 &&
+    pixelSpacePathsPercentile2 &&
+    !pixelSpacePathsPercentile3 &&
+    !pixelSpacePathsPercentile4
+  ) {
+    pp1 = undefined;
+    pp2 = pixelSpacePathsPercentile1;
+    pp3 = pixelSpacePathsPercentile2;
+    pp4 = undefined;
+  } else {
+    pp1 = undefined;
+    pp2 = undefined;
+    pp3 = undefined;
+    pp4 = undefined;
+  }
 
-        ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1])
-        for (let j=0; j<pLower.pointsInPaintBox.length; j++) {
-            ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1])
-        }
-        for (let j=pUpper.pointsInPaintBox.length - 1; j>=0; j--) {
-            ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1])
-        }
+  // outer percentile
+  pp1 &&
+    pp1.length > 0 &&
+    pp4 &&
+    pp4.length > 0 &&
+    pp1.forEach((p, ii) => {
+      if (!pp1) throw Error('unexpected');
+      if (!pp4) throw Error('unexpected');
+      const pLower = pp1[ii];
+      const pUpper = pp4[ii];
 
-        ctxt.fill()
-        ctxt.stroke()
-        ctxt.setTransform(baseTransform)
-    })
+      ctxt.fillStyle = '#dddddd';
+      ctxt.strokeStyle = '#dddddd';
+      ctxt.lineWidth = 1;
+      ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1]);
+      ctxt.beginPath();
 
-    // inner percentile
-    pp2 && pp2.length > 0 && pp3 && pp3.length > 0 && pp2.forEach((p, ii) => {
-        if (!pp2) throw Error('unexpected')
-        if (!pp3) throw Error('unexpected')
-        const pLower = pp2[ii]
-        const pUpper = pp3[ii]
+      ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1]);
+      for (let j = 0; j < pLower.pointsInPaintBox.length; j++) {
+        ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1]);
+      }
+      for (let j = pUpper.pointsInPaintBox.length - 1; j >= 0; j--) {
+        ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1]);
+      }
 
-        ctxt.fillStyle = '#bbbbbb'
-        ctxt.strokeStyle = '#bbbbbb'
-        ctxt.lineWidth = 1
-        ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1])
-        ctxt.beginPath()
-        
-        ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1])
-        for (let j=0; j<pLower.pointsInPaintBox.length; j++) {
-            ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1])
-        }
-        for (let j=pUpper.pointsInPaintBox.length - 1; j>=0; j--) {
-            ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1])
-        }
+      ctxt.fill();
+      ctxt.stroke();
+      ctxt.setTransform(baseTransform);
+    });
 
-        ctxt.fill()
-        ctxt.stroke()
-        ctxt.setTransform(baseTransform)
-    })
+  // inner percentile
+  pp2 &&
+    pp2.length > 0 &&
+    pp3 &&
+    pp3.length > 0 &&
+    pp2.forEach((p, ii) => {
+      if (!pp2) throw Error('unexpected');
+      if (!pp3) throw Error('unexpected');
+      const pLower = pp2[ii];
+      const pUpper = pp3[ii];
 
-    // waveforms
-    pixelSpacePaths.forEach((p) => {
-        ctxt.strokeStyle = useUnitColors ? p.color : 'black'
-        ctxt.lineWidth = waveformWidth
-        ctxt.translate(p.offsetFromParentCenter[0], p.offsetFromParentCenter[1])
-        ctxt.beginPath()
-        ctxt.moveTo(p.pointsInPaintBox[0][0], p.pointsInPaintBox[0][1])
-        p.pointsInPaintBox.forEach((pt) => {
-            ctxt.lineTo(pt[0], pt[1])
-        })
-        ctxt.stroke()
-        ctxt.setTransform(baseTransform)
-    })
-    ctxt.restore()
-    // Might be a good idea to do another ctxt.resetTransform() here to clear out any junk state
-}
+      ctxt.fillStyle = '#bbbbbb';
+      ctxt.strokeStyle = '#bbbbbb';
+      ctxt.lineWidth = 1;
+      ctxt.translate(pLower.offsetFromParentCenter[0], pLower.offsetFromParentCenter[1]);
+      ctxt.beginPath();
 
+      ctxt.moveTo(pLower.pointsInPaintBox[0][0], pLower.pointsInPaintBox[0][1]);
+      for (let j = 0; j < pLower.pointsInPaintBox.length; j++) {
+        ctxt.lineTo(pLower.pointsInPaintBox[j][0], pLower.pointsInPaintBox[j][1]);
+      }
+      for (let j = pUpper.pointsInPaintBox.length - 1; j >= 0; j--) {
+        ctxt.lineTo(pUpper.pointsInPaintBox[j][0], pUpper.pointsInPaintBox[j][1]);
+      }
+
+      ctxt.fill();
+      ctxt.stroke();
+      ctxt.setTransform(baseTransform);
+    });
+
+  // waveforms
+  pixelSpacePaths.forEach((p) => {
+    ctxt.strokeStyle = useUnitColors ? p.color : 'black';
+    ctxt.lineWidth = waveformWidth;
+    ctxt.translate(p.offsetFromParentCenter[0], p.offsetFromParentCenter[1]);
+    ctxt.beginPath();
+    ctxt.moveTo(p.pointsInPaintBox[0][0], p.pointsInPaintBox[0][1]);
+    p.pointsInPaintBox.forEach((pt) => {
+      ctxt.lineTo(pt[0], pt[1]);
+    });
+    ctxt.stroke();
+    ctxt.setTransform(baseTransform);
+  });
+  ctxt.restore();
+  // Might be a good idea to do another ctxt.resetTransform() here to clear out any junk state
+};
 
 const WaveformPlot = (props: WaveformProps) => {
-    const { electrodes, waveforms, oneElectrodeHeight, oneElectrodeWidth, yScale, horizontalStretchFactor, width, height, layoutMode, waveformWidth, affineTransform, useUnitColors } = props
+  const {
+    electrodes,
+    waveforms,
+    oneElectrodeHeight,
+    oneElectrodeWidth,
+    yScale,
+    horizontalStretchFactor,
+    width,
+    height,
+    layoutMode,
+    waveformWidth,
+    affineTransform,
+    useUnitColors,
+  } = props;
 
-    const canvas = useMemo(() => {
-        const pointsPerWaveform = waveforms.length > 0 ? waveforms[0].waveform.length > 0 ? waveforms[0].waveform[0].length : 0 : 0 // assumed constant across all
-        const timeScale = oneElectrodeWidth/pointsPerWaveform   // converts the frame numbers (1..130 or w/e) to pixel width of electrode
-        const offsetToCenter = -oneElectrodeWidth*(.5 + 1/pointsPerWaveform) // adjusts the waveforms to start at the left of the electrode, not its center
-        const finalYScale = (yScale*oneElectrodeHeight)/2       // scales waveform amplitudes to the pixel height of a single electrode
-                                                                // (...roughly. We'll exceed that height if the user dials up the scaling.)
-        const transform = matrix([[timeScale,               0,   offsetToCenter],
-                                  [        0,    -finalYScale,                0],
-                                  [        0,               0,                1]]
-                                ).toArray() as TransformationMatrix
-        const paths = computePaths(transform, waveforms, electrodes, 'normal', horizontalStretchFactor)
-        const pathsLower = computePaths(transform, waveforms, electrodes, 'lower', horizontalStretchFactor)
-        const pathsUpper = computePaths(transform, waveforms, electrodes, 'upper', horizontalStretchFactor)
-        let pathsPercentile1: PixelSpacePath[] | undefined = computePaths(transform, waveforms, electrodes, 'percentile1', horizontalStretchFactor)
-        let pathsPercentile2: PixelSpacePath[] | undefined = computePaths(transform, waveforms, electrodes, 'percentile2', horizontalStretchFactor)
-        let pathsPercentile3: PixelSpacePath[] | undefined = computePaths(transform, waveforms, electrodes, 'percentile3', horizontalStretchFactor)
-        let pathsPercentile4: PixelSpacePath[] | undefined = computePaths(transform, waveforms, electrodes, 'percentile4', horizontalStretchFactor)
-        if (pathsPercentile1.length === 0) pathsPercentile1 = undefined
-        if (pathsPercentile2.length === 0) pathsPercentile2 = undefined
-        if (pathsPercentile3.length === 0) pathsPercentile3 = undefined
-        if (pathsPercentile4.length === 0) pathsPercentile4 = undefined
-        // const pathsLower = waveformLowerPoints ? computePaths(transform, waveformLowerPoints, electrodes, horizontalStretchFactor) : undefined
-        // const pathsUpper = waveformUpperPoints ? computePaths(transform, waveformUpperPoints, electrodes, horizontalStretchFactor) : undefined
-        const xMargin = layoutMode === 'vertical' ? (width - oneElectrodeWidth)/2 : 0
+  const canvas = useMemo(() => {
+    const pointsPerWaveform =
+      waveforms.length > 0 ? (waveforms[0].waveform.length > 0 ? waveforms[0].waveform[0].length : 0) : 0; // assumed constant across all
+    const timeScale = oneElectrodeWidth / pointsPerWaveform; // converts the frame numbers (1..130 or w/e) to pixel width of electrode
+    const offsetToCenter = -oneElectrodeWidth * (0.5 + 1 / pointsPerWaveform); // adjusts the waveforms to start at the left of the electrode, not its center
+    const finalYScale = (yScale * oneElectrodeHeight) / 2; // scales waveform amplitudes to the pixel height of a single electrode
+    // (...roughly. We'll exceed that height if the user dials up the scaling.)
+    const transform = matrix([
+      [timeScale, 0, offsetToCenter],
+      [0, -finalYScale, 0],
+      [0, 0, 1],
+    ]).toArray() as TransformationMatrix;
+    const paths = computePaths(transform, waveforms, electrodes, 'normal', horizontalStretchFactor);
+    const pathsLower = computePaths(transform, waveforms, electrodes, 'lower', horizontalStretchFactor);
+    const pathsUpper = computePaths(transform, waveforms, electrodes, 'upper', horizontalStretchFactor);
+    let pathsPercentile1: PixelSpacePath[] | undefined = computePaths(
+      transform,
+      waveforms,
+      electrodes,
+      'percentile1',
+      horizontalStretchFactor
+    );
+    let pathsPercentile2: PixelSpacePath[] | undefined = computePaths(
+      transform,
+      waveforms,
+      electrodes,
+      'percentile2',
+      horizontalStretchFactor
+    );
+    let pathsPercentile3: PixelSpacePath[] | undefined = computePaths(
+      transform,
+      waveforms,
+      electrodes,
+      'percentile3',
+      horizontalStretchFactor
+    );
+    let pathsPercentile4: PixelSpacePath[] | undefined = computePaths(
+      transform,
+      waveforms,
+      electrodes,
+      'percentile4',
+      horizontalStretchFactor
+    );
+    if (pathsPercentile1.length === 0) pathsPercentile1 = undefined;
+    if (pathsPercentile2.length === 0) pathsPercentile2 = undefined;
+    if (pathsPercentile3.length === 0) pathsPercentile3 = undefined;
+    if (pathsPercentile4.length === 0) pathsPercentile4 = undefined;
+    // const pathsLower = waveformLowerPoints ? computePaths(transform, waveformLowerPoints, electrodes, horizontalStretchFactor) : undefined
+    // const pathsUpper = waveformUpperPoints ? computePaths(transform, waveformUpperPoints, electrodes, horizontalStretchFactor) : undefined
+    const xMargin = layoutMode === 'vertical' ? (width - oneElectrodeWidth) / 2 : 0;
 
-        const paintProps: PaintProps = {
-            pixelSpacePaths: paths,
-            pixelSpacePathsLower: pathsLower,
-            pixelSpacePathsUpper: pathsUpper,
-            pixelSpacePathsPercentile1: pathsPercentile1,
-            pixelSpacePathsPercentile2: pathsPercentile2,
-            pixelSpacePathsPercentile3: pathsPercentile3,
-            pixelSpacePathsPercentile4: pathsPercentile4,
-            xMargin: xMargin,
-            waveformWidth,
-            affineTransform,
-            useUnitColors
-        }
+    const paintProps: PaintProps = {
+      pixelSpacePaths: paths,
+      pixelSpacePathsLower: pathsLower,
+      pixelSpacePathsUpper: pathsUpper,
+      pixelSpacePathsPercentile1: pathsPercentile1,
+      pixelSpacePathsPercentile2: pathsPercentile2,
+      pixelSpacePathsPercentile3: pathsPercentile3,
+      pixelSpacePathsPercentile4: pathsPercentile4,
+      xMargin: xMargin,
+      waveformWidth,
+      affineTransform,
+      useUnitColors,
+    };
 
-        return <BaseCanvas<PaintProps>
-            width={width}
-            height={height}
-            draw={paint}
-            drawData={paintProps}
-        />
-    }, [waveforms, electrodes, yScale, width, height, oneElectrodeWidth, oneElectrodeHeight, layoutMode, waveformWidth, affineTransform, horizontalStretchFactor, useUnitColors])
+    return <BaseCanvas<PaintProps> width={width} height={height} draw={paint} drawData={paintProps} />;
+  }, [
+    waveforms,
+    electrodes,
+    yScale,
+    width,
+    height,
+    oneElectrodeWidth,
+    oneElectrodeHeight,
+    layoutMode,
+    waveformWidth,
+    affineTransform,
+    horizontalStretchFactor,
+    useUnitColors,
+  ]);
 
-    return canvas
-}
+  return canvas;
+};
 // (Note: The transform matrix above could also be computed by funcToTransform.)
 // The transform matrix combines two transforms: one maps waveform data into a roughly-unit-square system,
 // and the other maps a unit-square to the pixel area of one electrode. Breaking those steps out looks like this:
@@ -322,7 +391,6 @@ const WaveformPlot = (props: WaveformProps) => {
 // const combinedTransform = multiply(pointsToCentralBoxXfrm, wavesToUnitScale).toArray() as TransformationMatrix
 // but there's no need to actually make the computer do the math every time since we know what the result
 // should be. (Also notice the -yScale term to invert the axis, since pixel Ys increase as you move downward.)
-
 
 // Data-report functions for debugging:
 // const sampleWaveformData = (waveforms?: WaveformPoint[][]): string => {
@@ -344,7 +412,6 @@ const WaveformPlot = (props: WaveformProps) => {
 //     return [...start, ...mid, ...end, displacement].join('\n')
 // }
 
-
 // Note: This code is left as an example of the prior way of doing things, but it's not needed for anything
 // (and also doesn't work properly for vertical-layout.)
 // const computePathsViaElectrodeTransforms = (waveforms: WaveformPoint[][], electrodes: PixelSpaceElectrode[], yScale: number): PixelSpacePath[] => {
@@ -358,7 +425,7 @@ const WaveformPlot = (props: WaveformProps) => {
 //     // const wavesToUnits = funcToTransform(p => {
 //     //     return [p[0] / xrange, 0.5 - (p[1] /2) * yScale]
 //     // })
-    
+
 //     return electrodes.map((e, ii) => {
 //         const rawPoints = waveforms[ii].map(pt => [pt.time, pt.amplitude])
 //         const electrodeBaseTransform = matrix(e.transform)
@@ -395,4 +462,4 @@ const WaveformPlot = (props: WaveformProps) => {
 //     })
 // }
 
-export default WaveformPlot
+export default WaveformPlot;

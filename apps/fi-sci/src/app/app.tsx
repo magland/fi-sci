@@ -16,8 +16,7 @@ export function App() {
         <div>
           <h1>Fi-sci</h1>
           <p>
-            This app is a development tool, serving as a test for a collection
-            of React widgets in the @fi-sci repo.
+            This app is a development tool, serving as a test for a collection of React widgets in the @fi-sci repo.
           </p>
         </div>
       </Section>
@@ -34,11 +33,7 @@ export function App() {
         <LayoutExample width={0} />
       </Section>
       <Section label="SmallIconButton" width={width}>
-        <SmallIconButton
-          icon={<Add />}
-          label="Click me"
-          onClick={() => alert('SmallIconButton clicked')}
-        />
+        <SmallIconButton icon={<Add />} label="Click me" onClick={() => alert('SmallIconButton clicked')} />
       </Section>
       <Section label="ModalWindow" width={width}>
         <ModalWindowExample />

@@ -1,23 +1,23 @@
 .plotUnselectedStyle {
-    border: 3px solid rgb(202, 224, 231);
+  border: 3px solid rgb(202, 224, 231);
 }
 
 .plotSelectedStyle {
-    border: 3px solid #9999ff;
-    background-color: white
+  border: 3px solid #9999ff;
+  background-color: white;
 }
 .plotUnselectableStyle {
-    border: 3px solid transparent;
+  border: 3px solid transparent;
 }
 
 .plotCurrentStyle {
-    border: 3px solid blue;
-    background-color: white;
+  border: 3px solid blue;
+  background-color: white;
 }
 
 .plotLabelStyle {
-    font-weight: bold;
-    text-align: center;
-    overflow: hidden;
-    white-space: nowrap;
+  font-weight: bold;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
 }

@@ -1,15 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useCallback, useMemo } from 'react';
-import {
-  computeElectrodeLocations,
-  defaultColors,
-  ElectrodeColors,
-} from '../view-average-waveforms';
-import {
-  getUnitColor,
-  idToNum,
-  useSelectedUnitIds,
-} from '@fi-sci/context-unit-selection';
+import { computeElectrodeLocations, defaultColors, ElectrodeColors } from '../view-average-waveforms';
+import { getUnitColor, idToNum, useSelectedUnitIds } from '@fi-sci/context-unit-selection';
 import useWheelZoom from '../view-average-waveforms/WaveformWidget/sharedDrawnComponents/useWheelZoom';
 import {
   AffineTransform,
@@ -73,14 +65,7 @@ const emptyDrawData = {};
 const markerRadius = 8;
 
 const UnitLocationsWidget = (props: WidgetProps) => {
-  const {
-    width,
-    height,
-    electrodes,
-    units,
-    disableAutoRotate,
-    onlyShowSelected,
-  } = props;
+  const { width, height, electrodes, units, disableAutoRotate, onlyShowSelected } = props;
   // const { selectedElectrodeIds } = useSelectedElectrodes()
   const { selectedUnitIds, unitIdSelectionDispatch } = useSelectedUnitIds();
   const { affineTransform, handleWheel } = useWheelZoom(width, height, {
@@ -88,38 +73,25 @@ const UnitLocationsWidget = (props: WidgetProps) => {
     alt: false,
   });
 
-  const selectedUnitIdsSet = useMemo(
-    () => new Set([...selectedUnitIds]),
-    [selectedUnitIds]
-  );
+  const selectedUnitIdsSet = useMemo(() => new Set([...selectedUnitIds]), [selectedUnitIds]);
 
   const filteredUnits = units
     .filter((u) => (onlyShowSelected ? selectedUnitIdsSet.has(u.unitId) : true))
-    .filter(u => {
-        if ((u.x === null) || (u.y === null)) {
-            console.warn(`Unit ${u.unitId} has location null.`)
-            return false
-        }
-        return true
+    .filter((u) => {
+      if (u.x === null || u.y === null) {
+        console.warn(`Unit ${u.unitId} has location null.`);
+        return false;
+      }
+      return true;
     })
     .sort((u1, u2) => {
       // sort so that selected units are on top
-      if (
-        selectedUnitIdsSet.has(u1.unitId) &&
-        !selectedUnitIdsSet.has(u2.unitId)
-      )
-        return 1;
-      if (
-        !selectedUnitIdsSet.has(u1.unitId) &&
-        selectedUnitIdsSet.has(u2.unitId)
-      )
-        return -1;
+      if (selectedUnitIdsSet.has(u1.unitId) && !selectedUnitIdsSet.has(u2.unitId)) return 1;
+      if (!selectedUnitIdsSet.has(u1.unitId) && selectedUnitIdsSet.has(u2.unitId)) return -1;
       return idToNum(u1.unitId) - idToNum(u2.unitId);
     });
 
-  const maxElectrodePixelRadius =
-    props.maxElectrodePixelRadius ||
-    defaultElectrodeLayerProps.maxElectrodePixelRadius;
+  const maxElectrodePixelRadius = props.maxElectrodePixelRadius || defaultElectrodeLayerProps.maxElectrodePixelRadius;
   const colors = props.colors ?? defaultColors;
   const showLabels = props.showLabels ?? false;
   const offsetLabels = props.offsetLabels ?? false;
@@ -129,15 +101,7 @@ const UnitLocationsWidget = (props: WidgetProps) => {
     pixelRadius,
     transform,
   } = useMemo(
-    () =>
-      computeElectrodeLocations(
-        width,
-        height,
-        electrodes,
-        'geom',
-        maxElectrodePixelRadius,
-        { disableAutoRotate }
-      ),
+    () => computeElectrodeLocations(width, height, electrodes, 'geom', maxElectrodePixelRadius, { disableAutoRotate }),
     [electrodes, height, maxElectrodePixelRadius, width, disableAutoRotate]
   );
 
@@ -166,10 +130,7 @@ const UnitLocationsWidget = (props: WidgetProps) => {
         return {
           ...e,
           color: color,
-          textColor:
-            selected || (hovered && !dragged)
-              ? colors.textDark
-              : colors.textLight,
+          textColor: selected || (hovered && !dragged) ? colors.textDark : colors.textLight,
         };
       });
 
@@ -226,15 +187,7 @@ const UnitLocationsWidget = (props: WidgetProps) => {
         });
       }
     },
-    [
-      colors,
-      offsetLabels,
-      pixelElectrodes,
-      pixelRadius,
-      showLabels,
-      affineTransform,
-      radiusScale,
-    ]
+    [colors, offsetLabels, pixelElectrodes, pixelRadius, showLabels, affineTransform, radiusScale]
   );
 
   const paintUnits = useCallback(
@@ -267,25 +220,11 @@ const UnitLocationsWidget = (props: WidgetProps) => {
   );
 
   const electrodeGeometryCanvas = useMemo(() => {
-    return (
-      <BaseCanvas
-        width={width}
-        height={height}
-        draw={paintElectrodes}
-        drawData={emptyDrawData}
-      />
-    );
+    return <BaseCanvas width={width} height={height} draw={paintElectrodes} drawData={emptyDrawData} />;
   }, [width, height, paintElectrodes]);
 
   const unitsCanvas = useMemo(() => {
-    return (
-      <BaseCanvas
-        width={width}
-        height={height}
-        draw={paintUnits}
-        drawData={emptyDrawData}
-      />
-    );
+    return <BaseCanvas width={width} height={height} draw={paintUnits} drawData={emptyDrawData} />;
   }, [width, height, paintUnits]);
 
   const handleSelectRect = useCallback(
@@ -298,21 +237,11 @@ const UnitLocationsWidget = (props: WidgetProps) => {
         const pt = transformPoint(transform, [unit.x, unit.y]);
         if (
           rectangularRegionsIntersect(
-            rectangularRegion([
-              pt[0] - radius2,
-              pt[1] - radius2,
-              radius2 * 2,
-              radius2 * 2,
-            ]),
+            rectangularRegion([pt[0] - radius2, pt[1] - radius2, radius2 * 2, radius2 * 2]),
             rectangularRegion(r2)
           )
         ) {
-          rectangularRegion([
-            pt[0] - radius2,
-            pt[1] - radius2,
-            radius2 * 2,
-            radius2 * 2,
-          ]);
+          rectangularRegion([pt[0] - radius2, pt[1] - radius2, radius2 * 2, radius2 * 2]);
           ids.push(unit.unitId);
         }
       }
@@ -341,12 +270,7 @@ const UnitLocationsWidget = (props: WidgetProps) => {
         if (
           pointInRect(
             x,
-            rectangularRegion([
-              pt[0] - markerRadius,
-              pt[1] - markerRadius,
-              markerRadius * 2,
-              markerRadius * 2,
-            ])
+            rectangularRegion([pt[0] - markerRadius, pt[1] - markerRadius, markerRadius * 2, markerRadius * 2])
           )
         ) {
           somethingFound = true;
@@ -373,17 +297,14 @@ const UnitLocationsWidget = (props: WidgetProps) => {
     [transform, unitIdSelectionDispatch, filteredUnits]
   );
 
-  const { onMouseMove, onMouseDown, onMouseUp, paintDragSelectLayer } =
-    useDragSelectLayer(width, height, handleSelectRect, handleClickPoint);
+  const { onMouseMove, onMouseDown, onMouseUp, paintDragSelectLayer } = useDragSelectLayer(
+    width,
+    height,
+    handleSelectRect,
+    handleClickPoint
+  );
   const dragSelectCanvas = useMemo(() => {
-    return (
-      <BaseCanvas
-        width={width}
-        height={height}
-        draw={paintDragSelectLayer}
-        drawData={emptyDrawData}
-      />
-    );
+    return <BaseCanvas width={width} height={height} draw={paintDragSelectLayer} drawData={emptyDrawData} />;
   }, [width, height, paintDragSelectLayer]);
 
   return width > 0 && height > 0 ? (

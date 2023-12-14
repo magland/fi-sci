@@ -64,9 +64,7 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": [
-          "apps/figurl-spike-sorting-analysis/**/*.{ts,tsx,js,jsx}"
-        ]
+        "lintFilePatterns": ["apps/figurl-spike-sorting-analysis/**/*.{ts,tsx,js,jsx}"]
       }
     }
   },

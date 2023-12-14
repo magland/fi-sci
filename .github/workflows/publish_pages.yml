@@ -2,7 +2,7 @@ name: publish-pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 jobs:
   build:
