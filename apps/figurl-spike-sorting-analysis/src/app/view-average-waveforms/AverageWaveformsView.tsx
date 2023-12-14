@@ -265,8 +265,6 @@ const AverageWaveformsView: FunctionComponent<Props> = ({data, width, height}) =
         })
     }, [])
 
-    console.log('---- 111', width)
-
     const TOOLBAR_WIDTH = viewToolbarWidth // hard-coded for now
     return (
         <div

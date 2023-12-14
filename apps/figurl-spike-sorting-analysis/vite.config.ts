@@ -31,4 +31,8 @@ export default defineConfig({
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
   },
+
+  // added by jfm - this is important for hosting the app on github pages
+  // it's also important to remove <base href="/" /> from index.html
+  base: './'
 });

@@ -3,6 +3,7 @@
 import { AutocorrelogramsViewData } from "./view-autocorrelograms"
 import { AverageWaveformsViewData } from "./view-average-waveforms"
 import { RemoteNH5FileClient, RemoteNH5Group } from "./nh5"
+import { UnitLocationsViewData } from "./view-unit-locations"
 
 class SpikeSortingAnalysisClient {
     constructor(private d: {
@@ -10,7 +11,8 @@ class SpikeSortingAnalysisClient {
         rootGroup: RemoteNH5Group,
         unitIds: (string | number)[],
         autocorrelogramsViewData?: AutocorrelogramsViewData,
-        averageWaveformsViewData?: AverageWaveformsViewData
+        averageWaveformsViewData?: AverageWaveformsViewData,
+        unitLocationsViewData?: any
     }) {
         console.log('unitIds', this.d.unitIds)
     }
@@ -27,11 +29,18 @@ class SpikeSortingAnalysisClient {
         return this.d.averageWaveformsViewData
     }
 
+    get unitLocationsViewData() {
+        return this.d.unitLocationsViewData
+    }
+
     // static create
     static async create(nh5File: RemoteNH5FileClient) {
         const rootGroup = await nh5File.getGroup('/')
         if (!rootGroup) throw Error('Unable to get root group')
         const unitIds = JSON.parse(rootGroup.attrs['unit_ids'])
+        const channelIds: (string | number)[] = JSON.parse(rootGroup.attrs['channel_ids'])
+        const channelLocations: number[][] = JSON.parse(rootGroup.attrs['channel_locations'])
+        const unitLocations: number[][] = JSON.parse(rootGroup.attrs['unit_locations'])
 
         let autocorrelogramsViewData: AutocorrelogramsViewData | undefined = undefined
         try {
@@ -49,12 +58,21 @@ class SpikeSortingAnalysisClient {
             console.warn(err)
         }
 
+        let unitLocationsViewData: UnitLocationsViewData | undefined = undefined
+        try {
+            unitLocationsViewData = await getUnitLocationsViewData(nh5File, unitIds, channelIds, channelLocations, unitLocations)
+        }
+        catch (err) {
+            console.warn(err)
+        }
+
         return new SpikeSortingAnalysisClient({
             nh5File,
             rootGroup,
             unitIds,
             autocorrelogramsViewData,
-            averageWaveformsViewData
+            averageWaveformsViewData,
+            unitLocationsViewData
         });
     }
 }
@@ -123,6 +141,24 @@ const getAverageWaveformsViewData = async (h5File: RemoteNH5FileClient, unitIds:
     const ret: AverageWaveformsViewData = {
         type: 'AverageWaveforms',
         averageWaveforms
+    }
+    return ret
+}
+
+const getUnitLocationsViewData = async (h5File: RemoteNH5FileClient, unitIds: (string | number)[], channelIds: (string | number)[], channelLocations: number[][], unitLocations: number[][]) => {
+    const channelLocations2: { [key: string]: number[] } = {}
+    for (let i = 0; i < channelIds.length; i++) {
+        channelLocations2[channelIds[i].toString()] = channelLocations[i]
+    }
+    const ret: UnitLocationsViewData = {
+        type: 'UnitLocations',
+        channelLocations: channelLocations2,
+        units: unitIds.map((unitId, ii) => ({
+            unitId,
+            x: unitLocations[ii][0],
+            y: unitLocations[ii][1]
+        })),
+        disableAutoRotate: false
     }
     return ret
 }

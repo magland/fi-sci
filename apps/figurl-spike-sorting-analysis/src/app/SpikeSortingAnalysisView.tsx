@@ -3,12 +3,14 @@ import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { getFileDataUrl } from '@fi-sci/figurl-interface';
 import { SpikeSortingAnalysisData } from './SpikeSortingAnalysisData';
 // import { RemoteH5File, getRemoteH5File } from '@fi-sci/remote-h5-file';
-import SpikeSortingAnalysisClient from './SpikeSortingAnalysisClient';
-import { UnitsTableView } from './view-units-table';
+import { HBoxLayout } from '@fi-sci/misc';
 import { Splitter } from '@fi-sci/splitter';
+import SpikeSortingAnalysisClient from './SpikeSortingAnalysisClient';
+import { RemoteNH5FileClient, getRemoteNH5File } from './nh5';
 import { AutocorrelogramsView } from './view-autocorrelograms';
 import { AverageWaveformsView } from './view-average-waveforms';
-import { RemoteNH5FileClient, getRemoteNH5File } from './nh5';
+import { UnitLocationsView } from './view-unit-locations';
+import { UnitsTableView } from './view-units-table';
 
 type SpikeSortingAnalysisViewProps = {
   width: number;
@@ -48,7 +50,7 @@ const useNH5File = (url: string | null) => {
       });
   }, [url]);
   return nh5File;
-}
+};
 
 const SpikeSortingAnalysisView: FunctionComponent<
   SpikeSortingAnalysisViewProps
@@ -92,48 +94,25 @@ const ViewChild: FunctionComponent<ViewChildProps> = ({
 }) => {
   const unitsTableViewData = useMemo(() => {
     const unitIds: (string | number)[] = client.unitIds;
-    const columns: UTColumn[] = [
-    ];
+    const columns: UTColumn[] = [];
     const rows = unitIds.map((unitId) => ({
       unitId,
-      values: {
-      },
+      values: {},
     }));
     return {
       type: 'UnitsTable',
       columns,
       rows,
     } as {
-        type: 'UnitsTable';
-        columns: UTColumn[];
-        rows: UTRow[];
-    }
+      type: 'UnitsTable';
+      columns: UTColumn[];
+      rows: UTRow[];
+    };
   }, [client.unitIds]);
-  console.log('--- c', client.averageWaveformsViewData)
   return (
-    <Splitter
-      width={width}
-      height={height}
-      initialPosition={100}
-    >
+    <Splitter width={width} height={height} initialPosition={100}>
       <UnitsTableView width={0} height={0} data={unitsTableViewData} />
-      <Splitter
-        width={0}
-        height={0}
-        direction='vertical'
-        initialPosition={height / 2}
-      >
-        {
-          client.autocorrelogramsViewData ? (
-            <AutocorrelogramsView width={0} height={0} data={client.autocorrelogramsViewData} />
-          ) : <span />
-        }
-        {
-          client.averageWaveformsViewData ? (
-            <AverageWaveformsView width={0} height={0} data={client.averageWaveformsViewData} />
-          ) : <span />
-        }
-      </Splitter>
+      <RightContent width={0} height={0} client={client} />
     </Splitter>
   );
 };
@@ -147,6 +126,64 @@ type UTColumn = {
 type UTRow = {
   unitId: number | string;
   values: { [key: string]: unknown };
+};
+
+type ContentProps = {
+  width: number;
+  height: number;
+  client: SpikeSortingAnalysisClient;
+};
+
+const RightContent: FunctionComponent<ContentProps> = ({
+  width,
+  height,
+  client,
+}) => {
+  const unitLocationsWidth = 100
+  const widths = useMemo(
+    () => (width >= unitLocationsWidth + 300 ? [unitLocationsWidth, width - unitLocationsWidth] : [0, width]),
+    [width]
+  );
+  return (
+    <HBoxLayout widths={widths} height={height}>
+      <UnitLocationsView width={0} height={0} data={client.unitLocationsViewData} />
+      <RightContent2 width={0} height={0} client={client} />
+    </HBoxLayout>
+  );
+};
+
+const RightContent2: FunctionComponent<ContentProps> = ({
+  width,
+  height,
+  client,
+}) => {
+  return (
+    <Splitter
+      width={width}
+      height={height}
+      direction="vertical"
+      initialPosition={height / 2}
+    >
+      {client.autocorrelogramsViewData ? (
+        <AutocorrelogramsView
+          width={0}
+          height={0}
+          data={client.autocorrelogramsViewData}
+        />
+      ) : (
+        <span />
+      )}
+      {client.averageWaveformsViewData ? (
+        <AverageWaveformsView
+          width={0}
+          height={0}
+          data={client.averageWaveformsViewData}
+        />
+      ) : (
+        <span />
+      )}
+    </Splitter>
+  );
 };
 
 export default SpikeSortingAnalysisView;

@@ -10,7 +10,9 @@
       "require": "./index.js"
     }
   },
-  "dependencies": {},
+  "dependencies": {
+    "@fi-sci/misc": "~0.0.6"
+  },
   "peerDependencies": {
     "react": "*"
   }
