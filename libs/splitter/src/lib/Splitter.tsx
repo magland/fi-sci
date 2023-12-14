@@ -145,8 +145,8 @@ const Splitter: FunctionComponent<PropsWithChildren<Props>> = (props) => {
         onChange && onChange(newGripPosition)
     }
     return (
-        <div className="splitter" style={{...style0, position: 'relative'}}>
-            <div key="child1" style={{...style1, position: 'absolute'}} className="SplitterChild">
+        <div className="splitter" style={{...style0, position: 'relative', overflow: 'hidden'}}>
+            <div key="child1" style={{...style1, position: 'absolute', overflow: 'hidden'}} className="SplitterChild">
                 <child1.type {...child1.props} width={direction === 'horizontal' ? size1A : width} height={direction === 'horizontal' ? height : size1A} />
             </div>
             {
@@ -168,7 +168,7 @@ const Splitter: FunctionComponent<PropsWithChildren<Props>> = (props) => {
                 )
             }
 
-            <div key="child2" style={{...style2, position: 'absolute'}} className="SplitterChild">
+            <div key="child2" style={{...style2, position: 'absolute', overflow: 'hidden'}} className="SplitterChild">
                 {/* <child2.type ref={ref} {...child2.props} width={direction === 'horizontal' ? size1B : width} height={direction === 'horizontal' ? height : size1B} /> */}
                 <child2.type {...child2.props} width={direction === 'horizontal' ? size1B : width} height={direction === 'horizontal' ? height : size1B} />
             </div>
