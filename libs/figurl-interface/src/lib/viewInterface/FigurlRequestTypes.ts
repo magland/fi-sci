@@ -15,11 +15,13 @@ import {
 
 export type GetFigureDataRequest = {
   type: 'getFigureData';
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isGetFigureDataRequest = (x: any): x is GetFigureDataRequest => {
   return validateObject(x, {
     type: isEqualTo('getFigureData'),
+    figurlProtocolVersion: isString
   });
 };
 
@@ -43,6 +45,7 @@ export type GetFileDataRequest = {
   responseType?: string; // 'text', 'json', 'json-deserialized', 'binary': default is 'json-deserialized'
   startByte?: number;
   endByte?: number;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isGetFileDataRequest = (x: any): x is GetFileDataRequest => {
@@ -52,6 +55,7 @@ export const isGetFileDataRequest = (x: any): x is GetFileDataRequest => {
     responseType: optional(isString),
     startByte: optional(isNumber),
     endByte: optional(isNumber),
+    figurlProtocolVersion: isString
   });
 };
 
@@ -74,12 +78,14 @@ export const isGetFileDataResponse = (x: any): x is GetFileDataResponse => {
 export type GetFileDataUrlRequest = {
   type: 'getFileDataUrl';
   uri: string;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isGetFileDataUrlRequest = (x: any): x is GetFileDataUrlRequest => {
   return validateObject(x, {
     type: isEqualTo('getFileDataUrl'),
     uri: optional(isString),
+    figurlProtocolVersion: isString
   });
 };
 
@@ -103,6 +109,7 @@ export type StoreFileRequest = {
   type: 'storeFile';
   fileData: string;
   uri?: string;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isStoreFileRequest = (x: any): x is StoreFileRequest => {
@@ -111,6 +118,7 @@ export const isStoreFileRequest = (x: any): x is StoreFileRequest => {
     fileData: isString,
     uri: optional(isString),
     jotId: optional(() => true), // need to keep this in because one visualization still passes undefined for this value
+    figurlProtocolVersion: isString
   });
 };
 
@@ -134,6 +142,7 @@ export type StoreGithubFileRequest = {
   type: 'storeGithubFile';
   fileData: string;
   uri: string;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isStoreGithubFileRequest = (x: any): x is StoreGithubFileRequest => {
@@ -141,6 +150,7 @@ export const isStoreGithubFileRequest = (x: any): x is StoreGithubFileRequest =>
     type: isEqualTo('storeGithubFile'),
     fileData: isString,
     uri: isString,
+    figurlProtocolVersion: isString
   });
 };
 
@@ -163,12 +173,14 @@ export const isStoreGithubFileResponse = (x: any): x is StoreGithubFileResponse 
 export type SetUrlStateRequest = {
   type: 'setUrlState';
   state: { [key: string]: any };
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isSetUrlStateRequest = (x: any): x is SetUrlStateRequest => {
   return validateObject(x, {
     type: isEqualTo('setUrlState'),
     state: isJSONObject,
+    figurlProtocolVersion: isString
   });
 };
 
@@ -189,6 +201,7 @@ export type ServiceQueryRequest = {
   serviceName: string;
   query: any;
   includeUserId?: boolean;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isServiceQueryRequest = (x: any): x is ServiceQueryRequest => {
@@ -197,6 +210,7 @@ export const isServiceQueryRequest = (x: any): x is ServiceQueryRequest => {
     serviceName: isString,
     query: () => true,
     includeUserId: optional(isBoolean),
+    figurlProtocolVersion: isString
   });
 };
 
@@ -221,12 +235,14 @@ export const isServiceQueryResponse = (x: any): x is ServiceQueryResponse => {
 export type ReadDirRequest = {
   type: 'readDir';
   uri: string;
+  figurlProtocolVersion: string; // "p1"
 };
 
 export const isReadDirRequest = (x: any): x is ReadDirRequest => {
   return validateObject(x, {
     type: isEqualTo('readDir'),
     uri: isString,
+    figurlProtocolVersion: isString
   });
 };
 

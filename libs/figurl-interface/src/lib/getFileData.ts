@@ -10,19 +10,27 @@ import {
   StoreFileRequest,
   StoreGithubFileRequest,
 } from './viewInterface/FigurlRequestTypes';
+import deserializeReturnValue from './deserializeReturnValue';
 
 const getFileData = async (
   uri: string,
+  responseType: 'json' | 'binary' | 'text' | 'json-deserialized',
   onProgress: (a: { loaded: number; total: number }) => void,
-  o: { startByte?: number; endByte?: number; responseType?: string } = {}
+  o: { startByte?: number; endByte?: number; } = {}
 ) => {
+  let responseType2: 'json' | 'binary' | 'text'
+  if (responseType === 'json-deserialized') {
+    responseType2 = 'json'
+  }
+  else {
+    responseType2 = responseType
+  }
   const request: GetFileDataRequest = {
     type: 'getFileData',
     uri,
+    responseType: responseType2,
+    figurlProtocolVersion: 'p1'
   };
-  if (o.responseType !== undefined) {
-    request.responseType = o.responseType;
-  }
   if (o.startByte !== undefined) {
     request.startByte = o.startByte;
     request.endByte = o.endByte;
@@ -35,13 +43,19 @@ const getFileData = async (
   if (response.errorMessage) {
     throw Error(`Error getting file data for ${uri}: ${response.errorMessage}`);
   }
-  return response.fileData;
+  if (responseType === 'json-deserialized') {
+    return deserializeReturnValue(response.fileData);
+  }
+  else {
+    return response.fileData;
+  }
 };
 
 export const getFileDataUrl = async (uri: string): Promise<string> => {
   const request: GetFileDataUrlRequest = {
     type: 'getFileDataUrl',
     uri,
+    figurlProtocolVersion: 'p1'
   };
   const response = await sendRequestToParent(request);
   if (!isGetFileDataUrlResponse(response)) throw Error('Invalid response to getFigureUrlData');
@@ -55,6 +69,7 @@ export const storeFileData = async (fileData: string, o = {}): Promise<string> =
   const request: StoreFileRequest = {
     type: 'storeFile',
     fileData,
+    figurlProtocolVersion: 'p1'
   };
   const response = await sendRequestToParent(request);
   if (!isStoreFileResponse(response)) throw Error('Invalid response to storeFile');
@@ -72,6 +87,7 @@ export const storeGithubFileData = async (o: { fileData: string; uri: string }):
     type: 'storeGithubFile',
     fileData: o.fileData,
     uri: o.uri,
+    figurlProtocolVersion: 'p1'
   };
   const response = await sendRequestToParent(request);
   if (!isStoreGithubFileResponse(response)) throw Error('Invalid response to storeFile');
@@ -99,7 +115,7 @@ export type Progress = {
   onProgress: (callback: (a: { loaded: number; total: number }) => void) => void;
 };
 
-export const useFileData = (uri: string, o: { startByte?: number; endByte?: number } = {}) => {
+export const useFileData = (uri: string, responseType: 'json' | 'binary' | 'text' | 'json-deserialized', o: { startByte?: number; endByte?: number } = {}) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [fileData, setFileData] = useState<any | undefined>(undefined);
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
@@ -118,9 +134,9 @@ export const useFileData = (uri: string, o: { startByte?: number; endByte?: numb
   useEffect(() => {
     setErrorMessage(undefined);
     setFileData(undefined);
-    getFileData(uri, reportProgress, {
+    getFileData(uri, responseType, reportProgress, {
       startByte: o.startByte,
-      endByte: o.endByte,
+      endByte: o.endByte
     })
       .then((data) => {
         setFileData(data);
@@ -128,7 +144,7 @@ export const useFileData = (uri: string, o: { startByte?: number; endByte?: numb
       .catch((err) => {
         setErrorMessage(err.message);
       });
-  }, [uri, reportProgress, o.startByte, o.endByte]);
+  }, [uri, reportProgress, o.startByte, o.endByte, responseType]);
   return { fileData, progress, errorMessage };
 };
 

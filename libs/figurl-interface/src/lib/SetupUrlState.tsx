@@ -38,6 +38,7 @@ const SetupUrlState: FunctionComponent<PropsWithChildren<Props>> = (props) => {
       const request: SetUrlStateRequest = {
         type: 'setUrlState',
         state,
+        figurlProtocolVersion: '0.1.0'
       };
       const response = await sendRequestToParent(request);
       if (!isSetUrlStateResponse(response)) throw Error('Invalid response to setUrlState');

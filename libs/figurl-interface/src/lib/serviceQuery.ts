@@ -11,6 +11,7 @@ const serviceQuery = async (
     type: 'serviceQuery',
     serviceName,
     query,
+    figurlProtocolVersion: 'p1'
   };
   if (o.includeUserId) {
     request.includeUserId = true;

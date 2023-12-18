@@ -5,6 +5,7 @@ const readDir = async (uri: string): Promise<RDDir> => {
   const request: ReadDirRequest = {
     type: 'readDir',
     uri,
+    figurlProtocolVersion: 'p1'
   };
   const response = await sendRequestToParent(request);
   if (!isReadDirResponse(response)) throw Error('Invalid response to readDir');
