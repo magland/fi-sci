@@ -27,7 +27,7 @@ const urlStateFromQueryString = JSON.parse(decodeURIComponent(queryParams.s || '
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let urlStateFromInitialization: any | undefined = undefined;
 waitForInitialization().then((initializationData) => {
-  urlStateFromInitialization = JSON.parse(initializationData.s || '{}'); // important to only do this once
+  urlStateFromInitialization = JSON.parse(decodeURIComponent(initializationData.s || '{}')); // important to only do this once
 });
 export const getInitialUrlState = () => {
   return urlStateFromInitialization ? urlStateFromInitialization : urlStateFromQueryString;
