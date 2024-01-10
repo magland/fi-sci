@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // import { RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
-import { AutocorrelogramsViewData } from './view-autocorrelograms';
-import { AverageWaveformsViewData } from './view-average-waveforms';
-import { RemoteNH5FileClient, RemoteNH5Group } from './nh5';
-import { UnitLocationsViewData } from './view-unit-locations';
+import { AutocorrelogramsViewData } from '../view-autocorrelograms';
+import { AverageWaveformsViewData } from '../view-average-waveforms';
+import { RemoteNH5FileClient, RemoteNH5Group } from '../nh5';
+import { UnitLocationsViewData } from '../view-unit-locations';
 
 class SpikeSortingAnalysisClient {
   constructor(

@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { isEqualTo, isString, validateObject } from '@fi-sci/misc';
+import { isOneOf } from '@fi-sci/misc';
+import { SpikeSortingAnalysisViewData, isSpikeSortingAnalysisViewData } from './SpikeSortingAnalysisView/SpikeSortingAnalysisViewData';
+import { PlaceFieldsViewData, isPlaceFieldsViewData } from './PlaceFieldsView/PlaceFieldsViewData';
 
-export type SpikeSortingAnalysisData = {
-  type: 'spike_sorting_analysis';
-  analysisFile: string;
+export type SpikeSortingAnalysisData = SpikeSortingAnalysisViewData | PlaceFieldsViewData;
+
+export const isSpikeSortingAnalysisData = (x: any): x is SpikeSortingAnalysisData => {
+  return isOneOf([
+    isSpikeSortingAnalysisViewData,
+    isPlaceFieldsViewData
+  ])(x);
 };
-
-export const isSpikeSortingAnalysisData = (x: any): x is SpikeSortingAnalysisData =>
-  validateObject(x, {
-    type: isEqualTo('spike_sorting_analysis'),
-    analysisFile: isString,
-  });

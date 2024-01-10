@@ -1,22 +1,22 @@
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 
 import { getFileDataUrl } from '@fi-sci/figurl-interface';
-import { SpikeSortingAnalysisData } from './SpikeSortingAnalysisData';
 // import { RemoteH5File, getRemoteH5File } from '@fi-sci/remote-h5-file';
 import { HBoxLayout } from '@fi-sci/misc';
 import { Splitter } from '@fi-sci/splitter';
+import SpikeAmplitudesView from '../SpikeAmplitudesView/SpikeAmplitudesView';
+import { RemoteNH5FileClient, getRemoteNH5File } from '../nh5';
+import { AutocorrelogramsView } from '../view-autocorrelograms';
+import { AverageWaveformsView } from '../view-average-waveforms';
+import { UnitLocationsView } from '../view-unit-locations';
+import { UnitsTableView } from '../view-units-table';
 import SpikeSortingAnalysisClient from './SpikeSortingAnalysisClient';
-import { RemoteNH5FileClient, getRemoteNH5File } from './nh5';
-import { AutocorrelogramsView } from './view-autocorrelograms';
-import { AverageWaveformsView } from './view-average-waveforms';
-import { UnitLocationsView } from './view-unit-locations';
-import { UnitsTableView } from './view-units-table';
-import SpikeAmplitudesView from './SpikeAmplitudesView/SpikeAmplitudesView';
+import { SpikeSortingAnalysisViewData } from './SpikeSortingAnalysisViewData';
 
 type SpikeSortingAnalysisViewProps = {
   width: number;
   height: number;
-  data: SpikeSortingAnalysisData;
+  data: SpikeSortingAnalysisViewData;
 };
 
 // const useH5File = (url: string | null) => {
@@ -55,6 +55,9 @@ const useNH5File = (url: string | null) => {
 
 const SpikeSortingAnalysisView: FunctionComponent<SpikeSortingAnalysisViewProps> = ({ width, height, data }) => {
   const [analysisFileUrl, setAnalysisFileUrl] = useState<string | null>(null);
+  if (data.type !== 'spike_sorting_analysis') {
+    throw new Error('Unexpected: data.type !== spike_sorting_analysis');
+  }
   useEffect(() => {
     getFileDataUrl(data.analysisFile)
       .then((url: string) => {

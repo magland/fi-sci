@@ -6,11 +6,12 @@ import { getFigureData } from '@fi-sci/figurl-interface';
 import { useWindowDimensions } from '@fi-sci/misc';
 import { isSpikeSortingAnalysisData } from './SpikeSortingAnalysisData';
 
-import SpikeSortingAnalysisView from './SpikeSortingAnalysisView';
+import SpikeSortingAnalysisView from './SpikeSortingAnalysisView/SpikeSortingAnalysisView';
 import { UnitSelectionContext, defaultUnitSelection, unitSelectionReducer } from '@fi-sci/context-unit-selection';
 
-import './app.css';
+import './App.css';
 import { SetupTimeSelection } from '@fi-sci/context-time-selection';
+import PlaceFieldsView from './PlaceFieldsView/PlaceFieldsView';
 
 export function App() {
   const [data, setData] = useState<any>(null);
@@ -44,13 +45,22 @@ export function App() {
     return <div>{errorMessage ? errorMessage : 'Loading data...'}</div>;
   }
 
-  return (
-    <SetupTimeSelection>
+  if (data.type === 'spike_sorting_analysis') {
+    return (
+      <SetupTimeSelection>
+        <UnitSelectionContext.Provider value={{ unitSelection, unitSelectionDispatch }}>
+          <SpikeSortingAnalysisView width={width} height={height} data={data} />
+        </UnitSelectionContext.Provider>
+      </SetupTimeSelection>
+    );
+  }
+  else if (data.type === 'place_fields') {
+    return (
       <UnitSelectionContext.Provider value={{ unitSelection, unitSelectionDispatch }}>
-        <SpikeSortingAnalysisView width={width} height={height} data={data} />
+        <PlaceFieldsView width={width} height={height} data={data} />
       </UnitSelectionContext.Provider>
-    </SetupTimeSelection>
-  );
+    )
+  }
 }
 
 export default App;

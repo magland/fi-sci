@@ -14,7 +14,7 @@ const IfVisible: FunctionComponent<PropsWithChildren<Props>> = ({ children, widt
           if (isVisible) {
             return children;
           } else {
-            return <span>Not visible</span>;
+            return <span>Not visible</span>
           }
         }}
       </ReactVisibilitySensor>
