@@ -19,6 +19,7 @@ import validateObject, {
   isJSONSerializable,
   optional,
 } from './lib/validateObject';
+import VerticalScrollView from './lib/VerticalScrollView';
 
 export { HBoxLayout };
 export { Hyperlink };
@@ -42,3 +43,4 @@ export {
   isJSONSerializable,
   optional,
 };
+export { VerticalScrollView };

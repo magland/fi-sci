@@ -1,6 +1,6 @@
 {
-  "name": "@fi-sci/figurl-interface",
-  "version": "0.1.1",
+  "name": "@fi-sci/plot-grid",
+  "version": "0.0.1",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -10,10 +10,11 @@
       "require": "./index.js"
     }
   },
-  "dependencies": {
-    "@fi-sci/misc": "~0.0.8"
-  },
   "peerDependencies": {
     "react": "*"
+  },
+  "dependencies": {
+    "react-visibility-sensor": "^5.1.1",
+    "@mui/material": "^5.14.20"
   }
 }

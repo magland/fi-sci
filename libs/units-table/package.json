@@ -1,0 +1,23 @@
+{
+  "name": "@fi-sci/units-table",
+  "version": "0.0.1",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./index.mjs",
+      "require": "./index.js"
+    }
+  },
+  "peerDependencies": {
+    "react": "*"
+  },
+  "dependencies": {
+    "@fi-sci/context-unit-selection": "~0.0.1",
+    "@fi-sci/misc": "~0.0.8",
+    "@mui/material": "^5.14.20",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/react-fontawesome": "^0.2.0"
+  }
+}
