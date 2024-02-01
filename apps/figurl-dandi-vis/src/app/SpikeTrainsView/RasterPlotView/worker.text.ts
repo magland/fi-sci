@@ -47,9 +47,9 @@ async function draw() {
     drawCode += 1;
     const thisDrawCode = drawCode;
     const numUnits = plotData.plots.length;
-    const unitIndexToY = (unitIndex) => canvasHeight -
-        margins.bottom -
-        ((unitIndex + 0.5 - 0) / (numUnits - 0)) * (canvasHeight - margins.top - margins.bottom);
+    const vSpacing = Math.min((canvasHeight - margins.top - margins.bottom) / (numUnits + 1), 20);
+    const unitIndexToY = (unitIndex) => margins.top + vSpacing * (numUnits + 1) -
+        (unitIndex + 1) * vSpacing; // unit index starts from 0
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     for (const pass of plotData ? [1, 2] : [1]) {
         if (thisDrawCode !== drawCode)

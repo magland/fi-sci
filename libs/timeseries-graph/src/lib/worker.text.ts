@@ -46,23 +46,27 @@ async function draw() {
     // this is important because main thread no longer has control of canvas (it seems)
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
-    const canvasContext = canvas.getContext("2d");
+    const canvasContext = canvas.getContext('2d');
     if (!canvasContext)
         return;
     drawCode += 1;
     const thisDrawCode = drawCode;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    for (const pass of (plotSeries ? [1, 2] : [1])) {
+    for (const pass of plotSeries ? [1, 2] : [1]) {
         if (thisDrawCode !== drawCode)
             return;
         const timer = Date.now();
-        if ((pass === 2) || (!plotSeries)) {
+        if (pass === 2 || !plotSeries) {
             plotSeries = computePlotSeries(resolvedSeries);
         }
         const coordToPixel = (p) => {
             return {
-                x: margins.left + (p.x - visibleStartTimeSec) / (visibleEndTimeSec - visibleStartTimeSec) * (canvasWidth - margins.left - margins.right),
-                y: canvasHeight - margins.bottom - (p.y - minValue) / (maxValue - minValue) * (canvasHeight - margins.top - margins.bottom)
+                x: margins.left +
+                    ((p.x - visibleStartTimeSec) / (visibleEndTimeSec - visibleStartTimeSec)) *
+                        (canvasWidth - margins.left - margins.right),
+                y: canvasHeight -
+                    margins.bottom -
+                    ((p.y - minValue) / (maxValue - minValue)) * (canvasHeight - margins.top - margins.bottom),
             };
         };
         const pixelZero = coordToPixel({ x: 0, y: 0 }).y;
@@ -70,15 +74,15 @@ async function draw() {
             return {
                 dimensionIndex: i,
                 dimensionLabel: \`\${i}\`,
-                pixelTimes: s.times.map(t => coordToPixel({ x: t, y: 0 }).x),
-                pixelValues: s.values.map(y => coordToPixel({ x: 0, y }).y),
+                pixelTimes: s.times.map((t) => coordToPixel({ x: t, y: 0 }).x),
+                pixelValues: s.values.map((y) => coordToPixel({ x: 0, y }).y),
                 type: s.type,
-                attributes: s.attributes
+                attributes: s.attributes,
             };
         });
         const panelProps = {
             pixelZero: pixelZero,
-            dimensions: pixelData
+            dimensions: pixelData,
         };
         paintPanel(canvasContext, panelProps);
         // the wait time is equal to the render time
@@ -106,7 +110,7 @@ const paintLegend = (context) => {
     if (!resolvedSeries)
         return;
     const { legendOpts, margins, canvasWidth } = opts;
-    const seriesToInclude = resolvedSeries.filter(s => (s.title));
+    const seriesToInclude = resolvedSeries.filter((s) => s.title);
     if (seriesToInclude.length === 0)
         return;
     const { location } = legendOpts;
@@ -116,8 +120,21 @@ const paintLegend = (context) => {
     const legendWidth = 200;
     const margin = 10;
     const legendHeight = 20 + seriesToInclude.length * entryHeight;
-    const R = location === 'northwest' ? { x: margins.left + 20, y: margins.top + 20, w: legendWidth, h: legendHeight } :
-        location === 'northeast' ? { x: canvasWidth - margins.right - legendWidth - 20, y: margins.top + 20, w: legendWidth, h: legendHeight } : undefined;
+    const R = location === 'northwest'
+        ? {
+            x: margins.left + 20,
+            y: margins.top + 20,
+            w: legendWidth,
+            h: legendHeight,
+        }
+        : location === 'northeast'
+            ? {
+                x: canvasWidth - margins.right - legendWidth - 20,
+                y: margins.top + 20,
+                w: legendWidth,
+                h: legendHeight,
+            }
+            : undefined;
     if (!R)
         return; //unexpected
     context.fillStyle = 'white';
@@ -127,8 +144,18 @@ const paintLegend = (context) => {
     context.strokeRect(R.x, R.y, R.w, R.h);
     seriesToInclude.forEach((s, i) => {
         const y0 = R.y + margin + i * entryHeight;
-        const symbolRect = { x: R.x + margin, y: y0, w: symbolWidth, h: entryHeight };
-        const titleRect = { x: R.x + margin + symbolWidth + margin, y: y0, w: legendWidth - margin - margin - symbolWidth - margin, h: entryHeight };
+        const symbolRect = {
+            x: R.x + margin,
+            y: y0,
+            w: symbolWidth,
+            h: entryHeight,
+        };
+        const titleRect = {
+            x: R.x + margin + symbolWidth + margin,
+            y: y0,
+            w: legendWidth - margin - margin - symbolWidth - margin,
+            h: entryHeight,
+        };
         const title = s.title || 'untitled';
         context.fillStyle = 'black';
         context.font = \`\${entryFontSize}px Arial\`;
@@ -145,7 +172,10 @@ const paintLegend = (context) => {
             applyMarkerAttributes(context, s.attributes);
             const radius = entryHeight * 0.3;
             const shape = s.attributes['shape'] ?? 'circle';
-            const center = { x: symbolRect.x + symbolRect.w / 2, y: symbolRect.y + symbolRect.h / 2 };
+            const center = {
+                x: symbolRect.x + symbolRect.w / 2,
+                y: symbolRect.y + symbolRect.h / 2,
+            };
             if (shape === 'circle') {
                 context.beginPath();
                 context.ellipse(center.x, center.y, radius, radius, 0, 0, 2 * Math.PI);
@@ -176,7 +206,7 @@ const paintPanel = (context, props) => {
     // context.stroke()
     // context.setLineDash([]);
     // eslint-disable-next-line react/prop-types
-    props.dimensions.forEach(dim => {
+    props.dimensions.forEach((dim) => {
         if (dim.type === 'line') {
             applyLineAttributes(context, dim.attributes);
             context.beginPath();
@@ -217,13 +247,13 @@ const computePlotSeries = (resolvedSeries) => {
     if (!opts)
         return plotSeries;
     const { visibleStartTimeSec, visibleEndTimeSec } = opts;
-    if ((visibleStartTimeSec === undefined) || (visibleEndTimeSec === undefined)) {
+    if (visibleStartTimeSec === undefined || visibleEndTimeSec === undefined) {
         return plotSeries;
     }
-    resolvedSeries.forEach(rs => {
+    resolvedSeries.forEach((rs) => {
         const tt = rs.t;
         const yy = rs.y;
-        let filteredTimeIndices = tt.flatMap((t, ii) => (visibleStartTimeSec <= t) && (t <= visibleEndTimeSec) ? ii : []);
+        let filteredTimeIndices = tt.flatMap((t, ii) => visibleStartTimeSec <= t && t <= visibleEndTimeSec ? ii : []);
         // need to prepend an index before and append an index after so that lines get rendered properly
         if ((filteredTimeIndices[0] || 0) > 0) {
             filteredTimeIndices = [filteredTimeIndices[0] - 1, ...filteredTimeIndices];
@@ -232,13 +262,13 @@ const computePlotSeries = (resolvedSeries) => {
             filteredTimeIndices.push(filteredTimeIndices[filteredTimeIndices.length - 1] + 1);
         }
         ////////////////////////////////////////////////////////////////////////////////
-        const filteredTimes = filteredTimeIndices.map(i => tt[i]);
-        const filteredValues = filteredTimeIndices.map(index => yy[index]);
+        const filteredTimes = filteredTimeIndices.map((i) => tt[i]);
+        const filteredValues = filteredTimeIndices.map((index) => yy[index]);
         plotSeries.push({
             type: rs.type,
             times: filteredTimes,
             values: filteredValues,
-            attributes: rs.attributes
+            attributes: rs.attributes,
         });
     });
     return plotSeries;
@@ -253,7 +283,7 @@ const applyLineAttributes = (context, attributes) => {
     if (typeof lineWidth === 'number') {
         context.lineWidth = lineWidth;
     }
-    if ((dash) && (typeof dash === 'object')) {
+    if (dash && typeof dash === 'object') {
         context.setLineDash(dash);
     }
 };

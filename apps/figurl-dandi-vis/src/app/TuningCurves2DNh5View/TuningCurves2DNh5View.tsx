@@ -1,33 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useState } from 'react';
-import { TuningCurves2DNh5ViewData } from './TuningCurves2DNh5ViewData';
-import { TuningCurve2D, TuningCurves2DViewData } from '../TuningCurves2DView/TuningCurves2DViewData'
-import TuningCurves2DView from '../TuningCurves2DView/TuningCurves2DView'
-import { RemoteNh5FileClient } from 'nh5'
+import { useNh5FileClient } from '../SpikeTrainsView/SpikeTrainsView';
+import TuningCurves2DView from './TuningCurves2DView/TuningCurves2DView';
+import { TuningCurve2D, TuningCurves2DViewData } from './TuningCurves2DView/TuningCurves2DViewData';
 
 type TuningCurves2DNh5ViewProps = {
   width: number;
   height: number;
-  data: TuningCurves2DNh5ViewData;
+  nh5FileUri: string;
 };
 
-export const useNh5FileClient = (nh5Url?: string) => {
-  const [client, setClient] = useState<RemoteNh5FileClient | undefined>(undefined)
-  useEffect(() => {
-      let canceled = false
-      if (!nh5Url) return
-      ; (async () => {
-          const c = await RemoteNh5FileClient.create(nh5Url)
-          if (canceled) return
-          setClient(c)
-      })()
-      return () => {canceled = true}
-  }, [nh5Url])
-  return client
-}
-
-const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ width, height, data }) => {
-  const client = useNh5FileClient(data.nh5_file)
+const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ width, height, nh5FileUri }) => {
+  const client = useNh5FileClient(nh5FileUri)
 
   const [viewData, setViewData] = useState<TuningCurves2DViewData | undefined>(undefined)
   useEffect(() => {
@@ -36,6 +20,7 @@ const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ 
     if (!client) return
     ; (async () => {
       const rootGroup = await client.getGroup('/')
+      ;(window as any).rootGroup = rootGroup
       if (!rootGroup) throw Error('Unable to load root group')
       const unit_ids = rootGroup.attrs['unit_ids']
       if (!unit_ids) throw Error('Unable to load unit_ids')
@@ -76,7 +61,7 @@ const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ 
       })
     })()
     return () => {canceled = true}
-  }, [client, data])
+  }, [client, setViewData])
 
   if (!client) {
     return <div>Loading NH5 file...</div>

@@ -1,0 +1,72 @@
+{
+  "name": "figurl-dandi-vis",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/figurl-dandi-vis/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/figurl-dandi-vis"
+      },
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "figurl-dandi-vis:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "figurl-dandi-vis:build:development",
+          "hmr": true
+        },
+        "production": {
+          "buildTarget": "figurl-dandi-vis:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "figurl-dandi-vis:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "figurl-dandi-vis:build:development"
+        },
+        "production": {
+          "buildTarget": "figurl-dandi-vis:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/apps/figurl-dandi-vis"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/figurl-dandi-vis/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+}
