@@ -54,7 +54,7 @@ export function App() {
     );
   }
   else {
-    return <div>Unexpected data type: {data.type}</div>
+    return <div>Unexpected data type</div>
   }
 }
 
