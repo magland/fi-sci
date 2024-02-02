@@ -14,6 +14,11 @@
       "label": "generate nx react library",
       "type": "shell",
       "command": "nx g @nx/react:library --importPath=@fi-sci/${input:libraryName} --directory=libs/${input:libraryName} --publishable"
+    },
+    {
+      "label": "deploy neurosift",
+      "type": "shell",
+      "command": "nx build neurosift && npx gh-pages -d dist/apps/neurosift --repo https://github.com/flatironinstitute/neurosift --branch gh-pages --no-history"
     }
   ],
   "inputs": [

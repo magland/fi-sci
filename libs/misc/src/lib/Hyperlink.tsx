@@ -6,6 +6,7 @@ type Props = {
   disabled?: boolean;
   href?: string;
   target?: string;
+  title?: string;
 };
 
 const Hyperlink: FunctionComponent<PropsWithChildren<Props>> = ({
@@ -15,21 +16,22 @@ const Hyperlink: FunctionComponent<PropsWithChildren<Props>> = ({
   disabled,
   href,
   target,
+  title,
 }) => {
   if (href) {
     return (
-      <a href={href} target={target} style={{ cursor: 'pointer', color: color || 'darkblue' }}>
+      <a href={href} title={title} target={target} style={{ cursor: 'pointer', color: color || 'darkblue' }}>
         {children}
       </a>
     );
   }
   return !disabled ? (
     // eslint-disable-next-line jsx-a11y/anchor-is-valid
-    <a onClick={onClick} style={{ cursor: 'pointer', color: color || 'darkblue' }}>
+    <a onClick={onClick} title={title} style={{ cursor: 'pointer', color: color || 'darkblue' }}>
       {children}
     </a>
   ) : (
-    <span style={{ color: 'gray' }}>{children}</span>
+    <span title={title} style={{ color: 'gray' }}>{children}</span>
   );
 };
 
