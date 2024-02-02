@@ -1,7 +1,9 @@
+import { Hyperlink } from '@fi-sci/misc';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { DendroFile, DendroJob } from '../../../dendro/dendro-types';
-import { useNwbFile, useNwbFileUrls } from '../NwbFileContext';
-import { Hyperlink } from '@fi-sci/misc';
+import { useNwbFileUrls } from '../NwbFileContext';
+import { AssociatedDendroProject, useDandiAssetContext } from '../DandiAssetContext';
+import { formatUserId } from '../NwbMainView/NwbMainLeftPanel';
 
 type DendroLinksViewProps = {
   // none
@@ -28,76 +30,104 @@ const useDendroProject = (projectId: string) => {
   return { files, jobs };
 };
 
-const useDendroFigurl = (
+const getDerivedOutputFiles = (
   files: DendroFile[] | undefined,
   jobs: DendroJob[] | undefined,
-  nwbFileUrl: string | undefined,
-  processorName: string,
-  type: string
+  inputFile: DendroFile | undefined,
+  visited: { [key: string]: boolean }
 ) => {
-  if (!files) return undefined;
-  if (!jobs) return undefined;
-  const inputFileName = files.find((a) => a.content === `url:${nwbFileUrl}`)?.fileName;
-  if (!inputFileName) return undefined;
-  const job = jobs.filter(
-    (job) =>
-      job.processorName === processorName &&
-      job.inputFiles.find((a) => a.name === 'input' && a.fileName === inputFileName)
-  )[0];
-  if (!job) return undefined;
-  const output = job.outputFiles.find((a) => a.name === 'output');
-  if (!output) return undefined;
-  const outputFile = files.find((a) => a.fileName === output.fileName);
-  if (!outputFile) return undefined;
-  if (!outputFile.content.startsWith('url:')) return undefined;
-  const outputFileUrl = outputFile.content.slice('url:'.length);
+  if (!files) return [];
+  if (!jobs) return [];
+  if (!inputFile) return [];
+  if (visited[inputFile.fileName]) return [];
+  visited[inputFile.fileName] = true;
+
+  const ret: DendroFile[] = [];
+  
+  const inputFileName = inputFile.fileName;
+  const jobsWithInput = jobs.filter((job) =>
+    job.inputFiles.find((a) => a.fileName === inputFileName)
+  );
+  for (const job of jobsWithInput) {
+    for (const output of job.outputFiles) {
+      const outputFile = files.find((a) => a.fileName === output.fileName);
+      if (outputFile) {
+        ret.push(outputFile);
+        const a = getDerivedOutputFiles(files, jobs, outputFile, visited);
+        ret.push(...a);
+      }
+    }
+  }
+  return ret;
+}
+
+const DendroLinksView: FunctionComponent<DendroLinksViewProps> = () => {
+  const {associatedDendroProjects} = useDandiAssetContext();
+  if (!associatedDendroProjects) return <span>...</span>
+  if (associatedDendroProjects.length === 0) return <span />;
+  return (
+    <div>
+      {associatedDendroProjects.map((project, i) => (
+        <DendroLinksViewForProject key={i} project={project} />
+      ))}
+    </div>
+  );
+}
+
+const DendroLinksViewForProject: FunctionComponent<{project:AssociatedDendroProject}> = ({project}) => {
+  const nwbFileUrls = useNwbFileUrls();
+  const nwbFileUrl = nwbFileUrls[0] || undefined;
+  const { files, jobs } = useDendroProject(project.projectId);
+  const inputFile = useMemo(() => (files?.find((a) => a.content === `url:${nwbFileUrl}`)), [files, nwbFileUrl]);
+  const derivedOutputFiles = useMemo(() => (
+    getDerivedOutputFiles(files, jobs, inputFile, {}).filter(a => a.fileName.endsWith('.nh5'))
+  ), [files, jobs, inputFile])
+  const hasSomething = derivedOutputFiles.length > 0;
+  if (!hasSomething) return <span />;
+  return (
+    <div style={{ marginTop: 10, marginLeft: 10 }}>
+      Dendro {project.name} ({formatUserId(project.ownerId)}):&nbsp;
+      {derivedOutputFiles.map((outputFile, i) => (
+        <span key={i}>
+          {
+            outputFile.content === 'pending' ? (
+              <span style={{color: 'gray'}}>{baseNameWithoutExtension(outputFile.fileName)} (pending)</span>
+            ) : outputFile.content.startsWith('url:') ? (
+              <Hyperlink href={getFigurlForNh5(outputFile)} target="_blank">
+                {baseNameWithoutExtension(outputFile.fileName)}
+              </Hyperlink>
+            ) : (
+              <span style={{color: 'red'}}>{baseNameWithoutExtension(outputFile.fileName)} (unexpected content)</span>
+            )
+          }
+          &nbsp;
+          {i < derivedOutputFiles.length - 1 ? ' | ' : ''}
+          &nbsp;
+        </span>
+      ))}
+    </div>
+  );
+};
+
+const baseNameWithoutExtension = (path: string) => {
+  const parts = path.split('/');
+  const fileName = parts[parts.length - 1];
+  const parts2 = fileName.split('.');
+  return parts2.slice(0, parts2.length - 1).join('.');
+}
+
+const figurlDandiVisUrl = "npm://@fi-sci/figurl-dandi-vis@0.1/dist"
+
+const getFigurlForNh5 = (outputFile: DendroFile) => {
+  const url = outputFile.content.startsWith('url:') ? outputFile.content.slice('url:'.length) : undefined;
+  if (!url) return undefined;
   const d = {
-    type,
-    nh5_file: outputFileUrl,
+    nh5: url
   };
   const dJson = JSON.stringify(d);
   const dJsonEncoded = encodeURI(dJson);
   const labelEncoded = encodeURI(outputFile.fileName);
-  return `https://figurl.org/f?v=https://figurl-dandi-vis.surge.sh&d=${dJsonEncoded}&label=${labelEncoded}`;
-};
-
-const DendroLinksView: FunctionComponent<DendroLinksViewProps> = () => {
-  const dendroProjectId = 'a7852166';
-  const nwbFileUrls = useNwbFileUrls();
-  const nwbFileUrl = nwbFileUrls[0] || undefined;
-  const { files, jobs } = useDendroProject(dendroProjectId);
-  const tuningCurves2DFigurl = useDendroFigurl(
-    files,
-    jobs,
-    nwbFileUrl,
-    'dandi-vis-1.tuning_curves_2d',
-    'tuning_curves_2d_nh5'
-  );
-  const spikeTrainsFigurl = useDendroFigurl(
-    files,
-    jobs,
-    nwbFileUrl,
-    'dandi-vis-1.spike_trains',
-    'spike_trains_nh5'
-  );
-  const hasSomething = tuningCurves2DFigurl || spikeTrainsFigurl;
-  if (!hasSomething) return <div />;
-  return (
-    <div style={{ marginTop: 10 }}>
-      From Dendro:&nbsp;
-      {tuningCurves2DFigurl && (
-        <Hyperlink href={tuningCurves2DFigurl} target="_blank">
-          2d tuning curves
-        </Hyperlink>
-      )}
-      &nbsp;
-      {spikeTrainsFigurl && (
-        <Hyperlink href={spikeTrainsFigurl} target="_blank">
-          spike trains
-        </Hyperlink>
-      )}
-    </div>
-  );
-};
+  return `https://figurl.org/f?v=${figurlDandiVisUrl}&d=${dJsonEncoded}&label=${labelEncoded}`;
+}
 
 export default DendroLinksView;

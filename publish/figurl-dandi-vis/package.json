@@ -1,0 +1,15 @@
+{
+    "name": "@fi-sci/figurl-dandi-vis",
+    "version": "0.1.2",
+    "description": "figurl visualization plugin for dandi-vis",
+    "scripts": {
+      "build": "rm -rf dist && cd ../.. && nx build figurl-dandi-vis",
+      "deploy": "npm run build && cp -r ../../dist/apps/figurl-dandi-vis dist && npm publish --access public"
+    },
+    "keywords": [],
+    "author": "Jeremy Magland",
+    "license": "Apache-2.0",
+    "files": [
+      "dist"
+    ]
+  }

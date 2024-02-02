@@ -1,18 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useState } from 'react';
-import { useNh5FileClient } from '../SpikeTrainsView/SpikeTrainsView';
 import TuningCurves2DView from './TuningCurves2DView/TuningCurves2DView';
 import { TuningCurve2D, TuningCurves2DViewData } from './TuningCurves2DView/TuningCurves2DViewData';
+import { RemoteNh5FileClient } from 'nh5';
 
 type TuningCurves2DNh5ViewProps = {
   width: number;
   height: number;
-  nh5FileUri: string;
+  nh5FileClient: RemoteNh5FileClient
 };
 
-const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ width, height, nh5FileUri }) => {
-  const client = useNh5FileClient(nh5FileUri)
-
+const TuningCurves2DNh5View: FunctionComponent<TuningCurves2DNh5ViewProps> = ({ width, height, nh5FileClient: client }) => {
   const [viewData, setViewData] = useState<TuningCurves2DViewData | undefined>(undefined)
   useEffect(() => {
     let canceled = false

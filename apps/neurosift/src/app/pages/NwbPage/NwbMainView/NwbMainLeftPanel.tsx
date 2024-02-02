@@ -286,47 +286,17 @@ type AssociatedDendroProjectsComponentProps = {
     assetUrl: string
 }
 
-type AssociatedProject = {
-    projectId: string
-    name: string
-    ownerId: string
-}
-
 const AssociatedDendroProjectsComponent: FunctionComponent<AssociatedDendroProjectsComponentProps> = ({assetUrl}) => {
-    const [projects, setProjects] = useState<AssociatedProject[]>([])
-    useEffect(() => {
-        let canceled = false
-        ; (async () => {
-            const url = 'https://dendro.vercel.app/api/gui/find_projects'
-            const data = {
-                'fileUrl': assetUrl
-            }
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data),
-            })
-            if (!resp.ok) return
-            const obj = await resp.json()
-            if (canceled) return
-            setProjects(obj.projects.map((p: any) => ({
-                projectId: p.projectId,
-                name: p.name,
-                ownerId: p.ownerId
-            })) as AssociatedProject[])
-        })()
-        return () => {
-            canceled = true
-        }
-    }, [assetUrl])
+    const {associatedDendroProjects} = useDandiAssetContext()
     const [expanded, setExpanded] = useState(false)
     const initialNumProjectsToShow = 6
     const projectsFiltered = useMemo(() => {
-        if (expanded) return projects
-        else return projects.slice(0, initialNumProjectsToShow)
-    }, [projects, expanded])
+        if (!associatedDendroProjects) return undefined
+        if (expanded) return associatedDendroProjects
+        else return associatedDendroProjects.slice(0, initialNumProjectsToShow)
+    }, [associatedDendroProjects, expanded])
+    if (!projectsFiltered) return <span>...</span>
+    if (projectsFiltered.length === 0) return <span />
     return (
         <div>
             <span>Associated Dendro projects:&nbsp; </span>
@@ -349,7 +319,7 @@ const AssociatedDendroProjectsComponent: FunctionComponent<AssociatedDendroProje
                 ))
             }
             {
-                !expanded && projects.length > initialNumProjectsToShow && (
+                !expanded && associatedDendroProjects && associatedDendroProjects.length > initialNumProjectsToShow && (
                     <span>
                         &nbsp;|&nbsp;...&nbsp;
                         <span style={{whiteSpace: 'nowrap'}}>
@@ -362,7 +332,7 @@ const AssociatedDendroProjectsComponent: FunctionComponent<AssociatedDendroProje
     )
 }
 
-const formatUserId = (userId: string) => {
+export const formatUserId = (userId: string) => {
     if (userId.startsWith('github|')) {
         return userId.slice('github|'.length)
     }

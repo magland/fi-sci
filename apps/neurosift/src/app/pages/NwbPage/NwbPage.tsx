@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MergedRemoteH5File, RemoteH5File, getMergedRemoteH5File, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
 import { useCustomStatusBarStrings } from "../../StatusBar"
 import useRoute from "../../useRoute"
-import { DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
+import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
 import { NwbFileContext } from "./NwbFileContext"
 import { SetupNwbOpenTabs } from "./NwbOpenTabsContext"
 import NwbTabWidget from "./NwbTabWidget"
@@ -17,7 +18,7 @@ type Props = {
 // const url = 'https://api.dandiarchive.org/api/assets/29ba1aaf-9091-469a-b331-6b8ab818b5a6/download/'
 
 const NwbPage: FunctionComponent<Props> = ({width, height}) => {
-    const {route, setRoute} = useRoute()
+    const {route} = useRoute()
 
     // useEffect(() => {
     //     let canceled = false
@@ -115,6 +116,33 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
                 dandisetVersion,
                 assetId,
                 assetPath
+            })
+            const url = 'https://dendro.vercel.app/api/gui/find_projects'
+            const data = {
+                'fileUrl': assetUrl
+            }
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            if (!resp.ok) return
+            const obj = await resp.json()
+            if (canceled) return
+            const associatedDendroProjects: AssociatedDendroProject[] = obj.projects.map((p: any) => ({
+                projectId: p.projectId,
+                name: p.name,
+                ownerId: p.ownerId
+            }))
+            setDandiAssetContextValue({
+                assetUrl,
+                dandisetId,
+                dandisetVersion,
+                assetId,
+                assetPath,
+                associatedDendroProjects
             })
         })()
         return () => {canceled = true}

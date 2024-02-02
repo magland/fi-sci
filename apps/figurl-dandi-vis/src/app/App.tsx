@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { SetupTimeSelection } from "@fi-sci/context-time-selection"
+import { UnitSelectionContext, defaultUnitSelection, unitSelectionReducer } from "@fi-sci/context-unit-selection"
 import { getFigureData } from "@fi-sci/figurl-interface"
 import { useWindowDimensions } from "@fi-sci/misc"
 import { useEffect, useReducer, useState } from "react"
 import { isViewData } from "./types"
-import SpikeTrainsView from "./SpikeTrainsView/SpikeTrainsView"
-import { SetupTimeSelection } from "@fi-sci/context-time-selection"
-import TuningCurves2DNh5View from "./TuningCurves2DNh5View/TuningCurves2DNh5View"
-import { UnitSelectionContext, defaultUnitSelection, unitSelectionReducer } from "@fi-sci/context-unit-selection"
+import Nh5View from "./Nh5View"
 
 function App() {
   const [data, setData] = useState<any>()
@@ -42,30 +41,21 @@ function App() {
     return <div>Invalid figure data</div>
   }
 
-  if (data.type === 'spike_trains_nh5') {
-    return (
-      <SetupTimeSelection>
-        <SpikeTrainsView
-          nh5FileUri={data.nh5_file}
-          width={width}
-          height={height}
-        />
-      </SetupTimeSelection>
-    )
-  }
-  else if (data.type == 'tuning_curves_2d_nh5') {
+  if (data.nh5) {
     return (
       <UnitSelectionContext.Provider value={{ unitSelection, unitSelectionDispatch }}>
-        <TuningCurves2DNh5View
-          nh5FileUri={data.nh5_file}
-          width={width}
-          height={height}
-        />
+        <SetupTimeSelection>
+          <Nh5View
+            nh5FileUri={data.nh5}
+            width={width}
+            height={height}
+          />
+        </SetupTimeSelection>
       </UnitSelectionContext.Provider>
     )
   }
   else {
-    return <div>Unsupported figure type: {data.type}</div>
+    return <div>Unsupported figure data</div>
   }
 }
 

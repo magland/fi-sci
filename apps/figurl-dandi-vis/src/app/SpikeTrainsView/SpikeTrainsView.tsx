@@ -7,17 +7,17 @@ import { Canceler } from "nh5/dist/RemoteNh5FileClient";
 // https://figurl.org/f?v=http://localhost:3000&d=%7B%22type%22:%22spike_trains_nh5%22,%22nh5_file%22:%22https://neurosift.org/dendro-outputs/a7852166.e49b352a/output%22%7D&label=sub-10884/sub-10884_ses-03080402_behavior+ecephys.nwb/spike_trains.nh5
 
 type SpikeTrainsViewProps = {
-  nh5FileUri: string;
+  nh5FileClient: RemoteNh5FileClient
   width: number;
   height: number;
 };
 
 const SpikeTrainsView: FunctionComponent<SpikeTrainsViewProps> = ({
-  nh5FileUri,
+  nh5FileClient,
   width,
   height,
 }) => {
-  const client = useSpikeTrainsNh5Client(nh5FileUri);
+  const client = useSpikeTrainsNh5Client(nh5FileClient);
   if (!client) return <div>Loading...</div>;
   console.log('client', client);
   console.log('chunkStartTimes', client.chunkStartTimes);
@@ -79,36 +79,18 @@ export class SpikeTrainsNh5Client {
   }
 }
 
-const useSpikeTrainsNh5Client = (nh5FileUri: string) => {
-  const nh5Client = useNh5FileClient(nh5FileUri);
+const useSpikeTrainsNh5Client = (nh5FileClient: RemoteNh5FileClient) => {
   const [client, setClient] = useState<SpikeTrainsNh5Client | undefined>()
   useEffect(() => {
-    if (!nh5Client) return;
+    if (!nh5FileClient) return;
     (async () => {
-      const c = await SpikeTrainsNh5Client.create(nh5Client);
+      const c = await SpikeTrainsNh5Client.create(nh5FileClient);
       setClient(c);
     })();
-  }, [nh5Client]);
+  }, [nh5FileClient]);
   return client;
 }
 
-export const useNh5FileClient = (nh5Url?: string) => {
-  const [client, setClient] = useState<RemoteNh5FileClient | undefined>(
-    undefined
-  );
-  useEffect(() => {
-    let canceled = false;
-    if (!nh5Url) return;
-    (async () => {
-      const c = await RemoteNh5FileClient.create(nh5Url);
-      if (canceled) return;
-      setClient(c);
-    })();
-    return () => {
-      canceled = true;
-    };
-  }, [nh5Url]);
-  return client;
-};
+
 
 export default SpikeTrainsView;
