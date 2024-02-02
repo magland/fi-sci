@@ -1,5 +1,5 @@
-import { FunctionComponent, useContext, useEffect, useMemo, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
+import { FunctionComponent, useEffect, useMemo, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import { DirectSpikeTrainsClient } from "../Units/DirectRasterPlotUnitsItemView"
 import PSTHHistWidget from "./PSTHHistWidget"
 import { PSTHPrefs } from "./PSTHItemView"
@@ -92,7 +92,7 @@ type PSTHUnitAlignToWidgetProps = {
 }
 
 const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({width, height, path, spikeTrain, unitId, alignToVariable, groupByVariable, windowRange, prefs}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const [alignToTimes, setAlignToTimes] = useState<number[] | undefined>(undefined)
@@ -236,7 +236,7 @@ type PSTHGroupLegendProps = {
 }
 
 const PSTHGroupLegend: FunctionComponent<PSTHGroupLegendProps> = ({width, height, path, groupByVariable}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const [values, setValues] = useState<any[] | undefined>(undefined)

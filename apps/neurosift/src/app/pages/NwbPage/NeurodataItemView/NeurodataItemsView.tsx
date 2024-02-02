@@ -1,10 +1,10 @@
-import { FunctionComponent, useContext, useMemo } from "react"
-import { NwbFileContext } from "../NwbFileContext"
 import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { Splitter } from "@fi-sci/splitter"
+import { FunctionComponent, useMemo } from "react"
+import { useNwbFile } from "../NwbFileContext"
 import TimeseriesSelectionWidget from "../viewPlugins/TimeSeries/TimeseriesItemView/TimeseriesSelectionWidget"
 import viewPlugins, { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import ShareTabComponent from "./ShareTabComponent"
-import { Splitter } from "@fi-sci/splitter"
 
 type Props = {
     width: number
@@ -14,7 +14,7 @@ type Props = {
 }
 
 const NeurodataItemsView: FunctionComponent<Props> = ({width, height, items, tabName}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
 
     const itemNames = useMemo(() => {
@@ -83,7 +83,7 @@ type MainPanelProps = {
 }
 
 const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, items}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const H = height / items.length
     const positions = items.map((_, i) => i * H)

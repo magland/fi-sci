@@ -368,7 +368,7 @@ type NeurodataTypeLinkProps = {
 }
 
 const NeurodataTypeLink: FunctionComponent<NeurodataTypeLinkProps> = ({neurodataType, tableItem}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
     if (tableItem.type !== 'group') throw Error('Unexpected table item type')
     const viewPlugins = useMemo(() => (neurodataType ? findViewPluginsForType(neurodataType, {nwbFile}) : undefined), [neurodataType, nwbFile])

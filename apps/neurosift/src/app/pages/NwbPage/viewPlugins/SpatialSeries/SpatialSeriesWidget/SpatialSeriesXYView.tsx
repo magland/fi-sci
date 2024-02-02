@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { useTimeRange, useTimeseriesSelection, useTimeseriesSelectionInitialization } from "../../../../../package/context-timeseries-selection";
-import { NwbFileContext } from "../../../NwbFileContext";
-import { useDataset } from "../../../NwbMainView/NwbMainView";
 import { Canceler } from "@fi-sci/remote-h5-file";
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import { useTimeRange, useTimeseriesSelection, useTimeseriesSelectionInitialization } from "../../../../../package/context-timeseries-selection";
+import { useNwbFile } from "../../../NwbFileContext";
+import { useDataset } from "../../../NwbMainView/NwbMainView";
 import { useNwbTimeseriesDataClient } from "../../TimeSeries/TimeseriesItemView/NwbTimeseriesDataClient";
 import TimeseriesDatasetChunkingClient from "../../TimeSeries/TimeseriesItemView/TimeseriesDatasetChunkingClient";
 import TimeseriesSelectionBar, { timeSelectionBarHeight } from "../../TimeSeries/TimeseriesItemView/TimeseriesSelectionBar";
@@ -18,7 +18,7 @@ type Props = {
 const SpatialSeriesXYView: FunctionComponent<Props> = ({ width, height, path }) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>()
     const [worker, setWorker] = useState<Worker | null>(null)
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const [datasetChunkingClient, setDatasetChunkingClient] = useState<TimeseriesDatasetChunkingClient | undefined>(undefined)
     const {visibleStartTimeSec, visibleEndTimeSec, setVisibleTimeRange } = useTimeRange()

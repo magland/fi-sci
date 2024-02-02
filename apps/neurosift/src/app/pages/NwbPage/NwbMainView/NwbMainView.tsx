@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../NwbFileContext"
 import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { Splitter } from "@fi-sci/splitter"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../NwbFileContext"
 import NwbMainLeftPanel from "./NwbMainLeftPanel"
 import NwbMainViewMainPanel from "./NwbMainViewMainPanel"
-import { Splitter } from "@fi-sci/splitter"
 
 type Props = {
     width: number
@@ -12,7 +12,7 @@ type Props = {
 }
 
 const NwbMainView: FunctionComponent<Props> = ({width, height}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     return (
         <Splitter

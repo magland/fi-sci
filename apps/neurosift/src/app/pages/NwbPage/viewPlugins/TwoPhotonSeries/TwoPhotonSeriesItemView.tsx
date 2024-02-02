@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { SmallIconButton } from "@fi-sci/misc"
+import { Canceler, DatasetDataType, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
 import { ArrowLeft, ArrowRight } from "@mui/icons-material"
-import { FunctionComponent, useContext, useEffect, useMemo, useState } from "react"
+import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useTimeRange, useTimeseriesSelection, useTimeseriesSelectionInitialization } from "../../../../package/context-timeseries-selection"
-import { NwbFileContext } from "../../NwbFileContext"
+import { useNwbFile } from "../../NwbFileContext"
 import { useDataset } from "../../NwbMainView/NwbMainView"
-import { DatasetDataType, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
-import { Canceler } from "@fi-sci/remote-h5-file"
 import { useNwbTimeseriesDataClient } from "../TimeSeries/TimeseriesItemView/NwbTimeseriesDataClient"
 import TimeseriesSelectionBar, { timeSelectionBarHeight } from "../TimeSeries/TimeseriesItemView/TimeseriesSelectionBar"
 import MultiRangeSlider from "./MultiRangeSlider/MultiRangeSlider"
 import PlaneTransformSelector, { PlaneTransform, defaultPlaneTransform } from "./PlaneTransformSelector"
-import { SmallIconButton } from "@fi-sci/misc"
 
 // const queryParams = parseQuery(window.location.href)
 
@@ -54,7 +53,7 @@ const useComputedDataDatUrl = (nwbFile: RemoteH5File | MergedRemoteH5File, path:
 }
 
 const TwoPhotonSeriesItemView: FunctionComponent<Props> = ({width, height, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
     const dataDataset = useDataset(nwbFile, path + '/data')
 

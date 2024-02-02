@@ -1,6 +1,6 @@
-import { FunctionComponent, useContext, useEffect, useMemo, useReducer } from "react"
+import { FunctionComponent, useEffect, useMemo, useReducer } from "react"
 import { valueToString } from "../../BrowseNwbView/BrowseNwbView"
-import { NwbFileContext } from "../../NwbFileContext"
+import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
 
 type Props = {
@@ -106,7 +106,7 @@ const columnDescriptionReducer = (state: ColumnDescriptions, action: ColumnDescr
 }
 
 const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, referenceColumnName }) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
     const [data, dataDispatch] = useReducer(dataReducer, {})
     const group = useGroup(nwbFile, path)

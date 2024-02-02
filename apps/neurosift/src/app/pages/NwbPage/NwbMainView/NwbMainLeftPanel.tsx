@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Hyperlink } from "@fi-sci/misc"
 import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
 import { serializeBigInt, valueToString } from "../BrowseNwbView/BrowseNwbView"
 import { useDandiAssetContext } from "../DandiAssetContext"
-import { NwbFileContext } from "../NwbFileContext"
+import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
+import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
-import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
-import { Hyperlink } from "@fi-sci/misc"
 
 type Props = {
     width: number
@@ -177,7 +177,7 @@ type DandisetInfo = {
 }
 
 const DandiTable = () => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
 
     const {assetUrl, dandisetId, dandisetVersion, assetPath} = useDandiAssetContext()

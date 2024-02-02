@@ -1,9 +1,9 @@
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../NwbFileContext"
+import { Hyperlink } from "@fi-sci/misc"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { useSelectedItemViews } from "../SelectedItemViewsContext"
 import { ViewPlugin } from "./viewPlugins"
-import { Hyperlink } from "@fi-sci/misc"
 
 type Props = {
     viewPlugin: ViewPlugin
@@ -11,7 +11,7 @@ type Props = {
 }
 
 const ViewPluginButton: FunctionComponent<Props> = ({viewPlugin, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
     const {name, buttonLabel} = viewPlugin
     const {openTab} = useNwbOpenTabs()

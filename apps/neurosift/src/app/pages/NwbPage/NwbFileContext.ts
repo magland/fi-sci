@@ -1,12 +1,25 @@
 import { createContext, useContext } from "react";
 import { RemoteH5FileX } from "@fi-sci/remote-h5-file";
 
-type NwbFileContextType = RemoteH5FileX | null
+type NwbFileContextType = {
+    nwbFile: RemoteH5FileX | null,
+    nwbFileUrls: string[]
+}
 
-export const NwbFileContext = createContext<NwbFileContextType>(null)
+const defaultNwbFileContext: NwbFileContextType = {
+    nwbFile: null,
+    nwbFileUrls: []
+}
+
+export const NwbFileContext = createContext<NwbFileContextType>(defaultNwbFileContext)
 
 export const useNwbFile = () => {
-    const nwbFile = useContext(NwbFileContext)
-    if (!nwbFile) throw Error('No NwbFile')
-    return nwbFile
+    const a = useContext(NwbFileContext)
+    if (!a.nwbFile) throw Error('No NwbFile')
+    return a.nwbFile
+}
+
+export const useNwbFileUrls = () => {
+    const a = useContext(NwbFileContext)
+    return a.nwbFileUrls
 }

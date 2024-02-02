@@ -1,6 +1,6 @@
 import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
-import { FunctionComponent, useContext, useState } from "react"
-import { NwbFileContext } from "../NwbFileContext"
+import { FunctionComponent, useState } from "react"
+import { useNwbFile } from "../NwbFileContext"
 import { useDataset, useDatasetData, useGroup } from "../NwbMainView/NwbMainView"
 import TopLevelGroupContentPanel from "./TopLevelGroupContentPanel"
 import './nwb-attributes-table.css'
@@ -11,7 +11,7 @@ type Props = {
 }
 
 const BrowseNwbView: FunctionComponent<Props> = ({width, height}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     return (
         <MainPanel

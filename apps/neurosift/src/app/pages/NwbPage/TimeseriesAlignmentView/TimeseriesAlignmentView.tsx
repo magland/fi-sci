@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useContext, useEffect, useMemo, useReducer, useState } from "react"
-import { FaEye } from "react-icons/fa"
-import { neurodataTypeInheritsFrom } from "../neurodataSpec"
-import { NwbFileContext } from "../NwbFileContext"
-import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { SmallIconButton } from "@fi-sci/misc"
+import { FunctionComponent, useEffect, useMemo, useReducer, useState } from "react"
+import { FaEye } from "react-icons/fa"
+import { useNwbFile } from "../NwbFileContext"
+import { useNwbOpenTabs } from "../NwbOpenTabsContext"
+import { neurodataTypeInheritsFrom } from "../neurodataSpec"
 
 type Props = {
     width: number
@@ -40,7 +40,7 @@ const timeseriesAlignmentReducer = (state: TimeseriesAlignmentState, action: Tim
 }
 
 const TimeseriesAlignmentView: FunctionComponent<Props> = ({width, height}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
 
     const [timeseriesAlignment, timeseriesAlignmentDispatch] = useReducer(timeseriesAlignmentReducer, {timeseries: []})

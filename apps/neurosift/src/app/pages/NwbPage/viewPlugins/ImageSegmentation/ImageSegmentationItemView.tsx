@@ -1,9 +1,9 @@
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
-import { useGroup } from "../../NwbMainView/NwbMainView"
 import { MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
-import PlaneSegmentationView from "./PlaneSegmentationView"
 import { Splitter } from "@fi-sci/splitter"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
+import { useGroup } from "../../NwbMainView/NwbMainView"
+import PlaneSegmentationView from "./PlaneSegmentationView"
 
 type Props = {
     width: number
@@ -13,7 +13,7 @@ type Props = {
 }
 
 const ImageSegmentationItemView: FunctionComponent<Props> = ({width, height, path, condensed}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
     const group = useGroup(nwbFile, path)
 

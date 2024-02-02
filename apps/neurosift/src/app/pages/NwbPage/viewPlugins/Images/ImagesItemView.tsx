@@ -1,7 +1,7 @@
-import { FunctionComponent, useContext, useEffect, useMemo, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
-import { useDatasetData, useGroup } from "../../NwbMainView/NwbMainView"
 import { DatasetDataType, MergedRemoteH5File, RemoteH5Dataset, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useEffect, useMemo, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
+import { useDatasetData, useGroup } from "../../NwbMainView/NwbMainView"
 
 type Props = {
     width: number
@@ -11,7 +11,7 @@ type Props = {
 }
 
 const ImagesItemView: FunctionComponent<Props> = ({ width, height, path }) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
 
     const group = useGroup(nwbFile, path)

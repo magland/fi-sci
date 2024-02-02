@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
 import { DatasetDataType, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import RasterPlotView3 from "../Units/RasterPlotView3/RasterPlotView3"
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 }
 
 const LabeledEventsItemView: FunctionComponent<Props> = ({width, height, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
 
     const [spikeTrainsClient, setSpikeTrainsClient] = useState<LabeledEventsSpikeTrainsClient | undefined>(undefined)

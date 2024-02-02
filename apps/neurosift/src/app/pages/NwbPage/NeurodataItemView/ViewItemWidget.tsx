@@ -1,9 +1,9 @@
-import { FunctionComponent, useContext } from "react"
-import { NwbFileContext } from "../NwbFileContext"
+import { Splitter } from "@fi-sci/splitter"
+import { FunctionComponent } from "react"
+import { useNwbFile } from "../NwbFileContext"
 import { useGroup } from "../NwbMainView/NwbMainView"
 import { ViewPlugin } from "../viewPlugins/viewPlugins"
 import NeurodataItemViewLeftPanel from "./NeurodataItemViewLeftPanel"
-import { Splitter } from "@fi-sci/splitter"
 
 type Props = {
     width: number
@@ -16,7 +16,7 @@ type Props = {
 }
 
 const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, itemPath, additionalItemPaths, condensed, tabName}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const group = useGroup(nwbFile, itemPath)
 

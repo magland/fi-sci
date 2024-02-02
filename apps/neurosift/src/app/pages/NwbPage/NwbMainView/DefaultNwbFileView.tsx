@@ -5,6 +5,7 @@ import UnitsContentPanel from "./UnitsContentPanel"
 import IntervalsContentPanel from "./IntervalsContentPanel"
 import { useGroup } from "./NwbMainView"
 import ProcessingGroupContentPanel from "./ProcessingGroupContentPanel"
+import DendroLinksView from "../DendroLinksView/DendroLinksView"
 
 type Props = {
     width: number
@@ -72,6 +73,7 @@ const DefaultNwbFileView: FunctionComponent<Props> = ({width, height, nwbFile}) 
     }, [processingGroup, rootGroup])
     return (
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
+            <DendroLinksView />
             {
                 headings.map((heading) => (
                     <TopLevelHeadingView

@@ -1,5 +1,5 @@
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import { useDatasetData, useGroup } from "../../NwbMainView/NwbMainView"
 import NwbTimeIntervalsWidget from "./NwbTimeIntervalsWidget"
 
@@ -10,7 +10,7 @@ type Props = {
 }
 
 const NwbTimeIntervalsView: FunctionComponent<Props> = ({width, height, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
     const group = useGroup(nwbFile, path)
     const {data: startTimeData} = useDatasetData(nwbFile, `${path}/start_time`)

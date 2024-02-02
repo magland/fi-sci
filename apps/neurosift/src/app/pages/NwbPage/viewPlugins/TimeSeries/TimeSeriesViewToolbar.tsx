@@ -1,5 +1,5 @@
-import { FunctionComponent, useContext } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
+import { FunctionComponent } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import { useDataset } from "../../NwbMainView/NwbMainView"
 
 type Props = {
@@ -17,7 +17,7 @@ export type TimeSeriesViewOpts = {
 }
 
 const TimeSeriesViewToolbar: FunctionComponent<Props> = ({width, height, objectPath, timeSeriesViewOpts, setTimeSeriesViewOpts}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const dataDataset = useDataset(nwbFile, `${objectPath}/data`)
     const numChannels = dataDataset ? dataDataset.shape[1] : undefined

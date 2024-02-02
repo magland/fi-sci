@@ -4,7 +4,7 @@ import { SetupTimeseriesSelection } from "../../package/context-timeseries-selec
 import { defaultUnitSelection, UnitSelectionContext, unitSelectionReducer } from "../../package/context-unit-selection";
 import NeurodataItemsView from "./NeurodataItemView/NeurodataItemsView";
 import ViewItemWidget from "./NeurodataItemView/ViewItemWidget";
-import { NwbFileContext } from "./NwbFileContext";
+import { NwbFileContext, useNwbFile } from "./NwbFileContext";
 import NwbMainView from "./NwbMainView/NwbMainView";
 import { useNwbOpenTabs } from "./NwbOpenTabsContext";
 import TimeseriesAlignmentView from "./TimeseriesAlignmentView/TimeseriesAlignmentView";
@@ -46,7 +46,7 @@ type TabChildProps = {
 }
 
 const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
     const [unitSelection, unitSelectionDispatch] = useReducer(unitSelectionReducer, defaultUnitSelection)
     const {viewPlugin, itemPath, additionalItemPaths} = useMemo(() => {

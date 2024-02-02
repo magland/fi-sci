@@ -6,7 +6,7 @@ import { useModalDialog } from "../../../../../ApplicationBar"
 import TimeScrollView2, { useTimeScrollView2 } from "../../../../../package/component-time-scroll-view-2/TimeScrollView2"
 import { useTimeRange, useTimeseriesSelectionInitialization } from "../../../../../package/context-timeseries-selection"
 import { ToolbarItem } from "../../../../../package/ViewToolbar/Toolbars"
-import { NwbFileContext } from "../../../NwbFileContext"
+import { NwbFileContext, useNwbFile } from "../../../NwbFileContext"
 import { useDataset } from "../../../NwbMainView/NwbMainView"
 import { useNwbTimeseriesDataClient } from "./NwbTimeseriesDataClient"
 import TimeseriesDatasetChunkingClient from "./TimeseriesDatasetChunkingClient"
@@ -32,7 +32,7 @@ const hideToolbar = false
 const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath, visibleChannelsRange, autoChannelSeparation }) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>()
     const [worker, setWorker] = useState<Worker | null>(null)
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const [datasetChunkingClient, setDatasetChunkingClient] = useState<TimeseriesDatasetChunkingClient | undefined>(undefined)
     const {visibleStartTimeSec, visibleEndTimeSec, setVisibleTimeRange } = useTimeRange()

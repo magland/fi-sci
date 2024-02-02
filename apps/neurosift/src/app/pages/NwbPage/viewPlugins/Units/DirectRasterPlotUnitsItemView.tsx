@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useContext, useEffect, useState } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
 import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useEffect, useState } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import RasterPlotView3 from "./RasterPlotView3/RasterPlotView3"
 
 type Props = {
@@ -12,7 +12,7 @@ type Props = {
 }
 
 const DirectRasterPlotUnitsItemView: FunctionComponent<Props> = ({width, height, path, condensed}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
 
     const [spikeTrainsClient, setSpikeTrainsClient] = useState<DirectSpikeTrainsClient | undefined>(undefined)

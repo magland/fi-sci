@@ -1,11 +1,11 @@
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react"
-import { defaultUnitSelection, sortIds, UnitSelectionContext, unitSelectionReducer } from "../../../../package/context-unit-selection"
+import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react"
+import { UnitSelectionContext, defaultUnitSelection, sortIds, unitSelectionReducer } from "../../../../package/context-unit-selection"
 import { useSelectedUnitIds } from "../../../../package/context-unit-selection/UnitSelectionContext"
-import { NwbFileContext } from "../../NwbFileContext"
+import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
 import { DirectSpikeTrainsClient } from "../Units/DirectRasterPlotUnitsItemView"
-import PSTHUnitWidget from "./PSTHUnitWidget"
 import IfHasBeenVisible from "./IfHasBeenVisible"
+import PSTHUnitWidget from "./PSTHUnitWidget"
 
 type Props = {
     width: number
@@ -61,7 +61,7 @@ export const defaultPSTHPrefs: PSTHPrefs = {
 }
 
 const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, additionalPaths}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const {selectedUnitIds: selectedUnitIdsSet, unitIdSelectionDispatch} = useSelectedUnitIds()
@@ -199,7 +199,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
 }
 
 const AlignToSelectionComponent: FunctionComponent<{alignToVariables: string[], setAlignToVariables: (x: string[]) => void, path: string}> = ({alignToVariables, setAlignToVariables, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const group = useGroup(nwbFile, path)
@@ -278,7 +278,7 @@ const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], s
 }
 
 const GroupBySelectionComponent: FunctionComponent<{groupByVariable: string, setGroupByVariable: (x: string) => void, path: string}> = ({groupByVariable, setGroupByVariable, path}) => {
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const group = useGroup(nwbFile, path)

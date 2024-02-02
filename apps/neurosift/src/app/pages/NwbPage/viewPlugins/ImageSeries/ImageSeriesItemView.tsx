@@ -9,7 +9,7 @@ type Props = {
 
 const ImageSeriesItemView: FunctionComponent<Props> = ({width, height, path}) => {
     return <div>Avi page no longer supported</div>
-    // const nwbFile = useContext(NwbFileContext)
+    // const nwbFile = useNwbFile()
     // if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
 
     // const {route} = useRoute()

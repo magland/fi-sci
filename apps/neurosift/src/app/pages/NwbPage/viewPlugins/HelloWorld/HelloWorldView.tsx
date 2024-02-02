@@ -1,5 +1,5 @@
-import { FunctionComponent, useContext } from "react"
-import { NwbFileContext } from "../../NwbFileContext"
+import { FunctionComponent } from "react"
+import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
 
 // This is an example Neurosift view plugin.
@@ -15,7 +15,7 @@ type Props = {
 
 const HelloWorldView: FunctionComponent<Props> = ({width, height, path}) => {
     // Access the global nwb file
-    const nwbFile = useContext(NwbFileContext)
+    const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
 
     // Get the group of the item to be viewed

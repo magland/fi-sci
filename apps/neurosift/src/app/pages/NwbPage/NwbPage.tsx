@@ -123,7 +123,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     if (!nwbFile) return <div>Loading {urlList}</div>
     return (
         <DandiAssetContext.Provider value={dandiAssetContextValue}>
-            <NwbFileContext.Provider value={nwbFile}>
+            <NwbFileContext.Provider value={{nwbFile, nwbFileUrls: urlList}}>
                 <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
                     <SetupNwbOpenTabs>
                         <NwbTabWidget
