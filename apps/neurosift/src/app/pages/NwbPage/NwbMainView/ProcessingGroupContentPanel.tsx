@@ -2,7 +2,6 @@ import { FunctionComponent, useEffect, useMemo, useReducer, useState } from "rea
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { useSelectedItemViews } from "../SelectedItemViewsContext"
-import '../nwb-table.css'
 import Abbreviate from "../viewPlugins/TimeSeries/TimeseriesItemView/Abbreviate"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"

@@ -271,7 +271,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                     <div style={{padding: 10, fontSize: 12, color: 'gray'}}>Showing {sortedRowItemsAbbreviated.length} of {sortedRowItems.length} rows</div>
                 )
             }
-            <table className="nwb-table">
+            <table className="nwb-table-2">
                 <thead>
                     <tr>
                         {
