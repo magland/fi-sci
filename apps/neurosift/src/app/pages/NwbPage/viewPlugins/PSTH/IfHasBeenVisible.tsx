@@ -12,7 +12,8 @@ const IfHasBeenVisible: FunctionComponent<PropsWithChildren<Props>> = ({children
 		<div style={{position: 'relative', width, height}}>
 			<ReactVisibilitySensor partialVisibility={true}>
 				{({isVisible}: {isVisible: boolean}) => {
-					if ((isVisible) || (hasBeenVisible.current)) {
+					// if ((isVisible) || (hasBeenVisible.current)) {
+					if (isVisible) {
 						hasBeenVisible.current = true
 						return children
 					} else {

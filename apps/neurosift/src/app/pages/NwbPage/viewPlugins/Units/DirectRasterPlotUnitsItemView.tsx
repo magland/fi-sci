@@ -201,13 +201,13 @@ export class DirectSpikeTrainsClient {
         }
         return ret
     }
-    async getUnitSpikeTrain(unitId: number | string) {
+    async getUnitSpikeTrain(unitId: number | string, o: {canceler?: {onCancel: (() => void)[]}}={}) {
         const ii = this.unitIds.indexOf(unitId)
         if (ii < 0) throw Error(`Unexpected: unitId not found: ${unitId}`)
         const i1 = ii === 0 ? 0 : this.spikeTimesIndices[ii - 1]
         const i2 = this.spikeTimesIndices[ii]
         const path = this.path
-        const tt0 = await this.nwbFile.getDatasetData(`${path}/${this.spike_or_event}_times`, {slice: [[i1, i2]]})
+        const tt0 = await this.nwbFile.getDatasetData(`${path}/${this.spike_or_event}_times`, {slice: [[i1, i2]], canceler: o.canceler})
         if (tt0) {
             return Array.from(tt0)
         }

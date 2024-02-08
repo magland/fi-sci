@@ -25,13 +25,17 @@ const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTra
     const [spikeTrain, setSpikeTrain] = useState<number[] | undefined>(undefined)
     useEffect(() => {
         let canceled = false
+        const canceler: {onCancel: (() => void)[]} = {onCancel: []}
         const load = async () => {
-            const st = await spikeTrainsClient.getUnitSpikeTrain(unitId)
+            const st = await spikeTrainsClient.getUnitSpikeTrain(unitId, {canceler})
             if (canceled) return
             setSpikeTrain(st)
         }
         load()
-        return () => {canceled = true}
+        return () => {
+            canceled = true
+            canceler.onCancel.forEach((c) => c())
+        }
     }, [spikeTrainsClient, unitId])
 
     return (

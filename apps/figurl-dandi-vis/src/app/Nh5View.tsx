@@ -2,6 +2,7 @@ import { FunctionComponent } from "react"
 import useNh5FileClient from "./useNh5FileClient"
 import SpikeTrainsView from "./SpikeTrainsView/SpikeTrainsView"
 import TuningCurves2DNh5View from "./TuningCurves2DNh5View/TuningCurves2DNh5View"
+import SpikeSortingSummaryView from "./SpikeSortingSummaryView/SpikeSortingSummaryView"
 
 
 type Nh5ViewProps = {
@@ -26,6 +27,15 @@ const Nh5View: FunctionComponent<Nh5ViewProps> = ({ width, height, nh5FileUri })
     else if (type0 === 'tuning_curves_2d') {
         return (
             <TuningCurves2DNh5View
+                nh5FileClient={client}
+                width={width}
+                height={height}
+            />
+        )
+    }
+    else if (type0 === 'spike_sorting_summary') {
+        return (
+            <SpikeSortingSummaryView
                 nh5FileClient={client}
                 width={width}
                 height={height}
