@@ -1,7 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useReducer } from "react"
 import { valueToString } from "../../BrowseNwbView/BrowseNwbView"
 import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
+import { SmallIconButton } from "@fi-sci/misc"
+import { Help } from "@mui/icons-material"
+import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
+import DynamicTableColumnInfoView from "./DynamicTableColumnInfoView"
 
 type Props = {
     width: number
@@ -262,10 +267,15 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         return ret
     }, [sortedRowItems, validColumnNames])
 
+    const {visible: columnInfoVisible, handleClose: closeColumnInfo, handleOpen: openColumnInfo} = useModalWindow()
+
     if (!validColumnNames) return <div>Loading...</div>
 
     return (
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
+            <div style={{color: 'gray', paddingBottom: 2}}>
+                <SmallIconButton onClick={openColumnInfo} icon={<Help />} title="View info about columns" />
+            </div>
             {
                 sortedRowItemsAbbreviated.length < sortedRowItems.length && (
                     <div style={{padding: 10, fontSize: 12, color: 'gray'}}>Showing {sortedRowItemsAbbreviated.length} of {sortedRowItems.length} rows</div>
@@ -308,6 +318,15 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                     }
                 </tbody>
             </table>
+            <ModalWindow
+                visible={columnInfoVisible}
+                onClose={closeColumnInfo}
+            >
+                <DynamicTableColumnInfoView
+                    columnNames={validColumnNames}
+                    columnDescriptions={columnDescriptions}
+                />
+            </ModalWindow>
         </div>
     )
 }
