@@ -1,6 +1,6 @@
 .nwb-table {
-    width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 2px 0px;
     font-size: 0.75em;
     font-family: sans-serif;
     text-align: left;
@@ -8,9 +8,12 @@
 }
 
 .nwb-table td {
-    word-break: break-all;
-    max-width: 250px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    min-width: 100px;
+    max-width: 400px;
     overflow: hidden;
+    padding: 30px;
 }
 
 .nwb-table thead tr {
