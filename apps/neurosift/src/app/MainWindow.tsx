@@ -4,6 +4,7 @@ import StatusBar, { statusBarHeight } from "./StatusBar";
 import AboutPage from "./pages/AboutPage/AboutPage";
 import HomePage from "./pages/HomePage/HomePage";
 import NwbPage from "./pages/NwbPage/NwbPage";
+import DandisetPage from "./pages/DandisetPage/DandisetPage"
 import useRoute from "./useRoute";
 import { useWindowDimensions } from "@fi-sci/misc";
 
@@ -42,6 +43,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                     //         height={H}
                     //         url={route.url}
                     //     />
+                    ) : route.page === 'dandiset' ? (
+                        <DandisetPage
+                            width={width}
+                            height={H}
+                        />
                     ) : (
                         <div>404</div>
                     )

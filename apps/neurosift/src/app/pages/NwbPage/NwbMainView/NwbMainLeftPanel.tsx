@@ -9,6 +9,7 @@ import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
+import useRoute from "../../../useRoute"
 
 type Props = {
     width: number
@@ -168,7 +169,7 @@ const valueToString2 = (val: any): string => {
 //     dandi_asset_blob_id: string
 // }
 
-type DandisetInfo = {
+export type DandisetInfo = {
     id: string,
     doi: string,
     url: string,
@@ -183,7 +184,6 @@ const DandiTable = () => {
     const {assetUrl, dandisetId, dandisetVersion, assetPath} = useDandiAssetContext()
 
     // const [dandiAssetInfo, setDandiAssetInfo] = useState<DandiAssetInfo | undefined>(undefined)
-    const [dandisetInfo, setDandisetInfo] = useState<DandisetInfo | undefined>(undefined)
 
     // let nwbFileUrl: string
     // if (nwbFile instanceof MergedRemoteH5File) {
@@ -213,22 +213,8 @@ const DandiTable = () => {
 
     // if (!dandiAssetInfo) return <span />
 
-    useEffect(() => {
-        if (!dandisetId) return
-        if (!dandisetVersion) return
-        const getDandisetInfo = async () => {
-            const staging = assetUrl.startsWith('https://api-staging.dandiarchive.org')
-            const baseUrl = staging ? 'https://api-staging.dandiarchive.org' : 'https://api.dandiarchive.org'
-            const url = `${baseUrl}/api/dandisets/${dandisetId}/versions/${dandisetVersion}/`
-            const authorizationHeader = getAuthorizationHeaderForUrl(url)
-            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
-            const resp = await fetch(url, {headers})
-            if (!resp.ok) return
-            const obj = await resp.json() as DandisetInfo
-            setDandisetInfo(obj)
-        }
-        getDandisetInfo()
-    }, [dandisetId, dandisetVersion, assetUrl])
+    const staging = assetUrl.startsWith('https://api-staging.dandiarchive.org')
+    const dandisetInfo = useDandisetInfo(dandisetId, dandisetVersion, staging)
 
     const assetPathParentPath = assetPath ? assetPath.split('/').slice(0, -1).join('/') : undefined
     const assetPathFileName = assetPath ? assetPath.split('/').slice(-1)[0] : undefined
@@ -239,6 +225,8 @@ const DandiTable = () => {
         window.open(url, '_blank')
     }, [dandisetId, dandisetVersion, assetPath, assetUrl])
 
+    const {setRoute} = useRoute()
+
     if (!dandisetId) return <span />
 
     return (
@@ -247,8 +235,9 @@ const DandiTable = () => {
                 <p>
                     DANDISET:&nbsp;
                     <Hyperlink
-                        href={`https://gui.dandiarchive.org/#/dandiset/${dandisetId}/${dandisetVersion}`}
-                        target="_blank"
+                        onClick={() => setRoute({page: 'dandiset', dandisetId, dandisetVersion, staging})}
+                        // href={`https://gui.dandiarchive.org/#/dandiset/${dandisetId}/${dandisetVersion}`}
+                        // target="_blank"
                     >
                         {dandisetId} {dandisetVersion}
                     </Hyperlink>&nbsp;
@@ -280,6 +269,26 @@ const DandiTable = () => {
             <hr />
         </div>
     )
+}
+
+export const useDandisetInfo = (dandisetId: string, dandisetVersion: string, staging: boolean) => {
+    const [dandisetInfo, setDandisetInfo] = useState<DandisetInfo | undefined>(undefined)
+    useEffect(() => {
+        if (!dandisetId) return
+        if (!dandisetVersion) return
+        const getDandisetInfo = async () => {
+            const baseUrl = staging ? 'https://api-staging.dandiarchive.org' : 'https://api.dandiarchive.org'
+            const url = `${baseUrl}/api/dandisets/${dandisetId}/versions/${dandisetVersion}/`
+            const authorizationHeader = getAuthorizationHeaderForUrl(url)
+            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
+            const resp = await fetch(url, {headers})
+            if (!resp.ok) return
+            const obj = await resp.json() as DandisetInfo
+            setDandisetInfo(obj)
+        }
+        getDandisetInfo()
+    }, [dandisetId, dandisetVersion, staging])
+    return dandisetInfo
 }
 
 type AssociatedDendroProjectsComponentProps = {

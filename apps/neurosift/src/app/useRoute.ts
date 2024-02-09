@@ -13,6 +13,13 @@ export type Route = {
 } | {
     page: 'nwb'
     url: string[]
+    dandisetId?: string
+    dandisetVersion?: string
+} | {
+    page: 'dandiset'
+    dandisetId: string
+    dandisetVersion?: string
+    staging?: boolean
 } | {
     page: 'github-auth'
 }
@@ -56,7 +63,17 @@ const useRoute = () => {
         else if (p === '/nwb') {
             return {
                 page: 'nwb',
-                url: typeof query.url === 'string' ? [query.url] : query.url
+                url: typeof query.url === 'string' ? [query.url] : query.url,
+                dandisetId: (query.dandisetId || '') as string,
+                dandisetVersion: (query.dandisetVersion || '') as string
+            }
+        }
+        else if (p === '/dandiset') {
+            return {
+                page: 'dandiset',
+                dandisetId: query.dandisetId as string,
+                dandisetVersion: (query.dandisetVersion || '') as string,
+                staging: query.staging === '1'
             }
         }
         // no longer supported
@@ -90,6 +107,42 @@ const useRoute = () => {
         else if (r.page === 'nwb') {
             newQuery.p = '/nwb'
             newQuery.url = r.url
+            if (r.dandisetId) {
+                newQuery.dandisetId = r.dandisetId
+            }
+            else {
+                if (newQuery.dandisetId) {
+                    delete newQuery.dandisetId
+                }
+            }
+            if (r.dandisetVersion) {
+                newQuery.dandisetVersion = r.dandisetVersion
+            }
+            else {
+                if (newQuery.dandisetVersion) {
+                    delete newQuery.dandisetVersion
+                }
+            }
+        }
+        else if (r.page === 'dandiset') {
+            newQuery.p = '/dandiset'
+            newQuery.dandisetId = r.dandisetId
+            if (r.dandisetVersion) {
+                newQuery.dandisetVersion = r.dandisetVersion
+            }
+            else {
+                if (newQuery.dandisetVersion) {
+                    delete newQuery.dandisetVersion
+                }
+            }
+            if (r.staging) {
+                newQuery.staging = '1'
+            }
+            else {
+                if (newQuery.staging) {
+                    delete newQuery.staging
+                }
+            }
         }
         // no longer supported
         // else if (r.page === 'avi') {
