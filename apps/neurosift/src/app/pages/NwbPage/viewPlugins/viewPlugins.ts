@@ -17,6 +17,7 @@ import TwoPhotonSeriesItemView from "./TwoPhotonSeries/TwoPhotonSeriesItemView"
 import DirectRasterPlotUnitsItemView from "./Units/DirectRasterPlotUnitsItemView"
 import UnitsItemView from "./Units/UnitsItemView"
 import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
+import TimeAlignedSeriesItemView from "./TimeAlignedSeries/TimeAlignedSeriesItemView"
 
 type Props = {
     width: number,
@@ -135,6 +136,13 @@ viewPlugins.push({
         if (!rootGroup) return false
         return rootGroup.subgroups.find(sg => (sg.name === 'units')) ? true : false
     },
+    isTimeView: false
+})
+viewPlugins.push({
+    name: 'TimeAlignedSeries',
+    neurodataType: 'TimeIntervals',
+    defaultForNeurodataType: false,
+    component: TimeAlignedSeriesItemView,
     isTimeView: false
 })
 

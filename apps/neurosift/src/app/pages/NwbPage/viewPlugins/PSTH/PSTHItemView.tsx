@@ -198,7 +198,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
     )
 }
 
-const AlignToSelectionComponent: FunctionComponent<{alignToVariables: string[], setAlignToVariables: (x: string[]) => void, path: string}> = ({alignToVariables, setAlignToVariables, path}) => {
+export const AlignToSelectionComponent: FunctionComponent<{alignToVariables: string[], setAlignToVariables: (x: string[]) => void, path: string}> = ({alignToVariables, setAlignToVariables, path}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
@@ -277,7 +277,7 @@ const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], s
     )
 }
 
-const GroupBySelectionComponent: FunctionComponent<{groupByVariable: string, setGroupByVariable: (x: string) => void, path: string}> = ({groupByVariable, setGroupByVariable, path}) => {
+export const GroupBySelectionComponent: FunctionComponent<{groupByVariable: string, setGroupByVariable: (x: string) => void, path: string}> = ({groupByVariable, setGroupByVariable, path}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
@@ -332,7 +332,7 @@ const GroupBySelectionComponent: FunctionComponent<{groupByVariable: string, set
     )
 }
 
-const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {start: string, end: string}, setWindowRangeStr: (x: {start: string, end: string}) => void}> = ({windowRangeStr: windowRange, setWindowRangeStr: setWindowRange}) => {
+export const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {start: string, end: string}, setWindowRangeStr: (x: {start: string, end: string}) => void}> = ({windowRangeStr: windowRange, setWindowRangeStr: setWindowRange}) => {
     return (
         <div>
             Window range (sec):<br />
