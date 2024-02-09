@@ -131,6 +131,28 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         }
     ), [allAssets, stagingStr])
 
+    const specialChangesAsset = useMemo(() => {
+        if (!allAssets) return undefined
+        const a = allAssets.find(a => a.path === 'CHANGES')
+        if (!a) return undefined
+        return a
+    }, [allAssets])
+
+    const [changesContent, setChangesContent] = useState<string | undefined>(undefined)
+    useEffect(() => {
+        if (!specialChangesAsset) return
+        const url = assetUrlForPath(specialChangesAsset.path)
+        ; (async () => {
+            const response = await fetch(url)
+            if (response.status === 200) {
+                const text = await response.text()
+                setChangesContent(text)
+            }
+        })()
+    }, [specialChangesAsset, assetUrlForPath])
+
+    console.log('--- allAssets', allAssets)
+
     if (!dandisetResponse) return <div>Loading dandiset...</div>
     if (!dandisetVersionInfo) return <div>Loading dandiset info...</div>
     
@@ -147,32 +169,41 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                 )}
             </div>
             <div style={{position: 'absolute', top: topBarHeight, width, height: height - topBarHeight, overflowY: 'auto'}}>
-                <div style={{fontSize: 20, fontWeight: 'bold', padding: 5}}>
-                    <a href={externalLink} target="_blank" rel="noreferrer" style={{color: applicationBarColorDarkened}}>{X.dandiset.identifier} ({X.version}): {X.name}</a>
-                </div>
-                <div style={{fontSize: 14, padding: 5}}>
+                <div style={{padding: 20}}>
+                    <div style={{fontSize: 20, fontWeight: 'bold', padding: 5}}>
+                        <a href={externalLink} target="_blank" rel="noreferrer" style={{color: applicationBarColorDarkened}}>{X.dandiset.identifier} ({X.version}): {X.name}</a>
+                    </div>
+                    <div style={{fontSize: 14, padding: 5}}>
+                        {
+                            X.metadata.contributor.map((c, i) => (
+                                <span key={i}>{c.name}; </span>
+                            ))
+                        }
+                    </div>
+                    <div style={{fontSize: 14, padding: 5}}>
+                        {X.metadata.description}
+                    </div>
                     {
-                        X.metadata.contributor.map((c, i) => (
-                            <span key={i}>{c.name}; </span>
-                        ))
+                        <div style={{fontSize: 14, padding: 5}}>
+                            <span style={{color: 'gray'}}>Loaded {allAssets.length} assets</span>
+                        </div>
+                    }
+                    {
+                        incomplete && (
+                            <div style={{fontSize: 14, padding: 5}}>
+                                <span style={{color: 'red'}}>Warning: only showing first {assetsResponses.length} pages of assets</span>
+                            </div>
+                        )
+                    }
+                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} />
+                    {
+                        changesContent && (
+                            <div>
+                                <pre>{changesContent}</pre>
+                            </div>
+                        )
                     }
                 </div>
-                <div style={{fontSize: 14, padding: 5}}>
-                    {X.metadata.description}
-                </div>
-                {
-                    <div style={{fontSize: 14, padding: 5}}>
-                        <span style={{color: 'gray'}}>Loaded {allAssets.length} assets</span>
-                    </div>
-                }
-                {
-                    incomplete && (
-                        <div style={{fontSize: 14, padding: 5}}>
-                            <span style={{color: 'red'}}>Warning: only showing first {assetsResponses.length} pages of assets</span>
-                        </div>
-                    )
-                }
-                <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} />
             </div>
         </div>
     )
@@ -288,7 +319,7 @@ const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selec
                         } */}
                     </div>
                 </div>
-            ))}  
+            ))}
         </div>
     )
 }
