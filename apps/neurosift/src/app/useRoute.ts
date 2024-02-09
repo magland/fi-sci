@@ -143,6 +143,9 @@ const useRoute = () => {
                     delete newQuery.staging
                 }
             }
+            if (newQuery.url) {
+                delete newQuery.url
+            }
         }
         // no longer supported
         // else if (r.page === 'avi') {
