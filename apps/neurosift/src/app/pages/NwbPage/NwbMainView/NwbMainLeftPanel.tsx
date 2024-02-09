@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Hyperlink } from "@fi-sci/misc"
+import { Hyperlink, SmallIconButton } from "@fi-sci/misc"
 import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
 import { serializeBigInt, valueToString } from "../BrowseNwbView/BrowseNwbView"
@@ -10,6 +10,7 @@ import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
 import useRoute from "../../../useRoute"
+import { OpenInBrowserOutlined } from "@mui/icons-material"
 
 type Props = {
     width: number
@@ -259,9 +260,7 @@ const DandiTable = () => {
                 </p>
             )}
             {dandisetId && dandisetVersion && assetPath && (
-                <p>
-                    <Hyperlink onClick={handleExportToDendro}>Export to Dendro</Hyperlink>
-                </p>
+                <SmallIconButton onClick={handleExportToDendro} title="Export to Dendro" icon={<OpenInBrowserOutlined />} />
             )}
             <AssociatedDendroProjectsComponent
                 assetUrl={assetUrl}
