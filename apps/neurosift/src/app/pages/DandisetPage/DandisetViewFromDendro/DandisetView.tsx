@@ -151,8 +151,6 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         })()
     }, [specialChangesAsset, assetUrlForPath])
 
-    console.log('--- allAssets', allAssets)
-
     if (!dandisetResponse) return <div>Loading dandiset...</div>
     if (!dandisetVersionInfo) return <div>Loading dandiset info...</div>
     

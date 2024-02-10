@@ -138,13 +138,13 @@ viewPlugins.push({
     },
     isTimeView: false
 })
-viewPlugins.push({
-    name: 'TimeAlignedSeries',
-    neurodataType: 'TimeIntervals',
-    defaultForNeurodataType: false,
-    component: TimeAlignedSeriesItemView,
-    isTimeView: false
-})
+// viewPlugins.push({
+//     name: 'TimeAlignedSeries',
+//     neurodataType: 'TimeIntervals',
+//     defaultForNeurodataType: false,
+//     component: TimeAlignedSeriesItemView,
+//     isTimeView: false
+// })
 
 // ElectricalSeries
 viewPlugins.push({

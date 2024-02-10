@@ -33,12 +33,12 @@ const RoiWidget: FunctionComponent<RoiWidgetProps> = ({width, height, path, roiC
                 arrayData ? (
                     alignToVariables.map((alignToVariable, i) => (
                         <div key={alignToVariable} style={{position: 'absolute', width: W, height: height - topBarHeight, top: topBarHeight, left: i * W}}>
-                            {/* <PSTHUnitAlignToWidget
+                            {/* <TimeAlignedSeriesPlot
                                 width={W}
                                 height={height - topBarHeight}
-                                path={path}
-                                spikeTrain={spikeTrain}
-                                unitId={unitId}
+                                timeIntervalsPath={path}
+                                arrayData={arrayData}
+                                roiIndex={roiIndex}
                                 alignToVariable={alignToVariable}
                                 groupByVariable={groupByVariable}
                                 windowRange={windowRange}
