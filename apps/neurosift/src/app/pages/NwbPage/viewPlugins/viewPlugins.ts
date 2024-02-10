@@ -138,13 +138,16 @@ viewPlugins.push({
     },
     isTimeView: false
 })
-// viewPlugins.push({
-//     name: 'TimeAlignedSeries',
-//     neurodataType: 'TimeIntervals',
-//     defaultForNeurodataType: false,
-//     component: TimeAlignedSeriesItemView,
-//     isTimeView: false
-// })
+viewPlugins.push({
+    name: 'TimeAlignedSeries',
+    neurodataType: 'TimeIntervals',
+    defaultForNeurodataType: false,
+    component: TimeAlignedSeriesItemView,
+    checkEnabled: async (nwbFile: RemoteH5File | MergedRemoteH5File, path: string) => {
+        return false
+    },
+    isTimeView: false
+})
 
 // ElectricalSeries
 viewPlugins.push({

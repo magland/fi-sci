@@ -2,7 +2,7 @@
 import { FunctionComponent, createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import IfHasBeenVisible from "../PSTH/IfHasBeenVisible"
-import {AlignToSelectionComponent, GroupBySelectionComponent, WindowRangeSelectionComponent} from "../PSTH/PSTHItemView"
+import {AlignToSelectionComponent, WindowRangeSelectionComponent} from "../PSTH/PSTHItemView"
 import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import RoiWidget from "./RoiWidget"
 
@@ -27,6 +27,7 @@ const TimeAlignedSeriesItemView: FunctionComponent<TimeAlignedSeriesItemViewProp
 
 export type TASPrefs = {
     height: 'small' | 'medium' | 'large'
+    maxNumRois: number
 }
 
 type TASPrefsAction = {
@@ -45,7 +46,8 @@ const tasPrefsReducer = (state: TASPrefs, action: TASPrefsAction): TASPrefs => {
 }
 
 export const defaultTasPrefs: TASPrefs = {
-    height: 'medium'
+    height: 'medium',
+    maxNumRois: 50
 }
 
 type TimeAlignedSeriesItemViewChildProps = {
@@ -61,12 +63,12 @@ export class RoiClient {
     array: number[][] | undefined
     canceler: {onCancel: (() => void)[]} = {onCancel: []}
     onLoadedCallbacks: (() => void)[] = []
-    constructor(private nwbFile: RemoteH5FileX, private roiIndices: number[], private roiPath: string, shape: number[]) {
+    constructor(private nwbFile: RemoteH5FileX, private roiIndices: number[], private roiPath: string, shape: number[], private roiTimestamps0: number[]) {
         ;(async () => {
             this.status = 'loading'
             const a = await nwbFile.getDatasetData(roiPath + '/data', {canceler: this.canceler/*, slice: [[0, 1000]]*/})
             if (!a) throw Error('No data in RoiClient')
-            this.array = create2DArray(a as any as number[], shape)
+            this.array = transpose2DArray(create2DArray(a as any as number[], shape))
             this.status = 'loaded'
             this.onLoadedCallbacks.forEach(cb => cb())
         })()
@@ -78,15 +80,21 @@ export class RoiClient {
         if (!ds) throw Error('Unable to get dataset: ' + roiPath)
         const numRois = ds.shape[1]
         const roiIndices = Array.from({length: numRois}, (_, i) => i)
-        const client = new RoiClient(nwbFile, roiIndices, roiPath, ds.shape)
+        const a = await nwbFile.getDatasetData(roiPath + '/timestamps', {})
+        if (!a) throw Error('No timestamps in RoiClient')
+        const timestamps = a as any as number[]
+        const client = new RoiClient(nwbFile, roiIndices, roiPath, ds.shape, timestamps)
         return client
     }
     destroy() {
         this.canceler.onCancel.forEach(cb => cb())
     }
-    get arrayData(): number[][] | undefined {
+    get roiData(): number[][] | undefined {
         if (this.status === 'loaded') return this.array
         return undefined
+    }
+    get roiTimestamps(): number[] {
+        return this.roiTimestamps0
     }
     getRoiIndices() {
         return this.roiIndices
@@ -131,7 +139,6 @@ const TimeAlignedSeriesItemViewChild: FunctionComponent<TimeAlignedSeriesItemVie
     }, [roiClient])
 
     const [alignToVariables, setAlignToVariables] = useState<string[]>(['start_time'])
-    const [groupByVariable, setGroupByVariable] = useState<string>('')
     const [windowRangeStr, setWindowRangeStr] = useState<{start: string, end: string}>({start: '-0.5', end: '5'})
     const windowRange = useMemo(() => {
         const t1 = parseFloat(windowRangeStr.start)
@@ -153,10 +160,6 @@ const TimeAlignedSeriesItemViewChild: FunctionComponent<TimeAlignedSeriesItemVie
         <AlignToSelectionComponent alignToVariables={alignToVariables} setAlignToVariables={setAlignToVariables} path={path} />
     )
 
-    const groupBySelectionComponent = (
-        <GroupBySelectionComponent groupByVariable={groupByVariable} setGroupByVariable={setGroupByVariable} path={path} />
-    )
-
     const windowRangeSelectionComponent = (
         <WindowRangeSelectionComponent windowRangeStr={windowRangeStr} setWindowRangeStr={setWindowRangeStr} />
     )
@@ -167,10 +170,9 @@ const TimeAlignedSeriesItemViewChild: FunctionComponent<TimeAlignedSeriesItemVie
 
     const roisTableWidth = 200
     const roisTableHeight = height * 2 / 5
-    const groupByHeight = 50
     const windowRangeHeight = 70
     const prefsHeight = 150
-    const alignToSelectionComponentHeight = height - roisTableHeight - groupByHeight - windowRangeHeight - prefsHeight
+    const alignToSelectionComponentHeight = height - roisTableHeight - windowRangeHeight - prefsHeight
 
     const roiWidgetHeight = Math.min(height, prefs.height === 'small' ? 150 : (prefs.height === 'medium' ? 300 : 450))
 
@@ -186,10 +188,7 @@ const TimeAlignedSeriesItemViewChild: FunctionComponent<TimeAlignedSeriesItemVie
                 <hr />
                 {windowRangeSelectionComponent}
             </div>
-            <div style={{position: 'absolute', width: roisTableWidth, height: groupByHeight, top: roisTableHeight + alignToSelectionComponentHeight + windowRangeHeight, overflowY: 'hidden'}}>
-                {groupBySelectionComponent}
-            </div>
-            <div style={{position: 'absolute', width: roisTableWidth, height: prefsHeight, top: roisTableHeight + alignToSelectionComponentHeight + windowRangeHeight + groupByHeight, overflowY: 'hidden'}}>
+            <div style={{position: 'absolute', width: roisTableWidth, height: prefsHeight, top: roisTableHeight + alignToSelectionComponentHeight + windowRangeHeight, overflowY: 'hidden'}}>
                 {prefsComponent}
                 <hr />
             </div>
@@ -204,11 +203,11 @@ const TimeAlignedSeriesItemViewChild: FunctionComponent<TimeAlignedSeriesItemVie
                                 <RoiWidget
                                     width={width - roisTableWidth}
                                     height={roiWidgetHeight}
-                                    path={path}
+                                    nwbFile={nwbFile}
+                                    timeIntervalsPath={path}
                                     roiClient={roiClient}
                                     roiIndex={roiIndex}
                                     alignToVariables={alignToVariables}
-                                    groupByVariable={groupByVariable}
                                     windowRange={windowRange}
                                     prefs={prefs}
                                 />
@@ -276,17 +275,30 @@ type PrefsComponentProps = {
 const PrefsComponent: FunctionComponent<PrefsComponentProps> = ({prefs, prefsDispatch}) => {
     return (
         <div>
-            Height:&nbsp;
-            <select
-                value={prefs.height}
-                onChange={(evt) => {
-                    prefsDispatch({type: 'SET_PREF', key: 'height', value: evt.target.value})
-                }}
-            >
-                <option value="small">Small</option>
-                <option value="medium">Medium</option>
-                <option value="large">Large</option>
-            </select>
+            <div>
+                Height:&nbsp;
+                <select
+                    value={prefs.height}
+                    onChange={(evt) => {
+                        prefsDispatch({type: 'SET_PREF', key: 'height', value: evt.target.value})
+                    }}
+                >
+                    <option value="small">Small</option>
+                    <option value="medium">Medium</option>
+                    <option value="large">Large</option>
+                </select>
+            </div>
+            <div>&nbsp;</div>
+            <IntEdit value={prefs.maxNumRois} setValue={(x) => {prefsDispatch({type: 'SET_PREF', key: 'maxNumRois', value: x})}} label="Max num" />
+        </div>
+    )
+}
+
+const IntEdit: FunctionComponent<{value: number, setValue: (x: number) => void, label: string}> = ({value, setValue, label}) => {
+    return (
+        <div>
+            {label}:&nbsp;
+            <input type="number" value={value} onChange={(evt) => {setValue(parseInt(evt.target.value))}} style={{maxWidth: 50}} />
         </div>
     )
 }
@@ -338,6 +350,14 @@ const create2DArray = (array: number[], shape: number[]) => {
     for (let j = 0; j < shape[0]; j++) {
         result.push(array.slice(i, i + shape[1]))
         i += shape[1]
+    }
+    return result
+}
+
+const transpose2DArray = (array: number[][]) => {
+    const result: number[][] = []
+    for (let i = 0; i < array[0].length; i++) {
+        result.push(array.map(row => row[i]))
     }
     return result
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { UnitSelectionContext, defaultUnitSelection, sortIds, unitSelectionReducer } from "../../../../package/context-unit-selection"
 import { useSelectedUnitIds } from "../../../../package/context-unit-selection/UnitSelectionContext"
@@ -83,7 +84,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
         }
         load()
         return () => {canceled = true}
-    }, [nwbFile, path, additionalPaths])
+    }, [nwbFile, additionalPaths])
 
     const unitIds = useMemo(() => {
         if (!spikeTrainsClient) return []

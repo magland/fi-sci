@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { getTicks } from "./getTicks"
 import { PSTHPrefs } from "./PSTHItemView"

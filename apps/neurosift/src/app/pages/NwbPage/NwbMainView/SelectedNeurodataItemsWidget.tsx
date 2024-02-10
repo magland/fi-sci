@@ -33,11 +33,10 @@ const SelectedNeurodataItemsWidget: FunctionComponent<Props> = () => {
                 selectedItemViews={selectedItemViews}
                 openTab={openTab}
            />
-           {/* Hide For now */}
-            {/* <SpecialTimeAlignedSeriesButton
+            <SpecialTimeAlignedSeriesButton
                 selectedItemViews={selectedItemViews}
                 openTab={openTab}
-            /> */}
+            />
         </div>
     )
 }

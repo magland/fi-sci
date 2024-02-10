@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import { DirectSpikeTrainsClient } from "../Units/DirectRasterPlotUnitsItemView"
@@ -110,7 +111,7 @@ const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({w
         }
         load()
         return () => {canceled = true}
-    }, [nwbFile, path, alignToVariable, spikeTrain])
+    }, [nwbFile, path, alignToVariable])
 
     const [groupByValues, setGroupByValues] = useState<any[] | undefined>(undefined)
     useEffect(() => {
