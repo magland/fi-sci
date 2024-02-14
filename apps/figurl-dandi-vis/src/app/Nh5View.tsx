@@ -3,6 +3,7 @@ import useNh5FileClient from "./useNh5FileClient"
 import SpikeTrainsView from "./SpikeTrainsView/SpikeTrainsView"
 import TuningCurves2DNh5View from "./TuningCurves2DNh5View/TuningCurves2DNh5View"
 import SpikeSortingSummaryView from "./SpikeSortingSummaryView/SpikeSortingSummaryView"
+import EcephysSummaryNh5View from "./EcephysSummaryNh5View/EcephysSummaryNh5View"
 
 
 type Nh5ViewProps = {
@@ -36,6 +37,15 @@ const Nh5View: FunctionComponent<Nh5ViewProps> = ({ width, height, nh5FileUri })
     else if (type0 === 'spike_sorting_summary') {
         return (
             <SpikeSortingSummaryView
+                nh5FileClient={client}
+                width={width}
+                height={height}
+            />
+        )
+    }
+    else if (type0 === 'ecephys_summary') {
+        return (
+            <EcephysSummaryNh5View
                 nh5FileClient={client}
                 width={width}
                 height={height}
