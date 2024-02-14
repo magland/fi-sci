@@ -80,7 +80,7 @@ const DendroLinksViewForProject: FunctionComponent<{project:AssociatedDendroProj
   const { files, jobs } = useDendroProject(project.projectId);
   const inputFile = useMemo(() => (files?.find((a) => a.content === `url:${nwbFileUrl}`)), [files, nwbFileUrl]);
   const derivedOutputFiles = useMemo(() => (
-    getDerivedOutputFiles(files, jobs, inputFile, {}).filter(a => a.fileName.endsWith('.nh5'))
+    getDerivedOutputFiles(files, jobs, inputFile, {}).filter(a => (a.fileName.endsWith('.nh5')))
   ), [files, jobs, inputFile])
   const hasSomething = derivedOutputFiles.length > 0;
   if (!hasSomething) return <span />;
