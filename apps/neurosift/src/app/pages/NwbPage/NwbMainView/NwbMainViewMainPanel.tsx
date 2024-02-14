@@ -1,8 +1,9 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material"
-import { FunctionComponent, useState } from "react"
+import { FunctionComponent, useEffect, useRef, useState } from "react"
 import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
 import DefaultNwbFileView from "./DefaultNwbFileView"
+import DendroView from "../DendroView/DendroView"
 
 type Props = {
     width: number
@@ -10,12 +11,19 @@ type Props = {
     nwbFile: RemoteH5File | MergedRemoteH5File
 }
 
-type ViewMode = 'default' | 'raw'
+type ViewMode = 'default' | 'raw' | 'dendro'
 
 const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile }) => {
     const topBarHeight = 50
 
     const [viewMode, setViewMode] = useState<ViewMode>('default')
+
+    const [hasBeenVisibleViewModes, setHasBeenVisibleViewModes] = useState<ViewMode[]>([])
+    useEffect(() => {
+        if (!hasBeenVisibleViewModes.includes(viewMode)) {
+            setHasBeenVisibleViewModes([...hasBeenVisibleViewModes, viewMode])
+        }
+    }, [viewMode, hasBeenVisibleViewModes])
 
     return (
         <div style={{ position: 'absolute', width, height }}>
@@ -24,17 +32,29 @@ const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile
             </div>
             {/* Important to use undefined rather than visible so that the hidden value is respected for parent components */}
             <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'default' ? undefined : 'hidden' }}>
-                <DefaultNwbFileView
-                    width={width}
-                    height={height - topBarHeight}
-                    nwbFile={nwbFile}
-                />
+                {hasBeenVisibleViewModes.includes('default') && (
+                    <DefaultNwbFileView
+                        width={width}
+                        height={height - topBarHeight}
+                        nwbFile={nwbFile}
+                    />
+                )}
             </div>
             <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'raw' ? undefined : 'hidden' }}>
-                <BrowseNwbView
-                    width={width}
-                    height={height - topBarHeight}
-                />
+                {hasBeenVisibleViewModes.includes('raw') && (
+                    <BrowseNwbView
+                        width={width}
+                        height={height - topBarHeight}
+                    />
+                )}
+            </div>
+            <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'dendro' ? undefined : 'hidden' }}>
+                {hasBeenVisibleViewModes.includes('dendro') && (
+                    <DendroView
+                        width={width}
+                        height={height - topBarHeight}
+                    />
+                )}
             </div>
         </div>
     )
@@ -63,6 +83,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
         >
             <ToggleButton value="default">Default</ToggleButton>
             <ToggleButton value="raw">Raw</ToggleButton>
+            <ToggleButton value="dendro">Dendro</ToggleButton>
         </ToggleButtonGroup>
     )
 }

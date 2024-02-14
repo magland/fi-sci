@@ -85,7 +85,7 @@ const DendroLinksViewForProject: FunctionComponent<{project:AssociatedDendroProj
   const hasSomething = derivedOutputFiles.length > 0;
   if (!hasSomething) return <span />;
   return (
-    <div style={{ marginTop: 10, marginLeft: 10 }}>
+    <div>
       Dendro {project.name} ({formatUserId(project.ownerId)}):&nbsp;
       {derivedOutputFiles.map((outputFile, i) => (
         <span key={i}>
