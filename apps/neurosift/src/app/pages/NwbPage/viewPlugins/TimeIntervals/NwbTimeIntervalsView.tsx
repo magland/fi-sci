@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import { useDatasetData, useGroup } from "../../NwbMainView/NwbMainView"

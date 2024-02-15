@@ -1,4 +1,4 @@
-import { Key } from "@mui/icons-material";
+import { Key, QuestionMark } from "@mui/icons-material";
 import { AppBar, Toolbar } from "@mui/material";
 import { FunctionComponent, useCallback, useMemo, useState } from "react";
 import useRoute from "./useRoute";
@@ -48,6 +48,14 @@ const ApplicationBar: FunctionComponent<Props> = () => {
                     <div onClick={onHome} style={{cursor: 'pointer', color: titleColor}}>&nbsp;&nbsp;&nbsp;Neurosift</div>
                     {/* <div style={{color: bannerColor, position: 'relative', top: -2}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{star} This viewer is in alpha and is under <Hyperlink color={bannerColor} href="https://github.com/flatironinstitute/neurosift" target="_blank">active development</Hyperlink> {star}</div> */}
                     <span style={{marginLeft: 'auto'}} />
+                    <span>
+                        <SmallIconButton
+                            icon={<QuestionMark />}
+                            onClick={() => setRoute({page: 'about'})}
+                            title={`About Neurosift`}
+                        />
+                    </span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
                     <span style={{color: 'yellow'}}>
                         <SmallIconButton
                             icon={<Key />}

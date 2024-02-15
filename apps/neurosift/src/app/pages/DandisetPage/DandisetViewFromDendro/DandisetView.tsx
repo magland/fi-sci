@@ -3,6 +3,8 @@ import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useStat
 import { AssetsResponse, AssetsResponseItem, DandisetSearchResultItem, DandisetVersionInfo } from "./types";
 import getAuthorizationHeaderForUrl from "../../NwbPage/getAuthorizationHeaderForUrl";
 import formatByteCount from "./formatByteCount";
+import { Hyperlink } from "@fi-sci/misc";
+import useRoute from "../../../useRoute";
 
 const applicationBarColorDarkened = '#546' // from dendro
 
@@ -16,6 +18,7 @@ type DandisetViewProps = {
 }
 
 const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandisetVersion, width, height, useStaging, onOpenAssets}) => {
+    const {setRoute} = useRoute()
     const [dandisetResponse, setDandisetResponse] = useState<DandisetSearchResultItem | null>(null)
     const [dandisetVersionInfo, setDandisetVersionInfo] = useState<DandisetVersionInfo | null>(null)
     const [assetsResponses, setAssetsResponses] = useState<AssetsResponse[]>([])
@@ -50,6 +53,16 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
     const {most_recent_published_version, draft_version} = dandisetResponse || {}
     const V = most_recent_published_version || draft_version
     const dsVersion = dandisetVersion || (V ? V.version : 'draft')
+
+    useEffect(() => {
+        if ((!dandisetVersion) && V?.version) {
+            setRoute({
+                page: 'dandiset',
+                dandisetId,
+                dandisetVersion: V.version
+            })
+        }
+    }, [dandisetVersion, V, dandisetId, setRoute])
 
     useEffect(() => {
         let canceled = false
@@ -151,6 +164,10 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         })()
     }, [specialChangesAsset, assetUrlForPath])
 
+    const handleClickAsset = useCallback((asset: AssetsResponseItem) => {
+        if (onOpenAssets) onOpenAssets([assetUrlForPath(asset.path)])
+    }, [onOpenAssets, assetUrlForPath])
+
     if (!dandisetResponse) return <div>Loading dandiset...</div>
     if (!dandisetVersionInfo) return <div>Loading dandiset info...</div>
     
@@ -193,7 +210,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                             </div>
                         )
                     }
-                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} />
+                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} onClickAsset={handleClickAsset} />
                     {
                         changesContent && (
                             <div>
@@ -275,9 +292,10 @@ type AssetsBrowserProps = {
     selectedAssets: SelectedAssetsState
     selectedAssetsDispatch: (action: SelectedAssetsAction) => void
     canSelect?: boolean
+    onClickAsset?: (asset: AssetsResponseItem) => void
 }
 
-const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect}) => {
+const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset}) => {
     const folders: string[] = useMemo(() => {
         const folders = assetItems.filter(a => (a.path.includes('/'))).map(assetItem => assetItem.path.split('/')[0])
         const uniqueFolders = [...new Set(folders)].sort()
@@ -306,6 +324,7 @@ const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selec
                                 selectedAssets={selectedAssets}
                                 selectedAssetsDispatch={selectedAssetsDispatch}
                                 canSelect={canSelect}
+                                onClickAsset={onClickAsset}
                             />
                         )}
                         {/* {
@@ -327,9 +346,10 @@ type AssetItemsTableProps = {
     selectedAssets: SelectedAssetsState
     selectedAssetsDispatch: (action: SelectedAssetsAction) => void
     canSelect?: boolean
+    onClickAsset?: (asset: AssetsResponseItem) => void
 }
 
-const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect}) => {
+const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset}) => {
     const selectAllCheckedState = useMemo(() => {
         const numSelected = assetItems.filter(assetItem => selectedAssets.assetPaths.includes(assetItem.path)).length
         if (numSelected === 0) return false
@@ -367,6 +387,7 @@ const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, s
                             selected={selectedAssets.assetPaths.includes(assetItem.path)}
                             onToggleSelection={() => selectedAssetsDispatch({type: 'toggle', assetPath: assetItem.path})}
                             canSelect={canSelect}
+                            onClick={onClickAsset ? () => onClickAsset(assetItem) : undefined}
                         />
                     ))
                 }
@@ -380,10 +401,13 @@ type AssetItemRowProps = {
     selected: boolean
     onToggleSelection: () => void
     canSelect?: boolean
+    onClick?: () => void
 }
 
-const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected, onToggleSelection, canSelect}) => {
+const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected, onToggleSelection, canSelect, onClick}) => {
     const {modified, path, size} = assetItem
+
+    const label = path.split('/').slice(1).join('/')
 
     return (
         <tr>
@@ -395,7 +419,11 @@ const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected
                 )
             }
             <td>
-                {path.split('/').slice(1).join('/')}
+                {
+                    onClick ? (
+                        <Hyperlink onClick={onClick}>{label}</Hyperlink>
+                    ) : label
+                }
             </td>
             <td>
                 {formatTime2(modified)}

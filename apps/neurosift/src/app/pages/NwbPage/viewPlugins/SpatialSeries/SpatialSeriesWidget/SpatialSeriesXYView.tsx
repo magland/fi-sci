@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Canceler } from "@fi-sci/remote-h5-file";
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
 export type Route = {
@@ -19,6 +19,9 @@ export type Route = {
     page: 'dandiset'
     dandisetId: string
     dandisetVersion?: string
+    staging?: boolean
+} | {
+    page: 'dandi'
     staging?: boolean
 } | {
     page: 'github-auth'
@@ -73,6 +76,12 @@ const useRoute = () => {
                 page: 'dandiset',
                 dandisetId: query.dandisetId as string,
                 dandisetVersion: (query.dandisetVersion || '') as string,
+                staging: query.staging === '1'
+            }
+        }
+        else if (p === '/dandi') {
+            return {
+                page: 'dandi',
                 staging: query.staging === '1'
             }
         }
@@ -147,6 +156,26 @@ const useRoute = () => {
                 delete newQuery.url
             }
         }
+        else if (r.page === 'dandi') {
+            newQuery.p = '/dandi'
+            if (r.staging) {
+                newQuery.staging = '1'
+            }
+            else {
+                if (newQuery.staging) {
+                    delete newQuery.staging
+                }
+            }
+            if (newQuery.url) {
+                delete newQuery.url
+            }
+            if (newQuery.dandisetId) {
+                delete newQuery.dandisetId
+            }
+            if (newQuery.dandisetVersion) {
+                delete newQuery.dandisetVersion
+            }
+        }
         // no longer supported
         // else if (r.page === 'avi') {
         //     newQuery.p = '/avi'
@@ -155,6 +184,12 @@ const useRoute = () => {
         const newSearch = queryToQueryString(newQuery)
         navigate(location.pathname + newSearch)
     }, [navigate, location.pathname, query])
+
+    useEffect(() => {
+        if (p === '/') {
+            setRoute({page: 'dandi', staging: !!query.staging})
+        }
+    }, [p, setRoute, query.staging])
 
     return {
         route,

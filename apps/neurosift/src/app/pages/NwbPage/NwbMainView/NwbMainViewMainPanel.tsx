@@ -1,9 +1,9 @@
-import { ToggleButton, ToggleButtonGroup } from "@mui/material"
-import { FunctionComponent, useEffect, useRef, useState } from "react"
-import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
-import DefaultNwbFileView from "./DefaultNwbFileView"
+import { ToggleButton, ToggleButtonGroup } from "@mui/material"
+import { FunctionComponent, useEffect, useState } from "react"
+import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import DendroView from "../DendroView/DendroView"
+import DefaultNwbFileView from "./DefaultNwbFileView"
 
 type Props = {
     width: number

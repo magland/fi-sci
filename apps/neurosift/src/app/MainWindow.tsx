@@ -1,12 +1,12 @@
+import { useWindowDimensions } from "@fi-sci/misc";
 import { FunctionComponent } from "react";
 import ApplicationBar, { applicationBarHeight } from "./ApplicationBar";
 import StatusBar, { statusBarHeight } from "./StatusBar";
-import AboutPage from "./pages/AboutPage/AboutPage";
+import DandiPage from "./pages/DandiPage/DandiPage";
+import DandisetPage from "./pages/DandisetPage/DandisetPage";
 import HomePage from "./pages/HomePage/HomePage";
 import NwbPage from "./pages/NwbPage/NwbPage";
-import DandisetPage from "./pages/DandisetPage/DandisetPage"
 import useRoute from "./useRoute";
-import { useWindowDimensions } from "@fi-sci/misc";
 
 type Props = {
     // none
@@ -26,7 +26,7 @@ const MainWindow: FunctionComponent<Props> = () => {
                     route.page === 'home' ? (
                         <HomePage width={width} height={H} />
                     ) : route.page === 'about' ? (
-                        <AboutPage width={width} height={H} />
+                        <HomePage width={width} height={H} />
                     ) : route.page === 'test' ? (
                         <NwbPage
                             width={width}
@@ -45,6 +45,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                     //     />
                     ) : route.page === 'dandiset' ? (
                         <DandisetPage
+                            width={width}
+                            height={H}
+                        />
+                    ) : route.page === 'dandi' ? (
+                        <DandiPage
                             width={width}
                             height={H}
                         />
