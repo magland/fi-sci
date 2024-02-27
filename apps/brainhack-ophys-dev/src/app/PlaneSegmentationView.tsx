@@ -43,6 +43,19 @@ const distinctColors = [
     [_, v2, v1]
 ]
 
+const testData = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [0, 5, 5, 0, 0, 0, 0, 0, 0, 0 ],
+    [0, 5, 5, 0, 0, 0, 0, 0, 0, 0 ],
+    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [0, 0, 0, 0, 2, 2, 0, 0, 0, 0 ],
+    [0, 0, 0, 0, 2, 2, 0, 0, 0, 0 ],
+    [0, 0, 0, 0, 0, 0, 0, 3, 3, 0 ],
+    [0, 0, 0, 0, 0, 0, 0, 3, 3, 0 ],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
+]
+
 
 const testImageMasks: UnitMask[] = [
     {
@@ -85,6 +98,97 @@ const testImageMasks: UnitMask[] = [
         ]
     }
 ]
+
+
+const PlaneView: FunctionComponent<Props> = ({data, width, height, onSelect, selectedRois}) => {
+
+    const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
+
+    const statusBarHeight = 15
+    const N1 = testData.length
+    const N2 = testData[0].length
+    const scale = Math.min(width / N1, (height - statusBarHeight) / N2)
+    const offsetX = (width - N1 * scale) / 2
+    const offsetY = ((height - statusBarHeight) - N2 * scale) / 2
+    const blockW = width / N1
+    const blockH = height / N2
+
+    const handleMouseUp = useCallback((e: React.MouseEvent) => {
+
+        var canvas = document.getElementById('plane_canvas');
+        let boundingRect = canvas.getBoundingClientRect()
+        const x = e.clientX  - boundingRect.x
+        const y = e.clientY  - boundingRect.y
+
+        var w = canvas.width;
+        var h = canvas.height;
+        
+
+        const intX = Math.floor((x / w) * testData.length)
+        const intY = Math.floor((y / h) * testData[0].length)        
+        const a = testData[intX][intY]
+
+        if (a != 0) {
+            return onSelect(a)
+        }
+
+    }, [])
+
+
+    const [loadingMessage, setLoadingMessage] = useState('')
+
+    useEffect(() => {
+        setLoadingMessage('Loading...')
+        let canceled = false
+        if (!canvasElement) return
+        const ctx = canvasElement.getContext('2d')
+        if (!ctx) return
+        ctx.fillStyle = 'black'
+        ctx.fillRect(0, 0, canvasElement.width, canvasElement.height)
+        
+        const load = async () => {
+            const imageData = ctx.createImageData(N1, N2)
+            for (let i = 0; i < N1; i++) {
+                for (let j = 0; j < N2; j++) {
+                    const a = testData[i][j]
+                    if (selectedRois.includes(a)) {
+                        var color = [255, 255, 255]
+                    }
+                    else if (a == 0) {
+                        var color = [0, 0, 0]
+                    }
+                    else {
+                        var color = distinctColors[a % distinctColors.length]
+                    }
+                    
+                    ctx.fillStyle = "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")";
+                    ctx.fillRect(i * blockW, j * blockH, blockW, blockH)
+
+                }
+            }
+        }
+        load()
+        return () => {canceled = true}
+    }, [canvasElement, N1, N2, scale, selectedRois])
+
+    return (
+        <div style={{position: 'absolute', width, height, fontSize: 12}}>
+            <div style={{position: 'absolute', width: N1 * scale, height: N2 * scale, left: offsetX, top: offsetY}}>
+                <canvas
+                    id='plane_canvas'
+                    ref={elmt => elmt && setCanvasElement(elmt)}
+                    width={N1 * scale}
+                    height={N2 * scale}
+                    onMouseUp={handleMouseUp}
+                />
+            </div>
+            <div style={{position: 'absolute', width, height: statusBarHeight, top: height - statusBarHeight}}>
+                {loadingMessage}
+            </div>
+        </div>
+    )
+
+}
 
 
 const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, onSelect, selectedRois}) => {
@@ -231,4 +335,4 @@ const computeMaxVal = (data: number[][]) => {
 }
 
 //export default PlaneSegmentationView
-export {PlaneSegmentationView};
+export {PlaneSegmentationView, PlaneView};
