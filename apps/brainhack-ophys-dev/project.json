@@ -1,0 +1,72 @@
+{
+  "name": "brainhack-ophys-dev",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/brainhack-ophys-dev/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/brainhack-ophys-dev"
+      },
+      "configurations": {
+        "development": {
+          "mode": "development"
+        },
+        "production": {
+          "mode": "production"
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/vite:dev-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "brainhack-ophys-dev:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "brainhack-ophys-dev:build:development",
+          "hmr": true
+        },
+        "production": {
+          "buildTarget": "brainhack-ophys-dev:build:production",
+          "hmr": false
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nx/vite:preview-server",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "brainhack-ophys-dev:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "brainhack-ophys-dev:build:development"
+        },
+        "production": {
+          "buildTarget": "brainhack-ophys-dev:build:production"
+        }
+      }
+    },
+    "test": {
+      "executor": "@nx/vite:test",
+      "outputs": ["{options.reportsDirectory}"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../../coverage/apps/brainhack-ophys-dev"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/brainhack-ophys-dev/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+}
