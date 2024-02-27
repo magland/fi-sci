@@ -5,6 +5,7 @@ export {
   getMergedRemoteH5File,
   globalRemoteH5FileStats,
 } from './lib/RemoteH5File';
+export { default as RemoteH5FileZarr, getRemoteH5FileZarr } from './lib/RemoteH5FileZarr';
 export type {
   RemoteH5FileX,
   RemoteH5Dataset,

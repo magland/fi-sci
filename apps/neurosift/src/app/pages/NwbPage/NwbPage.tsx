@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MergedRemoteH5File, RemoteH5File, getMergedRemoteH5File, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, globalRemoteH5FileStats, getRemoteH5FileZarr } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
 import { useCustomStatusBarStrings } from "../../StatusBar"
 import useRoute from "../../useRoute"
@@ -54,7 +54,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     const {route} = useRoute()
     if (route.page !== 'nwb') throw Error('Unexpected: route.page is not nwb')
     const urlList = route.url
-    const [nwbFile, setNwbFile] = useState<RemoteH5File | MergedRemoteH5File | undefined>(undefined)
+    const [nwbFile, setNwbFile] = useState<RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr | undefined>(undefined)
     const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
 
     // status bar text
@@ -75,13 +75,27 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             const urlListResolved = await getResolvedUrls(urlList)
             const metaUrls = await getMetaUrls(urlListResolved)
             if (canceled) return
-            const f = await getMergedRemoteH5File(urlListResolved, metaUrls)
+            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr
+            if (urlListResolved.length === 1) {
+                if (route.isZarr) {
+                    f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
+                }
+                else {
+                    f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
+                }
+            }
+            else {
+                if (route.isZarr) {
+                    throw Error('Merging zarr files not yet implemented yet')
+                }
+                f = await getMergedRemoteH5File(urlListResolved, metaUrls)
+            }
             if (canceled) return
             setNwbFile(f)
         }
         load()
         return () => {canceled = true}
-    }, [urlList])
+    }, [urlList, route.isZarr])
 
     const [dandiAssetContextValue, setDandiAssetContextValue] = useState<DandiAssetContextType>(defaultDandiAssetContext)
     useEffect(() => {

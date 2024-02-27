@@ -7,6 +7,7 @@ import DandisetPage from "./pages/DandisetPage/DandisetPage";
 import HomePage from "./pages/HomePage/HomePage";
 import NwbPage from "./pages/NwbPage/NwbPage";
 import useRoute from "./useRoute";
+import TestPage from "./pages/TestPage/TestPage";
 
 type Props = {
     // none
@@ -28,7 +29,7 @@ const MainWindow: FunctionComponent<Props> = () => {
                     ) : route.page === 'about' ? (
                         <HomePage width={width} height={H} />
                     ) : route.page === 'test' ? (
-                        <NwbPage
+                        <TestPage
                             width={width}
                             height={H}
                         />
