@@ -1,8 +1,9 @@
 import { FunctionComponent } from "react";
 import './App.css'
 import PlaneSegmentationView from "./PlaneSegmentationView";
-import ExamplePlotlyComponent from "./ExamplePlotlyComponent";
-
+import {DeconvolvedTraceComponent, ROIsData} from "./DeconvolvedTraceView";
+import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
+const testData: ROIsData = rawTraces as ROIsData;
 type Props = {
   // name: string;
 }
@@ -20,16 +21,9 @@ const App: FunctionComponent<Props> = () => {
           selectedSegmentationName={'test'}
         />
       </div>
-      <div style={{position: 'relative', width: 1000, height: 400}}>
-        <ExamplePlotlyComponent
-          series={[
-            {
-              label: 'test',
-              data: [{x: 0, y: 0}, {x: 1, y: 1}],
-              color: 'red'
-            }
-          ]}
-          yAxisLabel={'test'}
+      <div style={{position: 'relative', width: 1000, height: 1000}}>
+        <DeconvolvedTraceComponent
+          rois={testData}
         />
       </div>
     </div>
