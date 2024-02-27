@@ -1,15 +1,10 @@
 import { FunctionComponent, useCallback, useState } from "react";
 import './App.css'
-<<<<<<< HEAD
 import {PlaneSegmentationView, PlaneView} from "./PlaneSegmentationView";
-import ExamplePlotlyComponent from "./ExamplePlotlyComponent";
-
-=======
-import PlaneSegmentationView from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent, ROIsData} from "./DeconvolvedTraceView";
 import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
 const testData: ROIsData = rawTraces as ROIsData;
->>>>>>> miles/main
+
 type Props = {
   // name: string;
 }
@@ -45,25 +40,12 @@ const App: FunctionComponent<Props> = () => {
           selectedRois={selectedRois}
         />
       </div>
-<<<<<<< HEAD
 
-      {/* <div style={{position: 'relative', width: 1000, height: 400}}>
-        <ExamplePlotlyComponent
-          series={[
-            {
-              label: 'test',
-              data: [{x: 0, y: 0}, {x: 1, y: 1}],
-              color: 'red'
-            }
-          ]}
-          yAxisLabel={'test'}
-=======
       <div style={{position: 'relative', width: 1000, height: 1000}}>
         <DeconvolvedTraceComponent
           rois={testData}
->>>>>>> miles/main
         />
-      </div> */}
+      </div> 
     </div>
   )
 }
