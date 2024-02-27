@@ -1,12 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useEffect, useMemo, useState } from "react"
+import { FunctionComponent, useEffect, useMemo, useState, useCallback } from "react"
 import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+
 
 type Props = {
     width: number
     height: number
     data: any
     selectedSegmentationName: string
+    selectedRois: number[]
+    onSelect: (idx: number) => void
 }
 
 // important to store localized masks, otherwise we run out of RAM quick
@@ -16,6 +19,10 @@ type UnitMask = {
     w0: number
     h0: number
     data: number[][]
+}
+
+type UnitIdxs = {
+    idx: number[]
 }
 
 const v1 = 255
@@ -36,6 +43,7 @@ const distinctColors = [
     [_, v2, v1]
 ]
 
+
 const testImageMasks: UnitMask[] = [
     {
         x0: 0,
@@ -44,9 +52,9 @@ const testImageMasks: UnitMask[] = [
         h0: 5,
         data: [
             [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1],
             [1, 1, 1, 1, 1]
         ]
     },
@@ -58,7 +66,7 @@ const testImageMasks: UnitMask[] = [
         data: [
             [0, 0, 0, 0, 0],
             [0, 1, 1, 1, 0],
-            [0, 1, 0, 1, 0],
+            [0, 1, 1, 1, 0],
             [0, 1, 1, 1, 0],
             [0, 0, 0, 0, 0]
         ]
@@ -71,15 +79,18 @@ const testImageMasks: UnitMask[] = [
         data: [
             [1, 1, 1, 1, 1],
             [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
+            [1, 1, 1, 1, 1],
             [1, 0, 0, 0, 1],
             [1, 1, 1, 1, 1]
         ]
     }
 ]
 
-const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) => {
+
+const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, onSelect, selectedRois}) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
+
+    const [selectedCoordinate, setSelectedCoordinate] = useState<any | any>(undefined)
 
     const statusBarHeight = 15
 
@@ -91,6 +102,19 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) 
     const offsetY = ((height - statusBarHeight) - N2 * scale) / 2
 
     const [loadingMessage, setLoadingMessage] = useState('')
+
+    const handleMouseUp = useCallback((e: React.MouseEvent) => {
+        const x = e.clientX //- boundingRect.x
+        const y = e.clientY //- boundingRect.y
+        let idx = 0;
+        
+        // const selectedCoord = [event.x, event.]
+        // console.log(selectedCoord)
+        // setSelectedCoordinate(selectedCoord)
+        // here we need to find the ROI and return data
+        // Here we need logic to find the ROI from the mouse click
+        return onSelect(idx)
+    }, [])
 
     const getImageMask = useMemo(() => (
         (index: number) => {
@@ -114,7 +138,15 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) 
                     setLoadingMessage(`Loaded ${j} / ${N0}...`)
                     timer = Date.now()
                 }
-                const color = distinctColors[j % distinctColors.length]
+                console.log(selectedRois)
+                if (selectedRois.includes(j)) {
+                    console.log('here')
+                    var color = [255, 255, 255]
+                }
+                else {
+                    var color = distinctColors[j % distinctColors.length]
+                }
+
                 const aa = getImageMask(j)
                 if (canceled) return
                 const {x0, y0, w0, h0, data} = aa
@@ -142,7 +174,7 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) 
         }
         load()
         return () => {canceled = true}
-    }, [canvasElement, N0, N1, N2, scale, getImageMask])
+    }, [canvasElement, N0, N1, N2, scale, getImageMask, selectedRois])
 
     return (
         <div style={{position: 'absolute', width, height, fontSize: 12}}>
@@ -151,6 +183,7 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) 
                     ref={elmt => elmt && setCanvasElement(elmt)}
                     width={N1 * scale}
                     height={N2 * scale}
+                    onMouseUp={handleMouseUp}
                 />
             </div>
             <div style={{position: 'absolute', width, height: statusBarHeight, top: height - statusBarHeight}}>
@@ -197,4 +230,5 @@ const computeMaxVal = (data: number[][]) => {
     return maxval
 }
 
-export default PlaneSegmentationView
+//export default PlaneSegmentationView
+export {PlaneSegmentationView};

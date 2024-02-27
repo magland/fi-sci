@@ -1,6 +1,6 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useState } from "react";
 import './App.css'
-import PlaneSegmentationView from "./PlaneSegmentationView";
+import {PlaneSegmentationView} from "./PlaneSegmentationView";
 import ExamplePlotlyComponent from "./ExamplePlotlyComponent";
 
 type Props = {
@@ -8,6 +8,35 @@ type Props = {
 }
 
 const App: FunctionComponent<Props> = () => {
+
+  const [selectedROIs, setSelectedRois] = useState<any | any>(undefined)
+
+  function onRoiSelected(idx: number) {
+    console.log(idx)
+    console.log('woppeee')
+    let loc = selectedROIs.find((roi: number) => roi === idx)
+    if (selectedROIs.includes(idx)) {
+      
+    }
+
+  }
+
+  // const onRoiSelected: FunctionComponent(idx: number) => {
+  //   console.log(idx)
+  //   console.log('wopppee')
+  // }
+    // let loc = selectedROIs.find((roi: number) => roi === idx)
+    // if loc is null:
+
+
+    // setSelectedRois([...selectedROIs, idx]);
+
+
+  // const onRoiDeselected(idx) => {
+  //   // Find the relevant idx and and pop it from the list
+  //   setSelectedRois([]);
+  // }
+  
   const a: number = 4
   return (
     <div>
@@ -18,9 +47,12 @@ const App: FunctionComponent<Props> = () => {
           height={500}
           data={{}}
           selectedSegmentationName={'test'}
+          onSelect={(idx: number) => onRoiSelected(idx)} 
+          selectedRois={[0, 1]}
         />
       </div>
-      <div style={{position: 'relative', width: 1000, height: 400}}>
+
+      {/* <div style={{position: 'relative', width: 1000, height: 400}}>
         <ExamplePlotlyComponent
           series={[
             {
@@ -31,7 +63,7 @@ const App: FunctionComponent<Props> = () => {
           ]}
           yAxisLabel={'test'}
         />
-      </div>
+      </div> */}
     </div>
   )
 }
