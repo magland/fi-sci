@@ -59,6 +59,13 @@ class ROIsData {
 
 }
 
+function fetchURL(url, prevState) {
+    function fail(r) {
+        error
+    }
+    const response = fetch(requestConfig.get('url'))
+}
+
 function useFetchData(requestConfig: URLSearchParams) {
     const [state, setState] = useState<Data>({
         loading: true,
@@ -66,20 +73,22 @@ function useFetchData(requestConfig: URLSearchParams) {
         error: null,
     });
     useEffect(() => {
-      (async () => {
-        console.log('loc', requestConfig)
+      (() => {
         const method = requestConfig.get('method') || 'GET';
-        console.log('method', method)
+
         if (!requestConfig.get('url') || method === 'TEST') {
-            console.log('TEST MODE')
             const data = ROIsData.fromJSON(rawTraces)
             setState(prevState => ({...prevState, data: data, loading: false} as Data))
-        } else {
-            console.log('GET MODE')
-            const response = await fetch(requestConfig.get('url'))
-            const data = await response.json()
-            setState(prevState => ({...prevState, data: ROIsData.fromJSON(data), loading: false}))
+            return
         }
+        fetch(requestConfig.get('url'))
+        .then((res) => res.json())
+        .then((data) => {
+            const obj = ROIsData.fromJSON(data);
+            setState(prevState => ({...prevState, data: obj, loading: false}))
+        })
+        .catch(err => {
+            setState(prevState => ({...prevState, error: err, loading: false}))});
       })()
     // return state
     }, [requestConfig])
