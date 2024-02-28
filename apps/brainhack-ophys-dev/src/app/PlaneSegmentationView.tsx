@@ -11,6 +11,11 @@ type Props = {
     onSelect: (idx: number) => void
 }
 
+type Click = {
+    idx: number
+    shift: boolean
+}
+
 const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, onSelect, selectedRois}) => {
 
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
@@ -23,6 +28,8 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
     
     const handleMouseUp = useCallback((e: React.MouseEvent) => {
 
+        const shift = e.shiftKey; 
+        
         const canvas = document.getElementById('plane_canvas')
         // Transform mouse click position to index in the data
         const boundingRect = canvas.getBoundingClientRect()
@@ -33,7 +40,7 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
         const d = data.roi_mask[intX][intY]
 
         if (d !== 0) {
-            return onSelect(d)
+            return onSelect({idx: d, shift: shift} as Click)
         }
 
     }, [])
@@ -93,4 +100,4 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
 
 }
 
-export {PlaneSegmentationView};
+export {PlaneSegmentationView, Click};

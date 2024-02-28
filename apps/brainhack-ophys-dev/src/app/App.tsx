@@ -1,6 +1,6 @@
 import { FunctionComponent, useCallback, useState, useMemo } from "react";
 import './App.css'
-import {PlaneSegmentationView} from "./PlaneSegmentationView";
+import {PlaneSegmentationView, Click} from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
 import { useFetchData } from "./GetData";
 
@@ -11,15 +11,20 @@ const App: FunctionComponent = () => {
 
   const [selectedRois, setSelectedRois] = useState<number[]>([])
 
-  const onRoiSelected = useCallback((id: number) => {
+  const onRoiSelected = useCallback((click: Click) => {
 
     setSelectedRois(v => {
-        if (v.includes(id)) {
-            return v.filter(i => i !== id)
-        }
-        else {
-            return [...v, id]
-        }
+      const id = click.idx
+      const shift = click.shift
+      if (v.includes(id)) {
+          return v.filter(i => i !== id)
+      } 
+      else if (shift) {
+        return [...v, id]
+      }
+      else {
+          return [id]
+      }
     })
   
 }, [])
@@ -39,7 +44,7 @@ console.info('ophysData', data)
           width={500}
           height={500}
           data={data}
-          onSelect={(idx: number) => onRoiSelected(idx)} 
+          onSelect={(click: Click) => onRoiSelected(click)} 
           selectedRois={selectedRois}
         />
       </div>
