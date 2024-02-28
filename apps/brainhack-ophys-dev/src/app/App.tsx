@@ -4,11 +4,8 @@ import {PlaneSegmentationView} from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
 import { testData } from "./GetData";
 
-type Props = {
-  // name: string;
-}
 
-const App: FunctionComponent<Props> = () => {
+const App: FunctionComponent = () => {
 
   const [selectedRois, setSelectedRois] = useState<number[]>([])
 
@@ -33,7 +30,6 @@ const App: FunctionComponent<Props> = () => {
           width={500}
           height={500}
           data={testData}
-          selectedSegmentationName={'test'}
           onSelect={(idx: number) => onRoiSelected(idx)} 
           selectedRois={selectedRois}
         />

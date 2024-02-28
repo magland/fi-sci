@@ -1,46 +1,50 @@
-import { FunctionComponent, useMemo } from "react";
+import { FunctionComponent, useMemo, useEffect } from "react";
 import { ROIsData } from './GetData'
 import Plot from 'react-plotly.js';
 
 type Props = {
     rois: ROIsData
-    height: number
+    height: number // height of the trace display
     selectedRois: number[]
 }
 
 
-
 const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, selectedRois}) => {
 
-    // constructor(props) {
-    //     super(props);
-    //     this.state = {data: [], layout: {}, frames: [], config: {}};
-    //   }
-    
     if(rois.validate() !== true) { 
         console.log('variable series length data')
         return
     }
-    const heightPadding = 1
-    const data: object[] = []
-    // TODO this should use entries and ROI IDs may be incomplete list
-    useMemo(() => {
+
+    const getData = (selectedRois: number[]) => {
+
         const heightPadding = 1
         const data: object[] = []
         // TODO this should use entries and ROI IDs may be incomplete list
         let i = 0;
         for (const [id, arr] of rois.trace) {
-            const offset = heightPadding * i
-            data.push({
-                y: arr.map((x: number) => x + offset),
-                x: rois.time,
-                mode: 'lines',
-                name: 'ROI #' + id,
-            })
-            i++
+            // If no rois are selected draw all lines
+            // If rois are selected only draw selected lines       
+            if (selectedRois.length == 0 || selectedRois.includes(id + 1)) {
+                const color = rois.id2colour(id)
+                data.push({
+                    y: arr.map((x: number) => x + heightPadding * i),
+                    x: rois.time,
+                    mode: 'lines',
+                    name: 'ROI #' + id,
+                    line: {
+                        color: "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")",
+                      }
+                })
+                i++
+            }
         }
-    }, [selectedRois]);
-    
+        return data
+    };
+
+    // Get the data, memo it so it is only refected if selectedRois change
+    const data= useMemo(() => getData(selectedRois), [selectedRois]);
+
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
     const defRange = 10  // seconds
