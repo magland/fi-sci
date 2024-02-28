@@ -2,13 +2,10 @@ import { FunctionComponent, useCallback, useState, useMemo } from "react";
 import './App.css'
 import {PlaneSegmentationView} from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
-import { useFetchData, ROIsData } from "./GetData";
+import { useFetchData } from "./GetData";
 
-type Props = {
-  // name: string;
-}
 
-const App: FunctionComponent<Props> = () => {
+const App: FunctionComponent = () => {
   const req = useMemo(() => ({url: 'https://neurosift.org/tmp/vis_traces.json', method: 'TEST'}),[]);
   const {data, loading, error} = useFetchData(req);
 
@@ -42,7 +39,6 @@ console.info('ophysData', data)
           width={500}
           height={500}
           data={data}
-          selectedSegmentationName={'test'}
           onSelect={(idx: number) => onRoiSelected(idx)} 
           selectedRois={selectedRois}
         />
