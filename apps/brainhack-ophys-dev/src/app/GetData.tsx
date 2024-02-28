@@ -78,7 +78,7 @@ function useFetchData(requestConfig: URLSearchParams) {
             console.log('GET MODE')
             const response = await fetch(requestConfig.get('url'))
             const data = await response.json()
-            setState(prevState => ({...prevState, data: data, loading: false}))
+            setState(prevState => ({...prevState, data: ROIsData.fromJSON(data), loading: false}))
         }
       })()
     // return state

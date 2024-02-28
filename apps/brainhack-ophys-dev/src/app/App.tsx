@@ -46,7 +46,7 @@ console.info('ophysData', data)
       <div id='traces'>
         <DeconvolvedTraceComponent
           rois={data}
-          height={500}
+          height={580}
           selectedRois={selectedRois}
         />
       </div> 

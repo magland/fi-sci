@@ -15,10 +15,10 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
         console.log('variable series length data')
         return
     }
+    const heightPadding = 1
 
     const getData = (selectedRois: number[]) => {
 
-        const heightPadding = 1
         const data: object[] = []
         let i = 0;
         for (const [id, arr] of rois.trace) {
@@ -49,6 +49,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
     const defRange = 10  // seconds
     const totalLength = rois.time[rois.time.length - 1] - rois.time[0]
     const range = [rois.time[0], rois.time[0] + Math.min(defRange, totalLength)];
+    console.log('xrange = ', range)
     return (
         <Plot
             data={data}
@@ -61,7 +62,8 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
                 yaxis: {
                     title: yAxisLabel,
                     visible: false,
-                    showticklabels: false
+                    showticklabels: false,
+                    range: [-heightPadding, (selectedRois.length || rois.trace.size) * heightPadding]
                 },
                 margin: {
                     l: 50,
@@ -69,7 +71,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
                     t: 10,
                     b: 50
                 },
-                showlegend: true
+                showlegend: false
             }}
             useResizeHandler={true}
             style={{width: '100%'}}
