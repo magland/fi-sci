@@ -6,8 +6,8 @@ import { useFetchData } from "./GetData";
 
 
 const App: FunctionComponent = () => {
-  const req = useMemo(() => ({url: 'https://neurosift.org/tmp/vis_traces.json', method: 'TEST'}),[]);
-  const {data, loading, error} = useFetchData(req);
+  const urlParams = useMemo(() => (new URLSearchParams(window.location.search)),[]);
+  const {data, loading, error} = useFetchData(urlParams);
 
   const [selectedRois, setSelectedRois] = useState<number[]>([])
 
@@ -25,9 +25,9 @@ const App: FunctionComponent = () => {
 }, [])
 
 if (!data && loading === true) {
-  return <div>Loading {req.url}</div>
+  return <div>Loading {urlParams.get('url')}</div>
 } else if (error) {
-  return <div>Failed to load {req.url}</div>
+  return <div>Failed to load {urlParams.get('url')}</div>
 }
 console.info('ophysData', data)
 
