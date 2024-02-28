@@ -25,6 +25,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height}) => 
         data.push({
             y: arr.map((x: number) => x + offset),
             x: rois.time,
+            // line: {color: rois.id2colour(id)},
             mode: 'lines',
             name: 'ROI #' + id
         })

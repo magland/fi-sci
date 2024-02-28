@@ -32,7 +32,7 @@ const App: FunctionComponent<Props> = () => {
         <PlaneSegmentationView
           width={500}
           height={500}
-          data={testData.roi_mask}
+          data={testData}
           selectedSegmentationName={'test'}
           onSelect={(idx: number) => onRoiSelected(idx)} 
           selectedRois={selectedRois}
