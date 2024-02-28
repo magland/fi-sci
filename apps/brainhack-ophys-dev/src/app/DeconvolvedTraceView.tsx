@@ -4,18 +4,19 @@ import Plot from 'react-plotly.js';
 
 type Props = {
     rois: ROIsData
+    height: number
+    selectedRois: number[]
 }
 
 
 
-const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois}) => {
+const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height}) => {
     
     if(rois.validate() !== true) { 
         console.log('variable series length data')
         return
     }
     const heightPadding = 1
-    const height = 1000 //rois.trace.size * heightPadding
     const data: object[] = []
     // TODO this should use entries and ROI IDs may be incomplete list
     let i = 0;

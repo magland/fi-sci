@@ -41,6 +41,8 @@ const App: FunctionComponent<Props> = () => {
       <div id='traces'>
         <DeconvolvedTraceComponent
           rois={testData}
+          height={500}
+          selectedRois={selectedRois}
         />
       </div> 
     </div>

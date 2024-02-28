@@ -6,23 +6,10 @@ import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from
 type Props = {
     width: number
     height: number
-    data: any
+    data: number[][]
     selectedSegmentationName: string
     selectedRois: number[]
     onSelect: (idx: number) => void
-}
-
-// important to store localized masks, otherwise we run out of RAM quick
-type UnitMask = {
-    x0: number
-    y0: number
-    w0: number
-    h0: number
-    data: number[][]
-}
-
-type UnitIdxs = {
-    idx: number[]
 }
 
 const v1 = 255
@@ -41,62 +28,6 @@ const distinctColors = [
     [v2, v1, _],
     [v2, _, v1],
     [_, v2, v1]
-]
-
-const testData = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [0, 5, 5, 0, 0, 0, 0, 0, 0, 0 ],
-    [0, 5, 5, 0, 0, 0, 0, 0, 0, 0 ],
-    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [0, 0, 0, 0, 2, 2, 0, 0, 0, 0 ],
-    [0, 0, 0, 0, 2, 2, 0, 0, 0, 0 ],
-    [0, 0, 0, 0, 0, 0, 0, 3, 3, 0 ],
-    [0, 0, 0, 0, 0, 0, 0, 3, 3, 0 ],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-]
-
-
-const testImageMasks: UnitMask[] = [
-    {
-        x0: 0,
-        y0: 0,
-        w0: 5,
-        h0: 5,
-        data: [
-            [1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1]
-        ]
-    },
-    {
-        x0: 10,
-        y0: 10,
-        w0: 5,
-        h0: 5,
-        data: [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0]
-        ]
-    },
-    {
-        x0: 20,
-        y0: 20,
-        w0: 5,
-        h0: 5,
-        data: [
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1]
-        ]
-    }
 ]
 
 
