@@ -59,16 +59,22 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois}) => {
     // }))
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
+    const defRange = 10  // seconds
+    const totalLength = rois.time[rois.time.length - 1] - rois.time[0]
+    const range = [rois.time[0], rois.time[0] + Math.min(defRange, totalLength)];
     return (
         <Plot
             data={data}
             layout={{
                 height,
                 xaxis: {
-                    title: xAxisLabel
+                    title: xAxisLabel,
+                    range: range,
                 },
                 yaxis: {
-                    title: yAxisLabel
+                    title: yAxisLabel,
+                    visible: false,
+                    showticklabels: false
                 },
                 margin: {
                     l: 50,
