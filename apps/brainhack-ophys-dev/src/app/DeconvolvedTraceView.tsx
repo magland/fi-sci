@@ -27,7 +27,6 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
     useMemo(() => {
         const heightPadding = 1
         const data: object[] = []
-        // TODO this should use entries and ROI IDs may be incomplete list
         let i = 0;
         for (const [id, arr] of rois.trace) {
             const offset = heightPadding * i

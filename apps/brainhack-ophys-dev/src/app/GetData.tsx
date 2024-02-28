@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
+import { urlToHttpOptions } from "url";
 
 // colours
 const v1 = 255
@@ -18,6 +20,17 @@ const distinctColors = [
     [v2, _, v1],
     [_, v2, v1]
 ]
+
+type Data = {
+    data: null | ROIsData
+    loading: boolean
+    error: null | Error
+}
+
+type RequestConfig = {
+    url: string | null
+    method?: string
+}
 
 class ROIsData {
     readonly time: number[]
@@ -51,8 +64,33 @@ class ROIsData {
 
 }
 
-// const testData: ROIsData = rawTraces as ROIsData;
-const testData = ROIsData.fromJSON(rawTraces);
+function useFetchData(requestConfig: RequestConfig) {
+    const [state, setState] = useState<Data>({
+        loading: true,
+        data: null,
+        error: null,
+    });
+    useEffect(() => {
+      (async () => {
+        if (!requestConfig?.method) {
+            requestConfig.method = 'TEST';
+          }
+      
+        console.log('loc', requestConfig)
+        if (requestConfig.method === 'TEST') {
+            console.log('TEST MODE')
+            const data = ROIsData.fromJSON(rawTraces)
+            setState(prevState => ({...prevState, data: data, loading: false} as Data))
+        } else {
+            console.log('GET MODE')
+            const response = await fetch(requestConfig.url)
+            const data = await response.json()
+            setState(prevState => ({...prevState, data: data, loading: false}))
+        }
+      })()
+    // return state
+    }, [requestConfig])
+  return state
+  };
 
-
-export {testData, ROIsData}
+export {useFetchData, ROIsData}

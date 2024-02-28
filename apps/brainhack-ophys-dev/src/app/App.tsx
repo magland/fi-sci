@@ -1,14 +1,16 @@
-import { FunctionComponent, useCallback, useState } from "react";
+import { FunctionComponent, useCallback, useState, useMemo } from "react";
 import './App.css'
 import {PlaneSegmentationView} from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
-import { testData } from "./GetData";
+import { useFetchData, ROIsData } from "./GetData";
 
 type Props = {
   // name: string;
 }
 
 const App: FunctionComponent<Props> = () => {
+  const req = useMemo(() => ({url: 'https://neurosift.org/tmp/vis_traces.json', method: 'TEST'}),[]);
+  const {data, loading, error} = useFetchData(req);
 
   const [selectedRois, setSelectedRois] = useState<number[]>([])
 
@@ -22,8 +24,15 @@ const App: FunctionComponent<Props> = () => {
             return [...v, id]
         }
     })
+  
 }, [])
 
+if (!data && loading === true) {
+  return <div>Loading {req.url}</div>
+} else if (error) {
+  return <div>Failed to load {req.url}</div>
+}
+console.info('ophysData', data)
 
   return (
     <div id='container'>
@@ -32,7 +41,7 @@ const App: FunctionComponent<Props> = () => {
         <PlaneSegmentationView
           width={500}
           height={500}
-          data={testData}
+          data={data}
           selectedSegmentationName={'test'}
           onSelect={(idx: number) => onRoiSelected(idx)} 
           selectedRois={selectedRois}
@@ -40,7 +49,7 @@ const App: FunctionComponent<Props> = () => {
       </div>
       <div id='traces'>
         <DeconvolvedTraceComponent
-          rois={testData}
+          rois={data}
           height={500}
           selectedRois={selectedRois}
         />
