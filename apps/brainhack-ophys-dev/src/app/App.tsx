@@ -1,11 +1,8 @@
 import { FunctionComponent, useCallback, useState } from "react";
 import './App.css'
 import {PlaneSegmentationView} from "./PlaneSegmentationView";
-import {DeconvolvedTraceComponent, ROIsData} from "./DeconvolvedTraceView";
-import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
-// const testData: ROIsData = rawTraces as ROIsData;
-const testData = ROIsData.fromJSON(rawTraces);
-console.log(testData);
+import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
+import { testData } from "./GetData";
 
 type Props = {
   // name: string;
