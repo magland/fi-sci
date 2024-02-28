@@ -46,7 +46,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
 
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
-    const defRange = 10  // seconds
+    const defRange = 600  // seconds
     const totalLength = rois.time[rois.time.length - 1] - rois.time[0]
     const range = [rois.time[0], rois.time[0] + Math.min(defRange, totalLength)];
     console.log('xrange = ', range)
