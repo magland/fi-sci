@@ -1,4 +1,4 @@
-import { FunctionComponent } from "react";
+import { FunctionComponent, useMemo } from "react";
 import { ROIsData } from './GetData'
 import Plot from 'react-plotly.js';
 
@@ -10,7 +10,12 @@ type Props = {
 
 
 
-const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height}) => {
+const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, selectedRois}) => {
+
+    // constructor(props) {
+    //     super(props);
+    //     this.state = {data: [], layout: {}, frames: [], config: {}};
+    //   }
     
     if(rois.validate() !== true) { 
         console.log('variable series length data')
@@ -19,18 +24,23 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height}) => 
     const heightPadding = 1
     const data: object[] = []
     // TODO this should use entries and ROI IDs may be incomplete list
-    let i = 0;
-    for (const [id, arr] of rois.trace) {
-        const offset = heightPadding * i
-        data.push({
-            y: arr.map((x: number) => x + offset),
-            x: rois.time,
-            // line: {color: rois.id2colour(id)},
-            mode: 'lines',
-            name: 'ROI #' + id
-        })
-        i++
-    }
+    useMemo(() => {
+        const heightPadding = 1
+        const data: object[] = []
+        // TODO this should use entries and ROI IDs may be incomplete list
+        let i = 0;
+        for (const [id, arr] of rois.trace) {
+            const offset = heightPadding * i
+            data.push({
+                y: arr.map((x: number) => x + offset),
+                x: rois.time,
+                mode: 'lines',
+                name: 'ROI #' + id,
+            })
+            i++
+        }
+    }, [selectedRois]);
+    
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
     const defRange = 10  // seconds
