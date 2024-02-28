@@ -68,7 +68,9 @@ function useFetchData(requestConfig: URLSearchParams) {
     useEffect(() => {
       (async () => {
         console.log('loc', requestConfig)
-        if (requestConfig.get('method') || 'TEST' === 'TEST') {
+        const method = requestConfig.get('method') || 'GET';
+        console.log('method', method)
+        if (!requestConfig.get('url') || method === 'TEST') {
             console.log('TEST MODE')
             const data = ROIsData.fromJSON(rawTraces)
             setState(prevState => ({...prevState, data: data, loading: false} as Data))
