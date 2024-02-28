@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
-import { urlToHttpOptions } from "url";
+import rawTraces from './vis_traces.json';  // resolveJsonModule: true in tsconfig todo remove
 
 // colours
 const v1 = 255
@@ -69,7 +68,7 @@ function useFetchData(requestConfig: URLSearchParams) {
     useEffect(() => {
       (async () => {
         console.log('loc', requestConfig)
-        if (requestConfig.get('method') === 'TEST') {
+        if (requestConfig.get('method') || 'TEST' === 'TEST') {
             console.log('TEST MODE')
             const data = ROIsData.fromJSON(rawTraces)
             setState(prevState => ({...prevState, data: data, loading: false} as Data))
