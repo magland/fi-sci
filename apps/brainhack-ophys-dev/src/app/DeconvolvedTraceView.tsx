@@ -1,11 +1,27 @@
 import { FunctionComponent } from "react";
 import Plot from 'react-plotly.js';
 
-type ROIsData = {
-    time: number[]
-    trace: Map<number, number[]>
-    roi_mask: Map<number, number[][]>
-    sampleRate?: number
+class ROIsData {
+    readonly time: number[]
+    readonly trace: Map<number, number[]>
+    readonly roi_mask: number[][]
+    readonly sampleRate?: number
+
+    validate() {
+        const lengths = new Set()
+        Object.values(this.trace).forEach(arr => lengths.add(arr.length))
+        return (
+          this.time.length === lengths.values().next().value
+        );
+    }
+
+    static fromJSON(obj: object) {
+        obj.trace = new Map(Object.entries(obj))
+        obj = Object.assign(new ROIsData(), obj) as ROIsData;
+        obj.validate() // todo assert
+        return obj
+    }
+
 }
 
 type Props = {
@@ -13,21 +29,10 @@ type Props = {
 }
 
 
-function isROITraces(rois: ROIsData): rois is ROIsData {
-    const lengths = new Set()
-    Object.values(rois.trace).forEach(arr => lengths.add(arr.length))
-    return (
-      typeof rois === "object" &&
-      rois !== null &&
-      lengths.size === 1 &&
-      rois.time.length === lengths.values().next().value
-    );
-  }
-
 
 const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois}) => {
     
-    if(isROITraces(rois) !== true) { 
+    if(rois.validate() !== true) { 
         console.log('variable series length data')
         return
     }

@@ -3,8 +3,9 @@ import './App.css'
 import {PlaneSegmentationView} from "./PlaneSegmentationView";
 import {DeconvolvedTraceComponent, ROIsData} from "./DeconvolvedTraceView";
 import rawTraces from './vis_traces.json' ;  // resolveJsonModule: true in tsconfig todo remove
-import test from "node:test";
-const testData: ROIsData = rawTraces as ROIsData;
+// const testData: ROIsData = rawTraces as ROIsData;
+const testData = ROIsData.fromJSON(rawTraces);
+console.log(testData);
 
 type Props = {
   // name: string;
