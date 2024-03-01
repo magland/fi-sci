@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import RemoteH5FileZarr from './RemoteH5FileZarr';
 import { Canceler, postRemoteH5WorkerRequest } from './helpers';
 
-export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File;
+export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr;
 
 export type RemoteH5Group = {
   path: string;

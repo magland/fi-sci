@@ -15,6 +15,7 @@ export type Route = {
     url: string[]
     dandisetId?: string
     dandisetVersion?: string
+    isZarr?: boolean
 } | {
     page: 'dandiset'
     dandisetId: string
@@ -68,7 +69,8 @@ const useRoute = () => {
                 page: 'nwb',
                 url: typeof query.url === 'string' ? [query.url] : query.url,
                 dandisetId: (query.dandisetId || '') as string,
-                dandisetVersion: (query.dandisetVersion || '') as string
+                dandisetVersion: (query.dandisetVersion || '') as string,
+                isZarr: query.zarr === '1'
             }
         }
         else if (p === '/dandiset') {
@@ -132,6 +134,14 @@ const useRoute = () => {
                     delete newQuery.dandisetVersion
                 }
             }
+            if (r.isZarr) {
+                newQuery.zarr = '1'
+            }
+            else {
+                if (newQuery.zarr) {
+                    delete newQuery.zarr
+                }
+            }
         }
         else if (r.page === 'dandiset') {
             newQuery.p = '/dandiset'
@@ -155,6 +165,9 @@ const useRoute = () => {
             if (newQuery.url) {
                 delete newQuery.url
             }
+            if (newQuery.zarr) {
+                delete newQuery.zarr
+            }
         }
         else if (r.page === 'dandi') {
             newQuery.p = '/dandi'
@@ -174,6 +187,9 @@ const useRoute = () => {
             }
             if (newQuery.dandisetVersion) {
                 delete newQuery.dandisetVersion
+            }
+            if (newQuery.zarr) {
+                delete newQuery.zarr
             }
         }
         // no longer supported

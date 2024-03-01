@@ -35,7 +35,6 @@ if (!data && loading === true) {
   return <div>Failed to load {urlParams.get('url')}</div>
 }
 console.info('ophysData', data)
-
   return (
     <div id='container'>
       <h1 id='header'>Brainhack Ophys Dev</h1>
