@@ -15,16 +15,16 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
         console.log('variable series length data')
         return
     }
-    const heightPadding = 1
-
+    const padding = 1;
     const getData = (selectedRois: number[]) => {
 
         const data: object[] = []
         let i = 0;
+        let heightPadding = 1
         for (const [id, arr] of rois.trace) {
             // If no rois are selected draw all lines
             // If rois are selected only draw selected lines       
-            if (selectedRois.length == 0 || selectedRois.includes(id + 1)) {
+            if (selectedRois.length === 0 || selectedRois.includes(id + 1)) {
                 const color = rois.id2colour(id)
                 data.push({
                     y: arr.map((x: number) => x + heightPadding * i),
@@ -42,7 +42,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
     };
 
     // Get the data, memo it so it is only refected if selectedRois change
-    const data= useMemo(() => getData(selectedRois), [selectedRois]);
+    const data = useMemo(() => getData(selectedRois), [selectedRois]);
 
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
@@ -63,7 +63,7 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
                     title: yAxisLabel,
                     visible: false,
                     showticklabels: false,
-                    range: [-heightPadding, (selectedRois.length || rois.trace.size) * heightPadding]
+                    range: [-padding, Math.max.apply(Math, data[data.length - 1].y) + padding]
                 },
                 margin: {
                     l: 50,
