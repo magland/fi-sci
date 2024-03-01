@@ -1,200 +1,103 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useEffect, useMemo, useState } from "react"
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useEffect, useState, useCallback } from "react"
+import { ROIsData } from "./GetData"
+
 
 type Props = {
-    width: number
-    height: number
-    data: any
-    selectedSegmentationName: string
+    width: number // width of the plane view
+    height: number // height of the plane view
+    data: ROIsData 
+    selectedRois: number[]
+    onSelect: (idx: number) => void
 }
 
-// important to store localized masks, otherwise we run out of RAM quick
-type UnitMask = {
-    x0: number
-    y0: number
-    w0: number
-    h0: number
-    data: number[][]
+type Click = {
+    idx: number
+    shift: boolean
 }
 
-const v1 = 255
-const v2 = 160
-const _ = 128
-const distinctColors = [
-    [v1, _, _],
-    [_, v1, _],
-    [_, _, v1],
-    [v1, v1, _],
-    [v1, _, v1],
-    [_, v1, v1],
-    [v1, v2, _],
-    [v1, _, v2],
-    [_, v1, v2],
-    [v2, v1, _],
-    [v2, _, v1],
-    [_, v2, v1]
-]
+const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, onSelect, selectedRois}) => {
 
-const testImageMasks: UnitMask[] = [
-    {
-        x0: 0,
-        y0: 0,
-        w0: 5,
-        h0: 5,
-        data: [
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1]
-        ]
-    },
-    {
-        x0: 10,
-        y0: 10,
-        w0: 5,
-        h0: 5,
-        data: [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 0],
-            [0, 1, 0, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 0, 0, 0, 0]
-        ]
-    },
-    {
-        x0: 20,
-        y0: 20,
-        w0: 5,
-        h0: 5,
-        data: [
-            [1, 1, 1, 1, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
-            [1, 0, 0, 0, 1],
-            [1, 1, 1, 1, 1]
-        ]
-    }
-]
-
-const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height}) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
+    const N1 = data.roi_mask.length
+    const N2 = data.roi_mask[0].length
 
-    const statusBarHeight = 15
+    const blockW = width / N1
+    const blockH = height / N2
 
-    const N0 = 3 // number of units
-    const N1 = 200 // width ?
-    const N2 = 200 // height ?
-    const scale = Math.min(width / N1, (height - statusBarHeight) / N2)
-    const offsetX = (width - N1 * scale) / 2
-    const offsetY = ((height - statusBarHeight) - N2 * scale) / 2
+    
+    const handleMouseUp = useCallback((e: React.MouseEvent) => {
 
-    const [loadingMessage, setLoadingMessage] = useState('')
+        const shift = e.shiftKey; 
+        
+        const canvas = document.getElementById('plane_canvas')
+        // Transform mouse click position to index in the data
+        const boundingRect = canvas.getBoundingClientRect()
+        const x = e.clientX  - boundingRect.x
+        const y = e.clientY  - boundingRect.y
+        const intX = Math.floor((x / canvas.width) * data.roi_mask.length)
+        const intY = Math.floor((y / canvas.height) * data.roi_mask[0].length)        
+        const d = data.roi_mask[intX][intY]
 
-    const getImageMask = useMemo(() => (
-        (index: number) => {
-            return testImageMasks[index]
+        if (d !== 0) {
+            return onSelect({idx: d, shift: shift} as Click)
         }
-    ), [])
+
+    }, [])
 
     useEffect(() => {
-        setLoadingMessage('Loading...')
         let canceled = false
         if (!canvasElement) return
         const ctx = canvasElement.getContext('2d')
         if (!ctx) return
+
         ctx.fillStyle = 'black'
         ctx.fillRect(0, 0, canvasElement.width, canvasElement.height)
+        
         const load = async () => {
-            let timer = Date.now()
-            for (let j = 0; j < N0; j++) {
-                const elapsed = (Date.now() - timer) / 1000
-                if (elapsed > 1) {
-                    setLoadingMessage(`Loaded ${j} / ${N0}...`)
-                    timer = Date.now()
-                }
-                const color = distinctColors[j % distinctColors.length]
-                const aa = getImageMask(j)
-                if (canceled) return
-                const {x0, y0, w0, h0, data} = aa
-                const maxval = computeMaxVal(data)
-                const imageData = ctx.createImageData(w0, h0)
-                for (let i = 0; i < w0; i++) {
-                    for (let j = 0; j < h0; j++) {
-                        const v = data[i][j] / (maxval || 1)
-                        const index = (j * w0 + i) * 4
-                        imageData.data[index + 0] = color[0] * v
-                        imageData.data[index + 1] = color[1] * v
-                        imageData.data[index + 2] = color[2] * v
-                        imageData.data[index + 3] = v ? (v * 255) : 0
+            // Iterate through the data and assign colors to the correct pixels
+            const imageData = ctx.createImageData(N1, N2)
+            for (let i = 0; i < N1; i++) {
+                for (let j = 0; j < N2; j++) {
+                    const d = data.roi_mask[i][j]
+                    let color
+                    // If a pixel is selected display it as white
+                    if (selectedRois.includes(d)) {
+                        color = [255, 255, 255]
                     }
+                    // If no roi in the pixel display as black
+                    else if (d === 0) {
+                        color = [0, 0, 0]
+                    }
+                    // Otherwise display the assigned cell colour
+                    else {
+                        color = data.id2colour(d - 1)
+                    }
+                    
+                    ctx.fillStyle = "rgb(" + color[0] + ", " + color[1] + ", " + color[2] + ")";
+                    ctx.fillRect(i * blockW, j * blockH, blockW, blockH)
+
                 }
-                const offscreenCanvas = document.createElement('canvas')
-                offscreenCanvas.width = w0
-                offscreenCanvas.height = h0
-                const c = offscreenCanvas.getContext('2d')
-                if (!c) return
-                c.putImageData(imageData, 0, 0)
-                ctx.drawImage(offscreenCanvas, x0 * scale, y0 * scale, w0 * scale, h0 * scale)
             }
-            setLoadingMessage(`Loaded ${N0} units`)
         }
         load()
-        return () => {canceled = true}
-    }, [canvasElement, N0, N1, N2, scale, getImageMask])
+        // return () => {canceled = true}
+    }, [canvasElement, N1, N2, selectedRois])
 
     return (
-        <div style={{position: 'absolute', width, height, fontSize: 12}}>
-            <div style={{position: 'absolute', width: N1 * scale, height: N2 * scale, left: offsetX, top: offsetY}}>
+        <div>
+            <div>
                 <canvas
+                    id='plane_canvas'
                     ref={elmt => elmt && setCanvasElement(elmt)}
-                    width={N1 * scale}
-                    height={N2 * scale}
+                    width={width}
+                    height={height}
+                    onMouseUp={handleMouseUp}
                 />
-            </div>
-            <div style={{position: 'absolute', width, height: statusBarHeight, top: height - statusBarHeight}}>
-                {loadingMessage}
             </div>
         </div>
     )
+
 }
 
-const getBoundingRect = (data: number[][]) => {
-    let x0 = undefined
-    let y0 = undefined
-    let x1 = undefined
-    let y1 = undefined
-    for (let i = 0; i < data.length; i++) {
-        const row = data[i]
-        for (let j = 0; j < row.length; j++) {
-            const v = row[j]
-            if (v) {
-                if (x0 === undefined) x0 = i
-                if (y0 === undefined) y0 = j
-                if (x1 === undefined) x1 = i
-                if (y1 === undefined) y1 = j
-                x0 = Math.min(x0, i)
-                y0 = Math.min(y0, j)
-                x1 = Math.max(x1, i)
-                y1 = Math.max(y1, j)
-            }
-        }
-    }
-    if ((x0 === undefined) || (y0 === undefined) || (x1 === undefined) || (y1 === undefined)) return {x0: 0, y0: 0, w0: 0, h0: 0}
-    return {x0, y0, w0: x1 - x0 + 1, h0: y1 - y0 + 1}
-}
-
-const computeMaxVal = (data: number[][]) => {
-    let maxval = 0
-    for (let i = 0; i < data.length; i++) {
-        const row = data[i]
-        for (let j = 0; j < row.length; j++) {
-            const v = row[j]
-            maxval = Math.max(maxval, v)
-        }
-    }
-    return maxval
-}
-
-export default PlaneSegmentationView
+export {PlaneSegmentationView, Click};

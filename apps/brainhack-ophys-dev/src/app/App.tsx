@@ -1,54 +1,59 @@
-import { FunctionComponent, useEffect, useState } from "react";
+import { FunctionComponent, useCallback, useState, useMemo } from "react";
 import './App.css'
-import PlaneSegmentationView from "./PlaneSegmentationView";
-import ExamplePlotlyComponent from "./ExamplePlotlyComponent";
+import {PlaneSegmentationView, Click} from "./PlaneSegmentationView";
+import {DeconvolvedTraceComponent} from "./DeconvolvedTraceView";
+import { useFetchData } from "./GetData";
 
-type Props = {
-  // name: string;
+
+const App: FunctionComponent = () => {
+  const urlParams = useMemo(() => (new URLSearchParams(window.location.search)),[]);
+  const {data, loading, error} = useFetchData(urlParams);
+
+  const [selectedRois, setSelectedRois] = useState<number[]>([])
+
+  const onRoiSelected = useCallback((click: Click) => {
+
+    setSelectedRois(v => {
+      const id = click.idx
+      const shift = click.shift
+      if (v.includes(id)) {
+          return v.filter(i => i !== id)
+      } 
+      else if (shift) {
+        return [...v, id]
+      }
+      else {
+          return [id]
+      }
+    })
+  
+}, [])
+
+if (!data && loading === true) {
+  return <div>Loading {urlParams.get('url')}</div>
+} else if (error) {
+  return <div>Failed to load {urlParams.get('url')}</div>
 }
-
-const App: FunctionComponent<Props> = () => {
-  const a: number = 4
-
-  const [visTracesData, setVisTracesData] = useState<any>(undefined)
-
-  useEffect(() => {
-    ;(async () => {
-      const response = await fetch('https://neurosift.org/tmp/vis_traces.json')
-      const data = await response.json()
-      setVisTracesData(data)
-    })()
-  }, [])
-
-  console.info('visTracesData', visTracesData)
-
-  if (!visTracesData) {
-    return <div>Loading vis_traces.json</div>
-  }
-
+console.info('ophysData', data)
   return (
-    <div>
-      <h1>Brainhack Ophys Dev {a}</h1>
-      <div>
+    <div id='container'>
+      <h1 id='header'>Brainhack Ophys Dev</h1>
+      <div id='plane'>
         <PlaneSegmentationView
           width={500}
           height={500}
-          data={{}}
-          selectedSegmentationName={'test'}
+          data={data}
+          onSelect={(click: Click) => onRoiSelected(click)} 
+          selectedRois={selectedRois}
         />
       </div>
-      <div style={{position: 'relative', width: 1000, height: 400}}>
-        <ExamplePlotlyComponent
-          series={[
-            {
-              label: 'test',
-              data: [{x: 0, y: 0}, {x: 1, y: 1}],
-              color: 'red'
-            }
-          ]}
-          yAxisLabel={'test'}
+      <div id='traces'>
+        <DeconvolvedTraceComponent
+          rois={data}
+          height={580}
+          selectedRois={selectedRois}
         />
-      </div>
+      </div> 
     </div>
   )
 }
