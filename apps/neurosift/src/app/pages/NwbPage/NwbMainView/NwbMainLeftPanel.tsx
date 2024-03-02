@@ -10,6 +10,7 @@ import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
+import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 
 type Props = {
     width: number
@@ -258,6 +259,9 @@ const DandiTable = () => {
                     </Hyperlink>/{assetPathFileName}
                 </p>
             )}
+            <ViewObjectNoteIconThing
+                objectPath="/"
+            />
             <hr />
         </div>
     )

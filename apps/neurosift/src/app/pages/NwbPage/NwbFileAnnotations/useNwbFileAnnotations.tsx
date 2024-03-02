@@ -1,21 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createContext, useCallback, useContext, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
 import useNeurosiftAnnotations, { NeurosiftAnnotation } from "../../../NeurosiftAnnotations/useNeurosiftAnnotations"
 import { useDandiAssetContext } from "../DandiAssetContext"
 
 type NwbFileAnnotationsContextType = {
-    nwbFileAnnotations: NeurosiftAnnotation[]
+    nwbFileAnnotations?: NeurosiftAnnotation[]
     refreshNwbFileAnnotations: () => void
-    setNwbFileAnnotations: (annotations: NeurosiftAnnotation[]) => void
+    annotationsRepo: string
+    setAnnotationsRepo: (repo: string) => void
+    addNwbFileAnnotation: (annotation: NeurosiftAnnotation, options: {replace?: string}) => Promise<void>
+    removeNwbFileAnnotation: (id: string) => Promise<void>
 }
 
 const defaultNwbFileAnnotationsContext: NwbFileAnnotationsContextType = {
-    nwbFileAnnotations: [],
+    nwbFileAnnotations: undefined,
     refreshNwbFileAnnotations: () => {
         throw new Error('refreshNwbFileAnnotations not implemented')
     },
-    setNwbFileAnnotations: (annotations: NeurosiftAnnotation[]) => {
-        throw new Error('setNwbFileAnnotations not implemented')
+    annotationsRepo: '',
+    setAnnotationsRepo: (repo: string) => {
+        throw new Error('setAnnotationsRepo not implemented')
+    },
+    addNwbFileAnnotation: (annotation: NeurosiftAnnotation, options: {replace?: string}) => {
+        throw new Error('addNwbFileAnnotation not implemented')
+    },
+    removeNwbFileAnnotation: (id: string) => {
+        throw new Error('removeNwbFileAnnotation not implemented')
     }
 }
 
@@ -26,20 +36,40 @@ export const useNwbFileAnnotations = () => {
     return {
         nwbFileAnnotations: cc.nwbFileAnnotations,
         refreshNwbFileAnnotations: cc.refreshNwbFileAnnotations,
-        setNwbFileAnnotations: cc.setNwbFileAnnotations
+        annotationsRepo: cc.annotationsRepo,
+        setAnnotationsRepo: cc.setAnnotationsRepo,
+        addNwbFileAnnotation: cc.addNwbFileAnnotation,
+        removeNwbFileAnnotation: cc.removeNwbFileAnnotation
     }
 }
 
+const neurosiftAnnotationsApiUrl = 'https://neurosift-annotations.vercel.app'
+// const neurosiftAnnotationsApiUrl = 'http://localhost:3000'
+
 export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.ReactNode}) => {
-    const [nwbFileAnnotations, setNwbFileAnnotations] = useState<NeurosiftAnnotation[]>([])
+    const [nwbFileAnnotations, setNwbFileAnnotations] = useState<NeurosiftAnnotation[] | undefined>(undefined)
     const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
     const {dandisetId, assetId, assetPath} = useDandiAssetContext()
-    const refreshNwbFileAnnotations = useCallback(async () => {
+
+    const [annotationsRepo, setAnnotationsRepo] = useState('')
+    const setAnnotationsRepoHandler = useCallback((repo: string) => {
+        setAnnotationsRepo(repo)
+        localStorage.setItem('neurosift-annotations-repo', repo)
+    }, [])
+    useEffect(() => {
+        const ar = localStorage.getItem('neurosift-annotations-repo')
+        if (ar) {
+            setAnnotationsRepo(ar)
+        }
+    }, [])
+
+    const fetchNwbFileAnnotations = useMemo(() => (async () => {
         if (!neurosiftAnnotationsAccessToken) return
         if (!dandisetId) return
         if (!assetPath) return
         if (!assetId) return
-        const url = 'http://localhost:3000/api/getNwbFileAnnotations'
+        if (!annotationsRepo) return
+        const url = `${neurosiftAnnotationsApiUrl}/api/getNwbFileAnnotations`
         const r = await fetch(url, {
             method: 'POST',
             headers: {
@@ -47,17 +77,29 @@ export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.Rea
                 'Authorization': `Bearer ${neurosiftAnnotationsAccessToken}`
             },
             body: JSON.stringify({
-                repo: 'jer-magland/ns_annotations',
+                repo: annotationsRepo,
                 dandisetId,
                 assetPath,
                 assetId,
             })
         })
+        if (r.status === 404) return []
+        if (r.status !== 200) {
+            console.error('Error fetching annotations', r)
+            return
+        }
         const data = await r.json()
-        setNwbFileAnnotations(data)
-    }, [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath])
+        return data as NeurosiftAnnotation[]
+    }), [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath, annotationsRepo])
 
-    const setNwbFileAnnotationsHandler = useCallback(async (annotations: NeurosiftAnnotation[]) => {
+    const refreshNwbFileAnnotations = useCallback(async () => {
+        setNwbFileAnnotations(undefined)
+        if (!neurosiftAnnotationsAccessToken) return
+        const a = await fetchNwbFileAnnotations()
+        setNwbFileAnnotations(a)
+    }, [neurosiftAnnotationsAccessToken, fetchNwbFileAnnotations])
+
+    const putNwbFileAnnotations = useMemo(() => (async (annotations: NeurosiftAnnotation[]) => {
         if (!neurosiftAnnotationsAccessToken) {
             console.warn('Cannot setNwbFileAnnotations because neurosiftAnnotationsAccessToken is not set')
             return
@@ -74,7 +116,7 @@ export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.Rea
             console.warn('Cannot setNwbFileAnnotations because assetId is not set')
             return
         }
-        const url = 'http://localhost:3000/api/setNwbFileAnnotations'
+        const url = `${neurosiftAnnotationsApiUrl}/api/setNwbFileAnnotations`
         const rr = await fetch(url, {
             method: 'POST',
             headers: {
@@ -82,7 +124,7 @@ export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.Rea
                 'Authorization': `Bearer ${neurosiftAnnotationsAccessToken}`
             },
             body: JSON.stringify({
-                repo: 'jer-magland/ns_annotations',
+                repo: annotationsRepo,
                 dandisetId,
                 assetPath,
                 assetId,
@@ -91,15 +133,37 @@ export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.Rea
         })
         const data = await rr.json()
         console.log(data)
-        setNwbFileAnnotations(annotations)
-    }, [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath])
+    }), [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath, annotationsRepo])
 
-    // only load when it is requested by the page
-    // useEffect(() => {
-    //     refreshNwbFileAnnotations()
-    // }, [refreshNwbFileAnnotations])
+    const addNwbFileAnnotation = useCallback(async (annotation: NeurosiftAnnotation, options: {replace?: string}) => {
+        // important to get the most recent because we don't want to overwrite changes
+        const mostRecentAnnotations = await fetchNwbFileAnnotations()
+        if (!mostRecentAnnotations) return
+        let newAnnotations = mostRecentAnnotations.filter(a => a.id !== annotation.id)
+        if ((options.replace) && (newAnnotations.find(a => a.id === options.replace))) {
+            newAnnotations = newAnnotations.map(a => a.id === options.replace ? annotation : a)
+        }
+        else {
+            newAnnotations.push(annotation)
+        }
+        await putNwbFileAnnotations(newAnnotations)
+        refreshNwbFileAnnotations()
+    }, [fetchNwbFileAnnotations, putNwbFileAnnotations, refreshNwbFileAnnotations])
+
+    const removeNwbFileAnnotation = useCallback(async (id: string) => {
+        const mostRecentAnnotations = await fetchNwbFileAnnotations()
+        if (!mostRecentAnnotations) return
+        if (!mostRecentAnnotations.find(a => a.id === id)) return
+        const newAnnotations = mostRecentAnnotations.filter(a => a.id !== id)
+        await putNwbFileAnnotations(newAnnotations)
+        refreshNwbFileAnnotations()
+    }, [fetchNwbFileAnnotations, putNwbFileAnnotations, refreshNwbFileAnnotations])
+
+    useEffect(() => {
+        refreshNwbFileAnnotations()
+    }, [refreshNwbFileAnnotations])
     return (
-        <NwbFileAnnotationsContext.Provider value={{nwbFileAnnotations, refreshNwbFileAnnotations, setNwbFileAnnotations: setNwbFileAnnotationsHandler}}>
+        <NwbFileAnnotationsContext.Provider value={{nwbFileAnnotations, refreshNwbFileAnnotations, annotationsRepo, setAnnotationsRepo: setAnnotationsRepoHandler, addNwbFileAnnotation, removeNwbFileAnnotation}}>
             {children}
         </NwbFileAnnotationsContext.Provider>
     )

@@ -4,6 +4,7 @@ import { RemoteH5Group } from "@fi-sci/remote-h5-file"
 import ShareTabComponent from "./ShareTabComponent"
 import { ViewPlugin } from "../viewPlugins/viewPlugins"
 import LoadInPythonComponent from "./LoadInPythonComponent"
+import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 
 type Props = {
     width: number
@@ -50,6 +51,8 @@ const NeurodataItemViewLeftPanel: FunctionComponent<Props> = ({width, height, pa
             <ShareTabComponent tabName={tabName} />
             <hr />
             {group && <LoadInPythonComponent path={path} group={group} viewName={viewName} />}
+            <hr />
+            <ViewObjectNoteIconThing objectPath={path} previewText={true} />
         </div>
     )
 }

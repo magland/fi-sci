@@ -5,7 +5,7 @@ export type NeurosiftAnnotation = {
     id: string
     type: string
     timestamp: number
-    owner: string
+    user: string
     data: {[key: string]: any}
 }
 
