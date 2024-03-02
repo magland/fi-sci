@@ -1,5 +1,5 @@
-import { RemoteNh5FileClient } from 'nh5';
 import { useEffect, useState } from 'react';
+import { RemoteNh5FileClient } from './nh5';
 
 const useNh5FileClient = (nh5Url?: string) => {
   const [client, setClient] = useState<RemoteNh5FileClient | undefined>(undefined);

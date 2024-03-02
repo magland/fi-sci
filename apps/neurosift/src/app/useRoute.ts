@@ -26,6 +26,9 @@ export type Route = {
     staging?: boolean
 } | {
     page: 'github-auth'
+} | {
+    page: 'neurosift-annotations-login'
+    accessToken: string
 }
 
 const useRoute = () => {
@@ -94,6 +97,12 @@ const useRoute = () => {
         //         url: query.url
         //     }
         // }
+        else if (p === '/neurosift-annotations-login') {
+            return {
+                page: 'neurosift-annotations-login',
+                accessToken: query.access_token as string
+            }
+        }
         else {
             return {
                 page: 'home'
@@ -190,6 +199,12 @@ const useRoute = () => {
             }
             if (newQuery.zarr) {
                 delete newQuery.zarr
+            }
+        }
+        else if (r.page === 'neurosift-annotations-login') {
+            newQuery = {
+                p: '/neurosift-annotations-login',
+                access_token: r.accessToken
             }
         }
         // no longer supported

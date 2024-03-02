@@ -4,6 +4,8 @@ import { FunctionComponent, useEffect, useState } from "react"
 import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import DendroView from "../DendroView/DendroView"
 import DefaultNwbFileView from "./DefaultNwbFileView"
+import useNeurosiftAnnotations from "../../../NeurosiftAnnotations/useNeurosiftAnnotations"
+import NeurosiftAnnotationsView from "../NeurosiftAnnotationsView/NeurosiftAnnotationsView"
 
 type Props = {
     width: number
@@ -11,7 +13,7 @@ type Props = {
     nwbFile: RemoteH5File | MergedRemoteH5File
 }
 
-type ViewMode = 'default' | 'raw' | 'dendro'
+type ViewMode = 'default' | 'raw' | 'dendro' | 'annotations'
 
 const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile }) => {
     const topBarHeight = 50
@@ -56,6 +58,16 @@ const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile
                     />
                 )}
             </div>
+            <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'annotations' ? undefined : 'hidden' }}>
+                {hasBeenVisibleViewModes.includes('annotations') && (
+                    <div>
+                        <NeurosiftAnnotationsView
+                            width={width}
+                            height={height - topBarHeight}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     )
 }
@@ -73,6 +85,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
         if (!newViewMode) return
         setViewMode(newViewMode as ViewMode)
     }
+    const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
     return (
         <ToggleButtonGroup
             color="primary"
@@ -84,6 +97,9 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
             <ToggleButton value="default">Default</ToggleButton>
             <ToggleButton value="raw">Raw</ToggleButton>
             <ToggleButton value="dendro">Dendro</ToggleButton>
+            {
+                neurosiftAnnotationsAccessToken && <ToggleButton value="annotations">Annotations</ToggleButton>
+            }
         </ToggleButtonGroup>
     )
 }

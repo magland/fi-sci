@@ -3,6 +3,8 @@ import { DatasetDataType, RemoteH5Dataset, RemoteH5Group, RemoteH5Subdataset, Re
 import { HTTPStore, NestedArray, openArray } from 'zarr';
 import { Canceler } from './helpers';
 
+// import { Blosc } from 'numcodecs';
+
 enum HTTPMethod {
   HEAD = 'HEAD',
   GET = 'GET',
@@ -163,7 +165,6 @@ class RemoteH5FileZarr {
           throw Error('Invalid slice');
         }
       }
-      throw Error('Slice not yet implemented for zarr')
     }
 
     // const { slice, allowBigInt, canceler } = o;
@@ -174,9 +175,44 @@ class RemoteH5FileZarr {
       if (!r.ok) throw Error('Failed to fetch .zarray for ' + path);
       const x: ZMetaDataZArray = await r.json();
       console.warn('dtype is |O', path, x);
-      return undefined;
+      // fetch bytes from this.url + path + '/0' -- the chunk
+      const r2 = await fetch(this.url + path + '/0');
+      if (!r2.ok) throw Error('Failed to fetch chunk for ' + path);
+      const chunk = await r2.arrayBuffer();
+      // const chunkDecompressed = await (new Blosc().decode(chunk));
+      let ret
+      if (((dd.shape.length === 1) && (dd.shape[0] === 1)) || (dd.shape.length === 0)) {
+        ret = new TextDecoder().decode(chunk.slice(8))
+      }
+      else if (dd.shape.length === 1) {
+        const view = new DataView(chunk);
+        ret = []
+        let i = 4;
+        while (i < chunk.byteLength) {
+          const byte1 = view.getUint32(i, true);
+          const byte2 = view.getUint32(i + 1, true);
+          const byte3 = view.getUint32(i + 2, true);
+          const byte4 = view.getUint32(i + 3, true);
+          const len = byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24);
+          i += 4;
+          ret.push(new TextDecoder().decode(chunk.slice(i, i + len)));
+          i += len;
+        }
+      }
+      return ret as any as DatasetDataType;
     }
-    const x = await dd.get(':');
+    let x
+    if (!o.slice) {
+      x = await dd.get(':');
+    }
+    else {
+      x = await dd.get(o.slice.map(ss => ({
+        start: ss[0],
+        stop: ss[1],
+        step: 1,
+        _slice: true
+      })))
+    }
 
     globalRemoteH5FileStats.getDatasetDataCount++;
 

@@ -8950,6 +8950,13 @@ numcodecs@^0.2.2:
   resolved "https://registry.yarnpkg.com/numcodecs/-/numcodecs-0.2.2.tgz#33d8b72e7223f3c80d67b9007720b9b54c62c240"
   integrity sha512-Y5K8mv80yb4MgVpcElBkUeMZqeE4TrovxRit/dTZvoRl6YkB6WEjY+fiUjGCblITnt3T3fmrDg8yRWu0gOLjhQ==
 
+numcodecs@^0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/numcodecs/-/numcodecs-0.3.1.tgz#5247eb0eeeb364073a3e48bd5af1977e26f0d587"
+  integrity sha512-ywIyGpJ+c6Ojktq9a8jsWSy12ZSUcW/W+I3jlH0q0zv9aR/ZiMsN7IrWaNq9YV2FRdLu6r/M6lp35jMA6fug/A==
+  dependencies:
+    fflate "^0.8.0"
+
 nwsapi@^2.2.2, nwsapi@^2.2.4:
   version "2.2.7"
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.7.tgz#738e0707d3128cb750dddcfe90e4610482df0f30"

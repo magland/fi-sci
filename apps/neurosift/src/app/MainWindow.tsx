@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage/HomePage";
 import NwbPage from "./pages/NwbPage/NwbPage";
 import useRoute from "./useRoute";
 import TestPage from "./pages/TestPage/TestPage";
+import NeurosiftAnnotationsLoginPage from "./pages/NeurosiftAnnotationsLoginPage/NeurosiftAnnotationsLoginPage";
 
 type Props = {
     // none
@@ -54,6 +55,8 @@ const MainWindow: FunctionComponent<Props> = () => {
                             width={width}
                             height={H}
                         />
+                    ) : route.page === 'neurosift-annotations-login' ? (
+                        <NeurosiftAnnotationsLoginPage />
                     ) : (
                         <div>404</div>
                     )

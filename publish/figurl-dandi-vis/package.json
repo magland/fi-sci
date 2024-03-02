@@ -1,6 +1,6 @@
 {
     "name": "@fi-sci/figurl-dandi-vis",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "description": "figurl visualization plugin for dandi-vis",
     "scripts": {
       "build": "rm -rf dist && cd ../.. && nx build figurl-dandi-vis",

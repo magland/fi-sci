@@ -9,6 +9,7 @@ import { SetupNwbOpenTabs } from "./NwbOpenTabsContext"
 import NwbTabWidget from "./NwbTabWidget"
 import { SelectedItemViewsContext, selectedItemViewsReducer } from "./SelectedItemViewsContext"
 import getAuthorizationHeaderForUrl from "./getAuthorizationHeaderForUrl"
+import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
 
 type Props = {
     width: number
@@ -168,10 +169,12 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             <NwbFileContext.Provider value={{nwbFile, nwbFileUrls: urlList}}>
                 <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
                     <SetupNwbOpenTabs>
-                        <NwbTabWidget
-                            width={width}
-                            height={height}
-                        />
+                        <SetupNwbFileAnnotationsProvider>
+                            <NwbTabWidget
+                                width={width}
+                                height={height}
+                            />
+                        </SetupNwbFileAnnotationsProvider>
                     </SetupNwbOpenTabs>
                 </SelectedItemViewsContext.Provider>
             </NwbFileContext.Provider>

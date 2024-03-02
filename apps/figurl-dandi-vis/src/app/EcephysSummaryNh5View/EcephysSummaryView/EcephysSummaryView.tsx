@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useTimeSelection } from '@fi-sci/context-time-selection';
 import { TimeScrollView, useTimeScrollView } from '@fi-sci/time-scroll-view';
-import { RemoteNh5FileClient } from 'nh5';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { RemoteNh5FileClient } from '../../nh5';
 
 type EcephysSummaryViewProps = {
   width: number;
@@ -18,6 +18,8 @@ export type BinnedArray = {
 };
 
 export class BinnedArrayClient {
+  #chunkSize: number
+  #chunks: { [index: number]: number[][] } = {};
   constructor(
     private fileClient: RemoteNh5FileClient,
     private minPath: string,
@@ -26,7 +28,9 @@ export class BinnedArrayClient {
     private p_binSizeSec: number,
     private p_binSizeFrames: number,
     private p_numChannels: number
-  ) {}
+  ) {
+    this.#chunkSize = Math.floor(1000000 / p_numChannels);
+  }
   get numBins() {
     return this.p_numBins;
   }
@@ -40,9 +44,36 @@ export class BinnedArrayClient {
     return this.p_numChannels;
   }
   async getData(startBinIndex: number, endBinIndex: number) {
+    const result: number[][] = [];
+    // first allocate all zeros
+    for (let i = startBinIndex; i < endBinIndex; i++) {
+      result.push(new Array(this.numChannels).fill(0));
+    }
+    const chunkIndex1 = Math.floor(startBinIndex / this.#chunkSize);
+    const chunkIndex2 = Math.floor(endBinIndex / this.#chunkSize);
+    for (let i = chunkIndex1; i <= chunkIndex2; i++) {
+      const startBinIndexInChunk = i * this.#chunkSize;
+      const endBinIndexInChunk = Math.min((i + 1) * this.#chunkSize, this.numBins);
+      if (!this.#chunks[i]) {
+        const chunkData = await this._getChunkData(startBinIndexInChunk, endBinIndexInChunk);
+        if (chunkData) this.#chunks[i] = chunkData;
+      }
+      const ch = this.#chunks[i];
+      if (!ch) continue;
+      const startBinIndexInChunk2 = Math.max(startBinIndex, startBinIndexInChunk);
+      const endBinIndexInChunk2 = Math.min(endBinIndex, endBinIndexInChunk);
+      for (let j = startBinIndexInChunk2; j < endBinIndexInChunk2; j++) {
+        result[j - startBinIndex] = ch[j - startBinIndexInChunk];
+      }
+    }
+    return result;
+  }
+  async _getChunkData(startBinIndex: number, endBinIndex: number) {
     const minData = await this.fileClient.getDatasetData(this.minPath, { slice: [[startBinIndex, endBinIndex]] });
+    if (!minData) console.warn('no min data', this.minPath, startBinIndex, endBinIndex);
     if (!minData) return undefined;
     const maxData = await this.fileClient.getDatasetData(this.maxPath, { slice: [[startBinIndex, endBinIndex]] });
+    if (!maxData) return console.warn('no max data', this.maxPath, startBinIndex, endBinIndex);
     if (!maxData) return undefined;
     const data = maxData?.map((v, i) => v - minData[i]);
     return create2DArray(data, [endBinIndex - startBinIndex, this.numChannels]);
@@ -80,7 +111,7 @@ const EcephysSummaryView: FunctionComponent<EcephysSummaryViewProps> = ({ width,
   }, [data.array, data.arrayDs25, data.arrayDs5, visibleStartTimeSec, visibleEndTimeSec]);
 
   const coordToPix = useMemo(() => {
-    if (!visibleStartTimeSec || !visibleEndTimeSec) return undefined;
+    if (visibleStartTimeSec === undefined || visibleEndTimeSec === undefined) return undefined;
     return ({ t, ch }: { t: number; ch: number }) => {
       const tFrac = (t - visibleStartTimeSec) / (visibleEndTimeSec - visibleStartTimeSec);
       const x = margins.left + tFrac * (canvasWidth - margins.left - margins.right);
@@ -99,6 +130,8 @@ const EcephysSummaryView: FunctionComponent<EcephysSummaryViewProps> = ({ width,
     if (!arrayToUse) return;
 
     let canceled = false;
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
     ; (async () => {
       const binStart = Math.floor(visibleStartTimeSec / arrayToUse.binSizeSec);

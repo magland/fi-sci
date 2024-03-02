@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Splitter } from '@fi-sci/splitter';
-import { RemoteNh5FileClient, RemoteNh5Group } from 'nh5';
+import { RemoteNh5Group } from 'nh5';
 import { Canceler, DatasetDataType } from 'nh5/dist/RemoteNh5FileClient';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { AutocorrelogramsView, AutocorrelogramsViewData } from './AutocorrelogramsView';
 import RasterPlotView from './RasterPlotView/RasterPlotView';
 import { UnitsTableView } from '@fi-sci/units-table';
+import { RemoteNh5FileClient } from '../nh5';
 
 type SpikeSortingSummaryViewProps = {
   nh5FileClient: RemoteNh5FileClient;

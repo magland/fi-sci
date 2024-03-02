@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RemoteNh5FileClient, RemoteNh5Group } from "nh5";
+import { RemoteNh5Group } from "nh5";
 import { FunctionComponent, useEffect, useState } from "react";
 import RasterPlotView from "./RasterPlotView/RasterPlotView";
 import { Canceler } from "nh5/dist/RemoteNh5FileClient";
+import { RemoteNh5FileClient } from "../nh5";
 
 // https://figurl.org/f?v=http://localhost:3000&d=%7B%22type%22:%22spike_trains_nh5%22,%22nh5_file%22:%22https://neurosift.org/dendro-outputs/a7852166.e49b352a/output%22%7D&label=sub-10884/sub-10884_ses-03080402_behavior+ecephys.nwb/spike_trains.nh5
 

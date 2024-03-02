@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RemoteNh5FileClient } from 'nh5';
 import { FunctionComponent, useEffect, useState } from 'react';
 import EcephysSummaryView, { BinnedArrayClient, EcephysSummaryData } from './EcephysSummaryView/EcephysSummaryView';
+import { RemoteNh5FileClient } from '../nh5';
 
 type EcephysSummaryNh5ViewProps = {
   width: number;
@@ -52,8 +52,8 @@ const EcephysSummaryNh5View: FunctionComponent<EcephysSummaryNh5ViewProps> = ({ 
       )
       const arrayDs5 = new BinnedArrayClient(
         client,
-        '/binned_arrays_ds5/min',
-        '/binned_arrays_ds5/max',
+        '/binned_arrays/min_ds5',
+        '/binned_arrays/max_ds5',
         min.numBins / 5,
         min.binSizeSec * 5,
         min.binSizeFrames * 5,
@@ -61,8 +61,8 @@ const EcephysSummaryNh5View: FunctionComponent<EcephysSummaryNh5ViewProps> = ({ 
       )
       const arrayDs25 = new BinnedArrayClient(
         client,
-        '/binned_arrays_ds25/min',
-        '/binned_arrays_ds25/max',
+        '/binned_arrays/min_ds25',
+        '/binned_arrays/max_ds25',
         min.numBins / 25,
         min.binSizeSec * 25,
         min.binSizeFrames * 25,
