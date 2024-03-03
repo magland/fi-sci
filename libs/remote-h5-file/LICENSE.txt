@@ -1,3 +1,5 @@
 This library uses a modified version of h5wasm.
 
 See the h5wasm_license_statement.txt
+
+See https://github.com/magland/remote-h5-worker
