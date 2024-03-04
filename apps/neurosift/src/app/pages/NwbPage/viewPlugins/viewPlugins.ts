@@ -1,9 +1,8 @@
+import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent } from "react"
-import { MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { neurodataTypeInheritanceRaw } from "../neurodataSpec"
 import BehavioralEventsItemView from "./BehavioralEvents/BehavioralEventsItemView"
 import DynamicTableView from "./DynamicTable/DynamicTableView"
-import TimeSeriesItemView from "./TimeSeries/NeurodataTimeSeriesItemView"
 import ImageSegmentationItemView from "./ImageSegmentation/ImageSegmentationItemView"
 import ImageSeriesItemView from "./ImageSeries/ImageSeriesItemView"
 import ImagesItemView from "./Images/ImagesItemView"
@@ -11,13 +10,13 @@ import LabeledEventsItemView from "./LabeledEvents/LabeledEventsItemView"
 import PSTHItemView from "./PSTH/PSTHItemView"
 import NeurodataSpatialSeriesItemView from "./SpatialSeries/SpatialSeriesWidget/NeurodataSpatialSeriesItemView"
 import SpatialSeriesXYView from "./SpatialSeries/SpatialSeriesWidget/SpatialSeriesXYView"
+import TimeAlignedSeriesItemView from "./TimeAlignedSeries/TimeAlignedSeriesItemView"
 import NeurodataTimeIntervalsItemView from "./TimeIntervals/NeurodataTimeIntervalsItemView"
-import NeurodataTimeSeriesItemView from "./TimeSeries/NeurodataTimeSeriesItemView"
+import { default as NeurodataTimeSeriesItemView, default as TimeSeriesItemView } from "./TimeSeries/NeurodataTimeSeriesItemView"
 import TwoPhotonSeriesItemView from "./TwoPhotonSeries/TwoPhotonSeriesItemView"
 import DirectRasterPlotUnitsItemView from "./Units/DirectRasterPlotUnitsItemView"
 import UnitsItemView from "./Units/UnitsItemView"
 import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
-import TimeAlignedSeriesItemView from "./TimeAlignedSeries/TimeAlignedSeriesItemView"
 
 type Props = {
     width: number,
@@ -34,7 +33,7 @@ export type ViewPlugin = {
     component: FunctionComponent<Props>
     buttonLabel?: string
     remoteDataOnly?: boolean
-    checkEnabled?: (nwbFile: RemoteH5File | MergedRemoteH5File, path: string) => Promise<boolean>
+    checkEnabled?: (nwbFile: RemoteH5FileX, path: string) => Promise<boolean>
     isTimeView?: boolean
     getCustomPythonCode?: (group: RemoteH5Group) => string
 }
@@ -69,7 +68,7 @@ viewPlugins.push({
     component: SpatialSeriesXYView,
     buttonLabel: 'X/Y',
     isTimeView: true,
-    checkEnabled: async (nwbFile: RemoteH5File | MergedRemoteH5File, path: string) => {
+    checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
         const grp = await nwbFile.getGroup(path)
         if (!grp) return false
         const ds = grp.datasets.find(ds => (ds.name === 'data'))
@@ -131,7 +130,7 @@ viewPlugins.push({
     neurodataType: 'TimeIntervals',
     defaultForNeurodataType: false,
     component: PSTHItemView,
-    checkEnabled: async (nwbFile: RemoteH5File | MergedRemoteH5File, path: string) => {
+    checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
         const rootGroup = await nwbFile.getGroup('/')
         if (!rootGroup) return false
         return rootGroup.subgroups.find(sg => (sg.name === 'units')) ? true : false
@@ -143,7 +142,7 @@ viewPlugins.push({
     neurodataType: 'TimeIntervals',
     defaultForNeurodataType: false,
     component: TimeAlignedSeriesItemView,
-    checkEnabled: async (nwbFile: RemoteH5File | MergedRemoteH5File, path: string) => {
+    checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
         return false
     },
     isTimeView: false
@@ -244,7 +243,7 @@ viewPlugins.push({
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5File | MergedRemoteH5File}): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
+export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
     const viewPluginsRet: ViewPlugin[] = []
     let defaultViewPlugin: ViewPlugin | undefined
     let nt: string | undefined = neurodataType

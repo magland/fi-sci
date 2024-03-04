@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { DatasetDataType, RemoteH5Dataset, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { useEffect, useState } from "react"
 import { useGroup } from "../../../NwbMainView/NwbMainView"
-import { DatasetDataType, MergedRemoteH5File, RemoteH5Dataset, RemoteH5File } from "@fi-sci/remote-h5-file"
 
 class TimestampFinder {
     #chunkSize = 100000
     #chunks: {[key: number]: DatasetDataType} = {}
-    constructor (private nwbFile: RemoteH5File | MergedRemoteH5File, private timestampsDataset: RemoteH5Dataset, private estimatedSamplingFrequency: number) {
+    constructor (private nwbFile: RemoteH5FileX, private timestampsDataset: RemoteH5Dataset, private estimatedSamplingFrequency: number) {
     }
     async getDataIndexForTime(time: number): Promise<number> {
         let iLower = 0
@@ -68,7 +69,7 @@ class IrregularTimeseriesDataClient {
     #startTime: number | undefined = undefined
     #endTime: number | undefined = undefined
     #timestampFinder: TimestampFinder | undefined = undefined
-    constructor(private nwbFile: RemoteH5File | MergedRemoteH5File, private objectPath: string) {
+    constructor(private nwbFile: RemoteH5FileX, private objectPath: string) {
     }
     async initialize() {
         const timestampsDataset = await this.nwbFile.getDataset(`${this.objectPath}/timestamps`)
@@ -113,7 +114,7 @@ class RegularTimeseriesDataClient {
     #startTime: number | undefined = undefined
     #endTime: number | undefined = undefined
     #dataShape: number[] | undefined = undefined
-    constructor(private nwbFile: RemoteH5File | MergedRemoteH5File, private objectPath: string) {
+    constructor(private nwbFile: RemoteH5FileX, private objectPath: string) {
     }
     async initialize() {
         const startingTimeDataset = await this.nwbFile.getDataset(`${this.objectPath}/starting_time`)
@@ -158,7 +159,7 @@ interface NwbTimeseriesDataClient {
     getTimestampsForDataIndices: (i1: number, i2: number) => Promise<DatasetDataType | undefined>
 }
 
-export const useNwbTimeseriesDataClient = (nwbFile: RemoteH5File | MergedRemoteH5File, objectPath: string) => {
+export const useNwbTimeseriesDataClient = (nwbFile: RemoteH5FileX, objectPath: string) => {
     const group = useGroup(nwbFile, objectPath)
     const [dataClient, setDataClient] = useState<NwbTimeseriesDataClient>()
     useEffect(() => {

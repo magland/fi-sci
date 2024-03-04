@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DatasetDataType, getRemoteH5File, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { DatasetDataType, getRemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 
 class SpikeTrainsClientFromRemoteNwb {
-    #nwbFile: RemoteH5File | MergedRemoteH5File | undefined
+    #nwbFile: RemoteH5FileX | undefined
     #blockSizeSec = 60 * 5
     constructor(
         private url: string,
-        private nwbFile: RemoteH5File | MergedRemoteH5File,
+        private nwbFile: RemoteH5FileX,
         public unitIds: (string | number)[],
         public spikeTimesIndices: DatasetDataType,
         public startTimeSec: number,

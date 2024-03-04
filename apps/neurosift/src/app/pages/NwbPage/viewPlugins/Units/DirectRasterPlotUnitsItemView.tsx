@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import RasterPlotView3 from "./RasterPlotView3/RasterPlotView3"
@@ -117,7 +118,7 @@ class DirectSpikeTrainsClientUnitSlice {
 export class DirectSpikeTrainsClient {
     #blockSizeSec = 60 * 5
     constructor(
-        private nwbFile: RemoteH5File | MergedRemoteH5File,
+        private nwbFile: RemoteH5FileX,
         private path: string,
         public unitIds: (number | string)[],
         private spikeTimesIndices: DatasetDataType,
@@ -127,7 +128,7 @@ export class DirectSpikeTrainsClient {
         group: RemoteH5Group | undefined
     ) {
     }
-    static async create(nwbFile: RemoteH5File | MergedRemoteH5File, path: string) {
+    static async create(nwbFile: RemoteH5FileX, path: string) {
         const group = await nwbFile.getGroup(path)
         let spike_or_event: 'spike' | 'event' | undefined
         if ((group) && (group.datasets.find(ds => (ds.name === 'spike_times')))) {

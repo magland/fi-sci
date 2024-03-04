@@ -1,4 +1,5 @@
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useState } from "react"
 import { useNwbFile } from "../NwbFileContext"
 import { useDataset, useDatasetData, useGroup } from "../NwbMainView/NwbMainView"
@@ -25,7 +26,7 @@ const BrowseNwbView: FunctionComponent<Props> = ({width, height}) => {
 type MainPanelProps = {
     width: number
     height: number
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, nwbFile}) => {
@@ -64,7 +65,7 @@ const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, nwbFile}) 
 }
 
 type TopLevelGroupViewProps = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     name: string
 }
 
@@ -91,7 +92,7 @@ const TopLevelGroupView: FunctionComponent<TopLevelGroupViewProps> = ({nwbFile, 
 }
 
 type TopLevelDatasetViewProps = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     name: string
 }
 
@@ -120,7 +121,7 @@ const TopLevelDatasetView: FunctionComponent<TopLevelDatasetViewProps> = ({nwbFi
 type GroupTitlePanelTextProps = {
     name: string
     group: RemoteH5Group | undefined
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 const GroupTitlePanelText: FunctionComponent<GroupTitlePanelTextProps> = ({name, group, nwbFile}) => {
@@ -131,7 +132,7 @@ const GroupTitlePanelText: FunctionComponent<GroupTitlePanelTextProps> = ({name,
 type DatasetTitlePanelTextProps = {
     name: string
     dataset: RemoteH5Dataset | undefined
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 const DatasetTitlePanelText: FunctionComponent<DatasetTitlePanelTextProps> = ({name, dataset, nwbFile}) => {
@@ -142,7 +143,7 @@ const DatasetTitlePanelText: FunctionComponent<DatasetTitlePanelTextProps> = ({n
 type TopLevelDatasetContentPanelProps = {
     name: string
     dataset: RemoteH5Dataset
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 const TopLevelDatasetContentPanel: FunctionComponent<TopLevelDatasetContentPanelProps> = ({name, nwbFile, dataset}) => {

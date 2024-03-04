@@ -1,10 +1,9 @@
-import { Canceler } from "@fi-sci/remote-h5-file";
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File } from "@fi-sci/remote-h5-file";
+import { Canceler, RemoteH5Dataset, RemoteH5FileX } from "@fi-sci/remote-h5-file";
 
 class TimeseriesDatasetChunkingClient {
     #chunks: {[k: number]: number[][]} = {}
     #noiseLevelForAutoSeparation: number | undefined
-    constructor(private nwbFile: RemoteH5File | MergedRemoteH5File, private dataset: RemoteH5Dataset, private chunkSize: number, private o: {visibleChannelsRange?: [number, number], autoChannelSeparation?: number}={}) {
+    constructor(private nwbFile: RemoteH5FileX, private dataset: RemoteH5Dataset, private chunkSize: number, private o: {visibleChannelsRange?: [number, number], autoChannelSeparation?: number}={}) {
     }
     async getConcatenatedChunk(startChunkIndex: number, endChunkIndex: number, canceler: Canceler): Promise<{concatenatedChunk: number[][], completed: boolean}> {
         if ((this.o.autoChannelSeparation) && (this.#noiseLevelForAutoSeparation === undefined)) {

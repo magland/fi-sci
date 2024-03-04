@@ -1,4 +1,4 @@
-import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { ToggleButton, ToggleButtonGroup } from "@mui/material"
 import { FunctionComponent, useEffect, useState } from "react"
 import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
@@ -10,7 +10,7 @@ import NeurosiftAnnotationsView from "../NeurosiftAnnotationsView/NeurosiftAnnot
 type Props = {
     width: number
     height: number
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 type ViewMode = 'default' | 'raw' | 'dendro' | 'annotations'

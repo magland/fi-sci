@@ -1,4 +1,4 @@
-import { MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { Splitter } from "@fi-sci/splitter"
 import { FunctionComponent, useEffect, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
@@ -54,7 +54,7 @@ type LeftPanelProps = {
     width: number
     height: number
     group: RemoteH5Group
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     selectedSegmentationName?: string
     setSelectedSegmentationName: (name: string) => void
 }

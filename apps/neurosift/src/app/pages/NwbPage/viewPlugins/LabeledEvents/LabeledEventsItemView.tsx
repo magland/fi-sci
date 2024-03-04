@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DatasetDataType, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import RasterPlotView3 from "../Units/RasterPlotView3/RasterPlotView3"
@@ -49,7 +49,7 @@ export class LabeledEventsSpikeTrainsClient {
     #endTimeSec: number | undefined
     #blockSizeSec = 60 * 5
     #spikeTrains: {spikeTrain: number[], unitId: number | string}[] | undefined
-    constructor(private nwbFile: RemoteH5File | MergedRemoteH5File, private path: string) {
+    constructor(private nwbFile: RemoteH5FileX, private path: string) {
     }
     async initialize() {
         const path = this.path

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { SmallIconButton } from "@fi-sci/misc"
-import { Canceler, DatasetDataType, MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { Canceler, DatasetDataType, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { ArrowLeft, ArrowRight } from "@mui/icons-material"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useTimeRange, useTimeseriesSelection, useTimeseriesSelectionInitialization } from "../../../../package/context-timeseries-selection"
@@ -26,7 +26,7 @@ type ImageData = {
     data: DatasetDataType
 }
 
-const useComputedDataDatUrl = (nwbFile: RemoteH5File | MergedRemoteH5File, path: string | undefined) => {
+const useComputedDataDatUrl = (nwbFile: RemoteH5FileX, path: string | undefined) => {
     return undefined // no longer used
     /*
     const [computedDataDatUrl, setComputedDataDatUrl] = useState<string | undefined>(undefined)

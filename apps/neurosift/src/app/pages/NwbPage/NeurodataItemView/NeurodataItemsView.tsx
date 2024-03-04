@@ -1,4 +1,4 @@
-import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { Splitter } from "@fi-sci/splitter"
 import { FunctionComponent, useMemo } from "react"
 import { useNwbFile } from "../NwbFileContext"
@@ -122,7 +122,7 @@ const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, items}) =>
     )
 }
 
-const getViewPluginAndItemPath = (item: string, nwbFile: RemoteH5File | MergedRemoteH5File) => {
+const getViewPluginAndItemPath = (item: string, nwbFile: RemoteH5FileX) => {
     if (item.startsWith('neurodata-item:')) {
         const itemPath = item.slice(`neurodata-item:`.length).split('|')[0]
         const neurodataType = item.slice(`neurodata-item:`.length).split('|')[1]

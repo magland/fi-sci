@@ -1,14 +1,14 @@
+import { Hyperlink } from "@fi-sci/misc"
+import { RemoteH5FileX, RemoteH5Group, RemoteH5Subgroup } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useMemo } from "react"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
-import { MergedRemoteH5File, RemoteH5File, RemoteH5Group, RemoteH5Subgroup } from "@fi-sci/remote-h5-file"
 import { useSelectedItemViews } from "../SelectedItemViewsContext"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { useGroup } from "./NwbMainView"
-import { Hyperlink } from "@fi-sci/misc"
 
 type Props = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     group: RemoteH5Group
 }
 
@@ -47,7 +47,7 @@ const IntervalsContentPanel: FunctionComponent<Props> = ({nwbFile, group}) => {
 }
 
 type GroupTableRowProps = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     subgroup: RemoteH5Subgroup
     selected: boolean
     onToggleSelect: (neurodataType: string) => void

@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MergedRemoteH5File, RemoteH5File, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, globalRemoteH5FileStats, getRemoteH5FileZarr } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
 import { useCustomStatusBarStrings } from "../../StatusBar"
 import useRoute from "../../useRoute"
 import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
+import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
 import { NwbFileContext } from "./NwbFileContext"
 import { SetupNwbOpenTabs } from "./NwbOpenTabsContext"
 import NwbTabWidget from "./NwbTabWidget"
 import { SelectedItemViewsContext, selectedItemViewsReducer } from "./SelectedItemViewsContext"
 import getAuthorizationHeaderForUrl from "./getAuthorizationHeaderForUrl"
-import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
 
 type Props = {
     width: number
@@ -55,7 +55,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     const {route} = useRoute()
     if (route.page !== 'nwb') throw Error('Unexpected: route.page is not nwb')
     const urlList = route.url
-    const [nwbFile, setNwbFile] = useState<RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr | undefined>(undefined)
+    const [nwbFile, setNwbFile] = useState<RemoteH5FileX | undefined>(undefined)
     const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
 
     // status bar text

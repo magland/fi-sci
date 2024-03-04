@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 
 type Props = {
     width: number
     height: number
     imageSegmentationGroup: RemoteH5Group
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     selectedSegmentationName: string
 }
 
@@ -23,7 +23,7 @@ const blockSize = 50
 class PlaneSegmentationClient {
     #imageMaskDataset: RemoteH5Dataset | undefined
     #blocks: {[i: number]: UnitMask[]} = {}
-    constructor(private nwbFile: RemoteH5File | MergedRemoteH5File, private objectPath: string) {
+    constructor(private nwbFile: RemoteH5FileX, private objectPath: string) {
     }
     async initialize() {
         this.#imageMaskDataset = await this.nwbFile.getDataset(`${this.objectPath}/image_mask`)

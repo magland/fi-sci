@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Hyperlink } from "@fi-sci/misc"
-import { MergedRemoteH5File, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import useRoute from "../../../useRoute"
 import { serializeBigInt, valueToString } from "../BrowseNwbView/BrowseNwbView"
@@ -15,7 +15,7 @@ import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 type Props = {
     width: number
     height: number
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
 }
 
 const labelMap: {name: string, newName: string, renderer?: (val: any) => string}[] = [
@@ -117,7 +117,7 @@ const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile}) =>
 }
 
 type DatasetDataViewProps = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     path: string
     renderer?: (val: any) => string
 }

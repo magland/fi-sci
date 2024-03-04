@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useReducer } from "react"
+import { SmallIconButton } from "@fi-sci/misc"
+import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useCallback, useEffect, useMemo, useReducer } from "react"
 import { FaEye, FaRegCircle } from "react-icons/fa"
-import { NwbFileContext, useNwbFile } from "../NwbFileContext"
+import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { valueToString } from "./BrowseNwbView"
 import './nwb-attributes-table.css'
-import { SmallIconButton } from "@fi-sci/misc"
 
 type Props = {
     name: string
     group: RemoteH5Group
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     excludeGroups?: boolean
 }
 

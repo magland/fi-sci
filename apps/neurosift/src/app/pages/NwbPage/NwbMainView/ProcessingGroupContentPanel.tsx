@@ -1,15 +1,15 @@
+import { Hyperlink } from "@fi-sci/misc"
+import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useMemo, useReducer, useState } from "react"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { useSelectedItemViews } from "../SelectedItemViewsContext"
 import Abbreviate from "../viewPlugins/TimeSeries/TimeseriesItemView/Abbreviate"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { useGroup } from "./NwbMainView"
-import { Hyperlink } from "@fi-sci/misc"
 
 type Props = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     groupPath: string
 }
 
@@ -132,7 +132,7 @@ const ProcessingGroupContentPanel: FunctionComponent<Props> = ({nwbFile, groupPa
 
 type GroupTableRowProps = {
     name: string,
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     path: string
     selected: boolean
     onToggleSelect: (neurodataType: string) => void

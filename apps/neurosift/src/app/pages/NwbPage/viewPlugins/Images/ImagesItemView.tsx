@@ -1,4 +1,4 @@
-import { DatasetDataType, MergedRemoteH5File, RemoteH5Dataset, RemoteH5File } from "@fi-sci/remote-h5-file"
+import { DatasetDataType, RemoteH5Dataset, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import { useDatasetData, useGroup } from "../../NwbMainView/NwbMainView"
@@ -35,7 +35,7 @@ const ImagesItemView: FunctionComponent<Props> = ({ width, height, path }) => {
 }
 
 type ImageItemProps = {
-    nwbFile: RemoteH5File | MergedRemoteH5File
+    nwbFile: RemoteH5FileX
     path: string
     neurodataType: string
 }
