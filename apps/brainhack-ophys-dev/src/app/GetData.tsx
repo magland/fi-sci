@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import rawTraces from './vis_traces.json';  // resolveJsonModule: true in tsconfig todo remove
+// import rawTraces from './vis_traces.json';  // resolveJsonModule: true in tsconfig todo remove
 
 // colours
 const v1 = 255
@@ -28,9 +29,9 @@ type Data = {
 
 
 class ROIsData {
-    readonly time: number[]
-    readonly trace: Map<number, number[]>
-    readonly roi_mask: number[][]
+    readonly time: number[] = []
+    readonly trace: Map<number, number[]> = new Map()
+    readonly roi_mask: number[][] = []
     readonly sampleRate?: number
 
     validate() {
@@ -49,7 +50,7 @@ class ROIsData {
         return distinctColors[id % distinctColors.length]
     }
 
-    static fromJSON(obj: object) {
+    static fromJSON(obj: any) {
         // convert trace object from str key to Map with int keys
         obj.trace = new Map(Object.entries(obj.trace).map(([k, v]) => [+k, v]))
         obj = Object.assign(new ROIsData(), obj) as ROIsData;
@@ -59,12 +60,12 @@ class ROIsData {
 
 }
 
-function fetchURL(url, prevState) {
-    function fail(r) {
-        error
-    }
-    const response = fetch(requestConfig.get('url'))
-}
+// function fetchURL(url, prevState) {
+//     function fail(r) {
+//         error
+//     }
+//     const response = fetch(requestConfig.get('url'))
+// }
 
 function useFetchData(requestConfig: URLSearchParams) {
     const [state, setState] = useState<Data>({
@@ -74,14 +75,19 @@ function useFetchData(requestConfig: URLSearchParams) {
     });
     useEffect(() => {
       (() => {
-        const method = requestConfig.get('method') || 'GET';
+        // const method = requestConfig.get('method') || 'GET';
 
-        if (!requestConfig.get('url') || method === 'TEST') {
-            const data = ROIsData.fromJSON(rawTraces)
-            setState(prevState => ({...prevState, data: data, loading: false} as Data))
+        // if (!requestConfig.get('url') || method === 'TEST') {
+        //     const data = ROIsData.fromJSON(rawTraces)
+        //     setState(prevState => ({...prevState, data: data, loading: false} as Data))
+        //     return
+        // }
+        const url = requestConfig.get('url')
+        if (!url) {
+            setState(prevState => ({...prevState, error: new Error('No URL provided'), loading: false}))
             return
         }
-        fetch(requestConfig.get('url'))
+        fetch(url)
         .then((res) => res.json())
         .then((data) => {
             const obj = ROIsData.fromJSON(data);
@@ -93,6 +99,6 @@ function useFetchData(requestConfig: URLSearchParams) {
     // return state
     }, [requestConfig])
   return state
-  };
+};
 
 export {useFetchData, ROIsData}

@@ -1,6 +1,6 @@
-import { FunctionComponent, useMemo, useEffect } from "react";
-import { ROIsData } from './GetData'
+import { FunctionComponent, useCallback, useMemo } from "react";
 import Plot from 'react-plotly.js';
+import { ROIsData } from './GetData';
 
 type Props = {
     rois: ROIsData
@@ -10,24 +10,25 @@ type Props = {
 
 
 const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, selectedRois}) => {
-
     if(rois.validate() !== true) { 
-        console.log('variable series length data')
-        return
+        throw Error('variable series length data')
     }
-    const padding = 1;
-    const getData = (selectedRois: number[]) => {
-
-        const data: object[] = []
+    
+    const getData = useCallback((selectedRois: number[]) => {
+        const data: {y: number[], x: number[], mode: string, name: string, line: {color: string}}[] = []
         let i = 0;
-        let heightPadding = 1
+        const heightPadding = 1
         for (const [id, arr] of rois.trace) {
             // If no rois are selected draw all lines
             // If rois are selected only draw selected lines       
             if (selectedRois.length === 0 || selectedRois.includes(id + 1)) {
                 const color = rois.id2colour(id)
+                const y = []
+                for (let j = 0; j < arr.length; j++) {
+                    y.push(arr[i] + heightPadding * i)
+                }
                 data.push({
-                    y: arr.map((x: number) => x + heightPadding * i),
+                    y,
                     x: rois.time,
                     mode: 'lines',
                     name: 'ROI #' + id,
@@ -39,10 +40,11 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
             }
         }
         return data
-    };
+    }, [rois])
 
     // Get the data, memo it so it is only refected if selectedRois change
-    const data = useMemo(() => getData(selectedRois), [selectedRois]);
+    const data = useMemo(() => getData(selectedRois), [getData, selectedRois])
+    const padding = 1;
 
     const xAxisLabel = 'Time (s)'
     const yAxisLabel = 'ROI id'
@@ -79,4 +81,4 @@ const DeconvolvedTraceComponent: FunctionComponent<Props> = ({rois, height, sele
     )
 }
 
-export {DeconvolvedTraceComponent, ROIsData}
+export { DeconvolvedTraceComponent, ROIsData };

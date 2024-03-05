@@ -34,6 +34,9 @@ if (!data && loading === true) {
 } else if (error) {
   return <div>Failed to load {urlParams.get('url')}</div>
 }
+if (!data) {
+  return <div>No data found</div>
+}
 console.info('ophysData', data)
   return (
     <div id='container'>

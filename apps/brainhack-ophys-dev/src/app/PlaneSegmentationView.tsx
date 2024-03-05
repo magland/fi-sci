@@ -8,7 +8,7 @@ type Props = {
     height: number // height of the plane view
     data: ROIsData 
     selectedRois: number[]
-    onSelect: (idx: number) => void
+    onSelect: ({idx, shift}: Click) => void
 }
 
 type Click = {
@@ -30,7 +30,8 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
 
         const shift = e.shiftKey; 
         
-        const canvas = document.getElementById('plane_canvas')
+        const canvas: HTMLCanvasElement | null = document.getElementById('plane_canvas') as (HTMLCanvasElement | null)
+        if (canvas === null) return
         // Transform mouse click position to index in the data
         const boundingRect = canvas.getBoundingClientRect()
         const x = e.clientX  - boundingRect.x
@@ -43,10 +44,10 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
             return onSelect({idx: d, shift: shift} as Click)
         }
 
-    }, [])
+    }, [onSelect, data])
 
     useEffect(() => {
-        let canceled = false
+        // let canceled = false
         if (!canvasElement) return
         const ctx = canvasElement.getContext('2d')
         if (!ctx) return
@@ -56,7 +57,7 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
         
         const load = async () => {
             // Iterate through the data and assign colors to the correct pixels
-            const imageData = ctx.createImageData(N1, N2)
+            // const imageData = ctx.createImageData(N1, N2)
             for (let i = 0; i < N1; i++) {
                 for (let j = 0; j < N2; j++) {
                     const d = data.roi_mask[i][j]
@@ -82,7 +83,7 @@ const PlaneSegmentationView: FunctionComponent<Props> = ({data, width, height, o
         }
         load()
         // return () => {canceled = true}
-    }, [canvasElement, N1, N2, selectedRois])
+    }, [canvasElement, N1, N2, selectedRois, data, blockW, blockH])
 
     return (
         <div>
