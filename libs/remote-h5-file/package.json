@@ -1,6 +1,6 @@
 {
   "name": "@fi-sci/remote-h5-file",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "main": "./index.js",
   "types": "./index.d.ts",
   "exports": {
@@ -8,5 +8,8 @@
       "import": "./index.mjs",
       "require": "./index.js"
     }
+  },
+  "dependencies": {
+    "numcodecs": "^0.3.1"
   }
 }
