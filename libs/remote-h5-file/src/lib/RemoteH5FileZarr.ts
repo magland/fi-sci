@@ -3,7 +3,7 @@ import { DatasetDataType, RemoteH5Dataset, RemoteH5Group, RemoteH5Subdataset, Re
 import { HTTPStore, NestedArray, openArray } from 'zarr';
 import { Canceler } from './helpers';
 
-// import { Blosc } from 'numcodecs';
+import { Blosc } from 'numcodecs';
 
 enum HTTPMethod {
   HEAD = 'HEAD',
@@ -178,27 +178,78 @@ class RemoteH5FileZarr {
       // fetch bytes from this.url + path + '/0' -- the chunk
       const r2 = await fetch(this.url + path + '/0');
       if (!r2.ok) throw Error('Failed to fetch chunk for ' + path);
-      const chunk = await r2.arrayBuffer();
-      // const chunkDecompressed = await (new Blosc().decode(chunk));
-      let ret
-      if (((dd.shape.length === 1) && (dd.shape[0] === 1)) || (dd.shape.length === 0)) {
-        ret = new TextDecoder().decode(chunk.slice(8))
-      }
-      else if (dd.shape.length === 1) {
-        const view = new DataView(chunk);
-        ret = []
-        let i = 4;
-        while (i < chunk.byteLength) {
-          const byte1 = view.getUint32(i, true);
-          const byte2 = view.getUint32(i + 1, true);
-          const byte3 = view.getUint32(i + 2, true);
-          const byte4 = view.getUint32(i + 3, true);
-          const len = byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24);
-          i += 4;
-          ret.push(new TextDecoder().decode(chunk.slice(i, i + len)));
-          i += len;
+      let chunk = await r2.arrayBuffer();
+      if ((x.compressor) && (x.compressor.id === 'blosc')) {
+        chunk = await (new Blosc().decode(chunk));
+        // check if Uint8Array
+        if (chunk instanceof Uint8Array) {
+          chunk = chunk.buffer;
         }
       }
+      let ret
+      // if (((dd.shape.length === 1) && (dd.shape[0] === 1)) || (dd.shape.length === 0)) {
+      //   ret = new TextDecoder().decode(chunk.slice(8))
+      // }
+      // else if (dd.shape.length === 1) {
+      if ((x.filters) && (x.filters.length > 0)) {
+        if (x.filters.length > 1) {
+          console.warn('More than one filter', path, x.filters);
+        }
+        const filter0 = x.filters[0];
+        if (filter0.id === 'vlen-utf8') {
+          const view = new DataView(chunk);
+          ret = []
+          let i = 4;
+          while (i < chunk.byteLength) {
+            const byte1 = view.getUint32(i, true);
+            const byte2 = view.getUint32(i + 1, true);
+            const byte3 = view.getUint32(i + 2, true);
+            const byte4 = view.getUint32(i + 3, true);
+            const len = byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24);
+            i += 4;
+            ret.push(new TextDecoder().decode(chunk.slice(i, i + len)));
+            i += len;
+          }
+        }
+        else if (filter0.id === 'vlen-bytes') {
+          const view = new DataView(chunk);
+          ret = []
+          let i = 4;
+          while (i < chunk.byteLength) {
+            const byte1 = view.getUint32(i, true);
+            const byte2 = view.getUint32(i + 1, true);
+            const byte3 = view.getUint32(i + 2, true);
+            const byte4 = view.getUint32(i + 3, true);
+            const len = byte1 + (byte2 << 8) + (byte3 << 16) + (byte4 << 24);
+            i += 4;
+            ret.push(chunk.slice(i, i + len));
+            i += len;
+          }
+        }
+        else if (filter0.id === 'json2') {
+          const aa = JSON.parse(new TextDecoder().decode(chunk));
+          // aa has the form [item1, item2, ..., itemN, '|O', shape]
+          if (aa.length <= 2) {
+            console.warn('Unexpected json2', path, aa);
+            ret = new TextDecoder().decode(chunk);
+          }
+          else {
+            ret = aa.slice(0, aa.length - 2);
+          }
+        }
+        else {
+          console.warn('Unhandled filter', path, filter0);
+          ret = new TextDecoder().decode(chunk);
+        }
+      }
+      else {
+        // no filter
+        ret = new TextDecoder().decode(chunk);
+      }
+      // else {
+      //   console.warn('Unhandled dtype |O', path, dd.shape, x);
+      //   ret = new TextDecoder().decode(chunk);
+      // }
       return ret as any as DatasetDataType;
     }
     let x

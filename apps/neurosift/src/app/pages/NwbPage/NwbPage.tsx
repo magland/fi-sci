@@ -73,8 +73,8 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     useEffect(() => {
         let canceled = false
         const load = async () => {
-            const urlListResolved = await getResolvedUrls(urlList)
-            const metaUrls = await getMetaUrls(urlListResolved)
+            const urlListResolved = !route.isZarr ? await getResolvedUrls(urlList) : urlList
+            const metaUrls = !route.isZarr ? await getMetaUrls(urlListResolved) : []
             if (canceled) return
             let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr
             if (urlListResolved.length === 1) {

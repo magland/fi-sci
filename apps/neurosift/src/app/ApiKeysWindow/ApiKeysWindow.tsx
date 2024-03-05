@@ -1,6 +1,7 @@
 import { Hyperlink } from "@fi-sci/misc"
 import { FunctionComponent, useCallback, useEffect, useReducer, useState } from "react"
 import useNeurosiftAnnotations from "../NeurosiftAnnotations/useNeurosiftAnnotations"
+import { Button } from "@mui/material"
 
 type ApiKeysWindowProps = {
     onClose: () => void
@@ -70,16 +71,17 @@ const ApiKeysWindow: FunctionComponent<ApiKeysWindowProps> = ({onClose}) => {
             </div>
             <hr />
             <h3>Neurosift annotations</h3>
-            <NeurosiftAnnotationsLoginPage onLoggedIn={onClose} />
+            <NeurosiftAnnotationsLoginPage onLoggedIn={onClose} onClose={onClose} />
         </div>
     )
 }
 
 type NeurosiftAnnotationsLoginPageProps = {
     onLoggedIn: () => void
+    onClose: () => void
 }
 
-const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLoginPageProps> = ({onLoggedIn}) => {
+const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLoginPageProps> = ({onLoggedIn, onClose}) => {
     const [, setRefreshCount] = useState(0)
     const refresh = useCallback(() => {
         setRefreshCount(c => c + 1)
@@ -109,6 +111,9 @@ const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLogin
                     localStorage.removeItem('neurosift-annotations-access-token')
                     refresh()
                 }}>Sign out</Hyperlink>
+                <div>
+                    <Button onClick={onClose}>Close</Button>
+                </div>
             </div>
         )
     }
@@ -117,10 +122,13 @@ const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLogin
             <div>
                 <Hyperlink onClick={() => {
                     setLogInHasBeenAttempted(true)
-                    window.open('https://neurosift-annotations.vercel.app', '_blank')
+                    window.open('https://neurosift-annotations.vercel.app/logIn', '_blank', 'height=600,width=600')
                 }}>
                     Log in to Neurosift Annotations
                 </Hyperlink>
+                <div>
+                    <Button onClick={onClose}>Close</Button>
+                </div>
             </div>
         )
     }
