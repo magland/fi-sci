@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
-import { useCustomStatusBarStrings } from "../../StatusBar"
+import { useCustomStatusBarElements } from "../../StatusBar"
 import useRoute from "../../useRoute"
 import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
 import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
@@ -59,16 +59,26 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
 
     // status bar text
-    const {setCustomStatusBarString} = useCustomStatusBarStrings()
+    const {setCustomStatusBarElement} = useCustomStatusBarElements()
     useEffect(() => {
         const timer = setInterval(() => {
             if (!nwbFile) return
             const x = globalRemoteH5FileStats
-            const s = `${x.numPendingRequests > 0 ? 'Loading... ' : ''}${x.getGroupCount} | ${x.getDatasetCount} | ${x.getDatasetDataCount} | ${x.numPendingRequests}`
-            setCustomStatusBarString && setCustomStatusBarString('custom1', s)
+            const s = <span style={{}}>
+                {
+                    x.numPendingRequests > 0 && (
+                        <span style={{color: 'darkblue'}}>Loading...</span>
+                    )
+                }&nbsp;
+                <span title="Number of groups fetched">{x.getGroupCount}</span>&nbsp;|&nbsp;
+                <span title="Number of datasets fetched">{x.getDatasetCount}</span>&nbsp;|&nbsp;
+                <span title="Number of datasets data fetched">{x.getDatasetDataCount}</span>&nbsp;|&nbsp;
+                <span title="Number of pending requests">{x.numPendingRequests}</span>
+            </span>
+            setCustomStatusBarElement && setCustomStatusBarElement('custom1', s)
         }, 250)
         return () => {clearInterval(timer)}
-    }, [nwbFile, setCustomStatusBarString])
+    }, [nwbFile, setCustomStatusBarElement])
 
     useEffect(() => {
         let canceled = false

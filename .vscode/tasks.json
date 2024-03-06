@@ -16,9 +16,14 @@
       "command": "nx g @nx/react:library --importPath=@fi-sci/${input:libraryName} --directory=libs/${input:libraryName} --publishable"
     },
     {
-      "label": "deploy neurosift",
+      "label": "deploy neurosift (old - to github pages)",
       "type": "shell",
       "command": "nx build neurosift && npx gh-pages -d dist/apps/neurosift --repo https://github.com/flatironinstitute/neurosift --branch gh-pages --no-history"
+    },
+    {
+      "label": "deploy neurosift",
+      "type": "shell",
+      "command": "nx build neurosift && cp apps/neurosift/devel/vercel_files/vercel.json dist/apps/neurosift/ && cp -r apps/neurosift/devel/vercel_files/.vercel dist/apps/neurosift/ && vercel --prod dist/apps/neurosift"
     }
   ],
   "inputs": [

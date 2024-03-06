@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/neurosift-logo.png" />
     <!-- <link rel="stylesheet" href="/src/styles.css" /> -->
+    <script>
+      // Check the url to see if it starts with https://flatironinstitute.github.org
+      // If so, then we need to redirect to https://neurosift.app, but keep the same
+      // query string
+      const url = new URL(window.location.href);
+      if (url.hostname === 'flatironinstitute.github.io') {
+        url.hostname = 'neurosift.app';
+        url.pathname = '';
+        window.location
+          .replace(url.toString());
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

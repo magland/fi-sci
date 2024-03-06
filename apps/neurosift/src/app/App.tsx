@@ -1,18 +1,18 @@
 import { useReducer } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import MainWindow from './MainWindow'
-import { CustomStatusBarStringsContext, customStatusBarStringsReducer } from './StatusBar'
+import { CustomStatusBarElementsContext, customStatusBarElementsReducer } from './StatusBar'
 import { SetupNeurosiftAnnotationsProvider } from './NeurosiftAnnotations/useNeurosiftAnnotations'
 
 function App() {
-  const [customStatusBarStrings, customStatusBarStringsDispatch] = useReducer(customStatusBarStringsReducer, {})
+  const [customStatusBarStrings, customStatusBarStringsDispatch] = useReducer(customStatusBarElementsReducer, {})
   return (
     <BrowserRouter>
-        <CustomStatusBarStringsContext.Provider value={{customStatusBarStrings, customStatusBarStringsDispatch}}>
+        <CustomStatusBarElementsContext.Provider value={{customStatusBarElements: customStatusBarStrings, customStatusBarElementsDispatch: customStatusBarStringsDispatch}}>
           <SetupNeurosiftAnnotationsProvider>
             <MainWindow />
           </SetupNeurosiftAnnotationsProvider>
-        </CustomStatusBarStringsContext.Provider>
+        </CustomStatusBarElementsContext.Provider>
     </BrowserRouter>
   )
 }

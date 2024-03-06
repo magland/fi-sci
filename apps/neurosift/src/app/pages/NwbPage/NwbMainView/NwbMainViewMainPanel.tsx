@@ -1,11 +1,10 @@
-import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { ToggleButton, ToggleButtonGroup } from "@mui/material"
 import { FunctionComponent, useEffect, useState } from "react"
 import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import DendroView from "../DendroView/DendroView"
-import DefaultNwbFileView from "./DefaultNwbFileView"
-import useNeurosiftAnnotations from "../../../NeurosiftAnnotations/useNeurosiftAnnotations"
 import NeurosiftAnnotationsView from "../NeurosiftAnnotationsView/NeurosiftAnnotationsView"
+import DefaultNwbFileView from "./DefaultNwbFileView"
 
 type Props = {
     width: number
@@ -85,7 +84,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
         if (!newViewMode) return
         setViewMode(newViewMode as ViewMode)
     }
-    const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
+    // const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
     return (
         <ToggleButtonGroup
             color="primary"
@@ -97,9 +96,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
             <ToggleButton value="default">Default</ToggleButton>
             <ToggleButton value="raw">Raw</ToggleButton>
             <ToggleButton value="dendro">Dendro</ToggleButton>
-            {
-                neurosiftAnnotationsAccessToken && <ToggleButton value="annotations">Annotations</ToggleButton>
-            }
+            <ToggleButton value="annotations">Annotations</ToggleButton>
         </ToggleButtonGroup>
     )
 }

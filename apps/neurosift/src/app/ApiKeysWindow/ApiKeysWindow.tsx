@@ -71,17 +71,17 @@ const ApiKeysWindow: FunctionComponent<ApiKeysWindowProps> = ({onClose}) => {
             </div>
             <hr />
             <h3>Neurosift annotations</h3>
-            <NeurosiftAnnotationsLoginPage onLoggedIn={onClose} onClose={onClose} />
+            <NeurosiftAnnotationsLoginView onLoggedIn={onClose} onClose={onClose} />
         </div>
     )
 }
 
 type NeurosiftAnnotationsLoginPageProps = {
     onLoggedIn: () => void
-    onClose: () => void
+    onClose?: () => void
 }
 
-const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLoginPageProps> = ({onLoggedIn, onClose}) => {
+export const NeurosiftAnnotationsLoginView: FunctionComponent<NeurosiftAnnotationsLoginPageProps> = ({onLoggedIn, onClose}) => {
     const [, setRefreshCount] = useState(0)
     const refresh = useCallback(() => {
         setRefreshCount(c => c + 1)
@@ -106,29 +106,30 @@ const NeurosiftAnnotationsLoginPage: FunctionComponent<NeurosiftAnnotationsLogin
     if (neurosiftAnnotationsAccessToken) {
         return (
             <div>
-                You are logged in to Neurosift Annotations.&nbsp;
+                <span style={{color: 'darkgreen'}}>You are logged in to Neurosift Annotations.</span>&nbsp;
                 <Hyperlink onClick={() => {
                     localStorage.removeItem('neurosift-annotations-access-token')
                     refresh()
-                }}>Sign out</Hyperlink>
-                <div>
+                }}>Log out</Hyperlink>
+                {onClose && <div>
                     <Button onClick={onClose}>Close</Button>
-                </div>
+                </div>}
             </div>
         )
     }
     else {
         return (
             <div>
+                You are not logged in to neurosift-annotations.&nbsp;
                 <Hyperlink onClick={() => {
                     setLogInHasBeenAttempted(true)
                     window.open('https://neurosift-annotations.vercel.app/logIn', '_blank', 'height=600,width=600')
                 }}>
-                    Log in to Neurosift Annotations
+                    Log in
                 </Hyperlink>
-                <div>
+                {onClose && <div>
                     <Button onClick={onClose}>Close</Button>
-                </div>
+                </div>}
             </div>
         )
     }
