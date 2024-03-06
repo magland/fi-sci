@@ -95,7 +95,8 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
         >
             <ToggleButton value="default">Default</ToggleButton>
             <ToggleButton value="raw">Raw</ToggleButton>
-            <ToggleButton value="dendro">Dendro</ToggleButton>
+            {/* disable for now until we develop it more */}
+            {/* <ToggleButton value="dendro">Dendro</ToggleButton> */}
             <ToggleButton value="annotations">Annotations</ToggleButton>
         </ToggleButtonGroup>
     )

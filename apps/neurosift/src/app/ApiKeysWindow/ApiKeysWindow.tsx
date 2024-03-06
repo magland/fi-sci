@@ -77,7 +77,7 @@ const ApiKeysWindow: FunctionComponent<ApiKeysWindowProps> = ({onClose}) => {
 }
 
 type NeurosiftAnnotationsLoginPageProps = {
-    onLoggedIn: () => void
+    onLoggedIn?: () => void
     onClose?: () => void
 }
 
@@ -97,7 +97,7 @@ export const NeurosiftAnnotationsLoginView: FunctionComponent<NeurosiftAnnotatio
                 setNeurosiftAnnotationsAccessToken(at || '')
                 lastAccessToken = at
                 if ((at) && (logInHasBeenAttempted)) {
-                    onLoggedIn()
+                    onLoggedIn && onLoggedIn()
                 }
             }
         }, 1000)

@@ -131,6 +131,10 @@ export const SetupNwbFileAnnotationsProvider = ({children}: {children: React.Rea
                 annotations
             })
         })
+        if (rr.status !== 200) {
+            console.warn('Error setting annotations', rr)
+            throw Error('Error setting annotations')
+        }
         const data = await rr.json()
         console.log(data)
     }), [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath, annotationsRepo])
