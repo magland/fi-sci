@@ -11,10 +11,10 @@ type NeurosiftAnnotationsViewProps = {
 
 const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps> = ({ width, height }) => {
     const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
-    const {nwbFileAnnotations, refreshNwbFileAnnotations, annotationsRepo, setAnnotationsRepo} = useNwbFileAnnotations()
+    const {nwbFileAnnotationItems, refreshNwbFileAnnotationItems, annotationsRepo, setAnnotationsRepo} = useNwbFileAnnotations()
     useEffect(() => {
-        refreshNwbFileAnnotations()
-    }, [refreshNwbFileAnnotations])
+        refreshNwbFileAnnotationItems()
+    }, [refreshNwbFileAnnotationItems])
     const padding = 10
     return (
         <div style={{ position: 'absolute', width: width - padding * 2, height: height - padding * 2, backgroundColor: '#eee', padding, overflowY: 'auto' }}>
@@ -45,8 +45,8 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
                     />
                 </div>
                 <hr />
-                {nwbFileAnnotations && <div>
-                    <p>This file has {nwbFileAnnotations.length} {nwbFileAnnotations.length === 1 ? 'annotation' : 'annotations'}.</p>
+                {nwbFileAnnotationItems && <div>
+                    <p>This file has {nwbFileAnnotationItems.length} {nwbFileAnnotationItems.length === 1 ? 'annotation' : 'annotations'}.</p>
                 </div>}
                 <div>
                     <p>You can add a top-level note for this file (see icon on left panel), or add notes to individual neurodata objects.</p>

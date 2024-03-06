@@ -11,16 +11,16 @@ type ViewObjectAnnotationIconThingProps = {
 }
 
 const ViewObjectNoteIconThing: FunctionComponent<ViewObjectAnnotationIconThingProps> = ({objectPath, previewText}) => {
-    const {nwbFileAnnotations} = useNwbFileAnnotations()
+    const {nwbFileAnnotationItems} = useNwbFileAnnotations()
     const thisNote = useMemo(() => {
-        if (!nwbFileAnnotations) return undefined
-        const note = nwbFileAnnotations.find(a => a.type === 'note' && a.data.path === objectPath)
+        if (!nwbFileAnnotationItems) return undefined
+        const note = nwbFileAnnotationItems.find(a => a.type === 'note' && a.data.path === objectPath)
         return note
-    }, [nwbFileAnnotations, objectPath])
+    }, [nwbFileAnnotationItems, objectPath])
 
     const {handleOpen: openNote, handleClose: closeNote, visible: noteVisible} = useModalWindow()
 
-    if (!nwbFileAnnotations) return <span />
+    if (!nwbFileAnnotationItems) return <span />
     return (
         <div>
             <span style={{color: thisNote ? 'darkgreen' : 'black'}}>

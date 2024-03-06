@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { MergedRemoteH5File, RemoteH5Dataset, RemoteH5File, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
 
 type Props = {
@@ -27,6 +27,7 @@ class PlaneSegmentationClient {
     }
     async initialize() {
         this.#imageMaskDataset = await this.nwbFile.getDataset(`${this.objectPath}/image_mask`)
+        if (!this.#imageMaskDataset) throw Error(`Unable to load image mask dataset`)
     }
     get shape() {
         return this.#imageMaskDataset!.shape

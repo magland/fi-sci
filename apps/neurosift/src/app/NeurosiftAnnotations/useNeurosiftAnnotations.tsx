@@ -1,14 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { createContext, useContext, useEffect, useState } from "react"
 
-export type NeurosiftAnnotation = {
-    id: string
-    type: string
-    timestamp: number
-    user: string
-    data: {[key: string]: any}
-}
-
 type NeurosiftAnnotationsContextType = {
     neurosiftAnnotationsAccessToken?: string
     setNeurosiftAnnotationsAccessToken: (accessToken: string) => void
