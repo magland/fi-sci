@@ -1,7 +1,7 @@
+import { SmallIconButton } from '@fi-sci/misc';
+import { Link } from '@mui/icons-material';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
 import useNwbFileAnnotations, { NeurosiftAnnotationItem } from '../NwbFileAnnotations/useNwbFileAnnotations';
-import { Hyperlink, SmallIconButton } from '@fi-sci/misc';
-import { Link } from '@mui/icons-material';
 
 type ObjectNoteViewProps = {
   objectPath: string;

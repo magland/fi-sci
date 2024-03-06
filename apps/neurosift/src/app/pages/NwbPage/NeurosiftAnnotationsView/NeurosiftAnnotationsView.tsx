@@ -1,5 +1,5 @@
 import { Hyperlink } from "@fi-sci/misc"
-import { FunctionComponent, useEffect, useState } from "react"
+import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { NeurosiftAnnotationsLoginView } from "../../../ApiKeysWindow/ApiKeysWindow"
 import useNwbFileAnnotations from "../NwbFileAnnotations/useNwbFileAnnotations"
 import useNeurosiftAnnotations from "../../../NeurosiftAnnotations/useNeurosiftAnnotations"
@@ -15,7 +15,13 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
     useEffect(() => {
         refreshNwbFileAnnotationItems()
     }, [refreshNwbFileAnnotationItems])
+    const itemPathsWithAnnotations = useMemo(() => {
+        if (!nwbFileAnnotationItems) return []
+        const paths = nwbFileAnnotationItems.map(a => a.data.path)
+        return [...new Set(paths)].sort()
+    }, [nwbFileAnnotationItems])
     const padding = 10
+    const dividingCharacter = '•'
     return (
         <div style={{ position: 'absolute', width: width - padding * 2, height: height - padding * 2, backgroundColor: '#eee', padding, overflowY: 'auto' }}>
             <div>
@@ -51,6 +57,22 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
                 <div>
                     <p>You can add a top-level note for this file (see icon on left panel), or add notes to individual neurodata objects.</p>
                 </div>
+                {
+                    itemPathsWithAnnotations.length > 0 && (
+                        <div>
+                            The following neurodata objects have annotations:&nbsp;&nbsp;&nbsp;
+                            {
+                                itemPathsWithAnnotations.map((p, i) => (
+                                    <span key={p}>
+                                        <span style={{color: 'darkblue', fontFamily: 'monospace'}}>
+                                            {p !== '/' ? p : 'top-level'}
+                                        </span>&nbsp;{i < itemPathsWithAnnotations.length - 1 ? dividingCharacter : ''}&nbsp;
+                                    </span>
+                                ))
+                            }
+                        </div>
+                    )
+                }
             </span>)}
         </div>
     )
