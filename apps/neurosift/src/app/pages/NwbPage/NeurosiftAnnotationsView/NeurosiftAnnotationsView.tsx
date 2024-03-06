@@ -26,7 +26,7 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
             </div>
             <NeurosiftAnnotationsLoginView
                 onClose={undefined}
-                onLoggedIn={() => {}}
+                onLoggedIn={undefined}
             />
             <div>
                 <p><Hyperlink href="https://github.com/flatironinstitute/neurosift/blob/main/doc/neurosift_annotations.md" target="_blank">

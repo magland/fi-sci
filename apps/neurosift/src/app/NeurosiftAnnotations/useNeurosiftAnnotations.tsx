@@ -38,11 +38,6 @@ export const SetupNeurosiftAnnotationsProvider = ({children}: {children: React.R
             setNeurosiftAnnotationsAccessToken(at)
         }
     }, [])
-    useEffect(() => {
-        if (neurosiftAnnotationsAccessToken) {
-            localStorage.setItem('neurosift-annotations-access-token', neurosiftAnnotationsAccessToken)
-        }
-    }, [neurosiftAnnotationsAccessToken])
 
     return (
         <NeurosiftAnnotationsContext.Provider value={{neurosiftAnnotationsAccessToken, setNeurosiftAnnotationsAccessToken}}>
