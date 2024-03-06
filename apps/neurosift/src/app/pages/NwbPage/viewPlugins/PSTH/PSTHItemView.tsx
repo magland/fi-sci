@@ -7,6 +7,8 @@ import { useGroup } from "../../NwbMainView/NwbMainView"
 import { DirectSpikeTrainsClient } from "../Units/DirectRasterPlotUnitsItemView"
 import IfHasBeenVisible from "./IfHasBeenVisible"
 import PSTHUnitWidget from "./PSTHUnitWidget"
+import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
+import { Button } from "@mui/material"
 
 type Props = {
     width: number
@@ -93,6 +95,10 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
 
     const [alignToVariables, setAlignToVariables] = useState<string[]>(['start_time'])
     const [groupByVariable, setGroupByVariable] = useState<string>('')
+    const [groupByVariableCategories, setGroupByVariableCategories] = useState<string[] | undefined>([])
+    useEffect(() => {
+        setGroupByVariableCategories(undefined)
+    }, [groupByVariable])
     const [windowRangeStr, setWindowRangeStr] = useState<{start: string, end: string}>({start: '-0.5', end: '1'})
     const windowRange = useMemo(() => {
         const t1 = parseFloat(windowRangeStr.start)
@@ -106,6 +112,8 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
         }
     }, [windowRangeStr])
 
+    const {handleOpen: openAdvancedOpts, handleClose: closeAdvancedOpts, visible: advancedOptsVisible} = useModalWindow()
+
     const [prefs, prefsDispatch] = useReducer(psthPrefsReducer, defaultPSTHPrefs)
 
     const unitsTable = <UnitSelectionComponent unitIds={unitIds} selectedUnitIds={selectedUnitIds} setSelectedUnitIds={setSelectedUnitIds} />
@@ -114,16 +122,16 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
         <AlignToSelectionComponent alignToVariables={alignToVariables} setAlignToVariables={setAlignToVariables} path={path} />
     )
 
-    const groupBySelectionComponent = (
-        <GroupBySelectionComponent groupByVariable={groupByVariable} setGroupByVariable={setGroupByVariable} path={path} />
-    )
-
     const windowRangeSelectionComponent = (
         <WindowRangeSelectionComponent windowRangeStr={windowRangeStr} setWindowRangeStr={setWindowRangeStr} />
     )
 
+    const groupBySelectionComponent = (
+        <GroupBySelectionComponent groupByVariable={groupByVariable} setGroupByVariable={setGroupByVariable} path={path} groupByVariableCategories={groupByVariableCategories} setGroupByVariableCategories={setGroupByVariableCategories} />
+    )
+
     const prefsComponent = (
-        <PrefsComponent prefs={prefs} prefsDispatch={prefsDispatch} />
+        <PrefsComponent prefs={prefs} prefsDispatch={prefsDispatch} advanced={false} onOpenAdvanced={openAdvancedOpts} />
     )
 
     const unitsTableWidth = 200
@@ -182,6 +190,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
                                     unitId={unitId}
                                     alignToVariables={alignToVariables}
                                     groupByVariable={groupByVariable}
+                                    groupByVariableCategories={groupByVariableCategories}
                                     windowRange={windowRange}
                                     prefs={prefs}
                                 />
@@ -195,6 +204,28 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
                     )
                 }
             </div>
+            <ModalWindow
+                visible={advancedOptsVisible}
+                onClose={closeAdvancedOpts}
+            >
+                <div>
+                    <WindowRangeSelectionComponent windowRangeStr={windowRangeStr} setWindowRangeStr={setWindowRangeStr} advanced={true} />
+                    <hr />
+                        <GroupBySelectionComponent
+                            groupByVariable={groupByVariable}
+                            setGroupByVariable={setGroupByVariable}
+                            path={path}
+                            advanced={true}
+                            groupByVariableCategories={groupByVariableCategories}
+                            setGroupByVariableCategories={setGroupByVariableCategories}
+                        />
+                    <hr />
+                    <PrefsComponent prefs={prefs} prefsDispatch={prefsDispatch} advanced={true} onOpenAdvanced={undefined} />
+                    <div>
+                        <Button onClick={closeAdvancedOpts}>Close</Button>
+                    </div>
+                </div>
+            </ModalWindow>
         </div>
     )
 }
@@ -278,21 +309,32 @@ const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], s
     )
 }
 
-export const GroupBySelectionComponent: FunctionComponent<{groupByVariable: string, setGroupByVariable: (x: string) => void, path: string}> = ({groupByVariable, setGroupByVariable, path}) => {
+type GroupBySelectionComponentProps = {
+    groupByVariable: string
+    setGroupByVariable: (x: string) => void
+    path: string
+    advanced?: boolean
+    groupByVariableCategories?: string[]
+    setGroupByVariableCategories?: (x: string[] | undefined) => void
+}
+
+export const GroupBySelectionComponent: FunctionComponent<GroupBySelectionComponentProps> = ({groupByVariable, setGroupByVariable, path, advanced, groupByVariableCategories, setGroupByVariableCategories}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
     const group = useGroup(nwbFile, path)
-    const options = useMemo(() => ((group?.datasets || []).map(ds => ds.name).filter(name => (!name.endsWith('_time') && !name.endsWith('_times')))), [group])
+    const options = useMemo(() => (
+        (group?.datasets || []).map(ds => ds.name).filter(name => (!name.endsWith('_time') && !name.endsWith('_times')))
+    ), [group])
 
     // determine which columns are categorical -- but don't let this slow down the UI
     // while it is calculating, we can use the full list of options
-    const [categoricalOptions, setCategoricalOptions] = useState<string[] | undefined>(undefined)
+    const [categoricalOptions, setCategoricalOptions] = useState<{variableName: string, categories: any[]}[] | undefined>(undefined)
     useEffect(() => {
         if (!group) return
         let canceled = false
         const load = async () => {
-            const categoricalOptions: string[] = []
+            const categoricalOptions: {variableName: string, categories: any[]}[] = []
             for (const option of options) {
                 const ds = group.datasets.find(ds => (ds.name === option))
                 if (!ds) continue
@@ -303,7 +345,7 @@ export const GroupBySelectionComponent: FunctionComponent<{groupByVariable: stri
                 if (canceled) return
                 const uniqueValues = [...new Set(dd)]
                 if (uniqueValues.length <= dd.length / 2) {
-                    categoricalOptions.push(option)
+                    categoricalOptions.push({variableName: option, categories: uniqueValues})
                 }
             }
             if (canceled) return
@@ -313,6 +355,12 @@ export const GroupBySelectionComponent: FunctionComponent<{groupByVariable: stri
         return () => {canceled = true}
     }, [options, group, nwbFile, path])
 
+    const categoriesForSelectedVariable = useMemo(() => {
+        if (!groupByVariable) return undefined
+        const opt = categoricalOptions?.find(opt => (opt.variableName === groupByVariable))
+        return opt ? opt.categories : undefined
+    }, [groupByVariable, categoricalOptions])
+
     return (
         <div>
             Group by:<br />
@@ -321,19 +369,66 @@ export const GroupBySelectionComponent: FunctionComponent<{groupByVariable: stri
                 onChange={(evt) => {
                     setGroupByVariable(evt.target.value)
                 }}
+                style={{maxWidth: 150}}
             >
                 <option value="">(none)</option>
                 {
-                    (categoricalOptions || options).map((option) => (
-                        <option key={option} value={option}>{option}</option>
+                    (categoricalOptions || []).map((option) => (
+                        <option key={option.variableName} value={option.variableName}>{option.variableName}</option>
                     ))
                 }
-            </select>
+            </select>&nbsp;
+            {
+                advanced && categoriesForSelectedVariable && setGroupByVariableCategories && (
+                    <div>
+                        <GroupByVariableCategoriesComponent groupByVariableCategories={groupByVariableCategories} setGroupByVariableCategories={setGroupByVariableCategories} options={categoriesForSelectedVariable} />
+                    </div>
+                )
+            }
         </div>
     )
 }
 
-export const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {start: string, end: string}, setWindowRangeStr: (x: {start: string, end: string}) => void}> = ({windowRangeStr: windowRange, setWindowRangeStr: setWindowRange}) => {
+type GroupByVariableCategoriesComponentProps = {
+    groupByVariableCategories: string[] | undefined
+    setGroupByVariableCategories: (x: string[] | undefined) => void
+    options: string[]
+}
+
+const GroupByVariableCategoriesComponent: FunctionComponent<GroupByVariableCategoriesComponentProps> = ({groupByVariableCategories, setGroupByVariableCategories, options}) => {
+    return (
+        <div>
+            <table>
+                <tbody>
+                    {
+                        options.map((option) => (
+                            <tr key={option}>
+                                <td>
+                                    <input type="checkbox" checked={groupByVariableCategories?.includes(option) || !groupByVariableCategories} onChange={() => {}} onClick={() => {
+                                        if (groupByVariableCategories) {
+                                            if (groupByVariableCategories.includes(option)) {
+                                                setGroupByVariableCategories(groupByVariableCategories.filter(x => (x !== option)))
+                                            }
+                                            else {
+                                                setGroupByVariableCategories([...(groupByVariableCategories || []), option])
+                                            }
+                                        }
+                                        else {
+                                            setGroupByVariableCategories(options.filter(x => (x !== option)))
+                                        }
+                                    }} />
+                                </td>
+                                <td>{option}</td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+export const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {start: string, end: string}, setWindowRangeStr: (x: {start: string, end: string}) => void, advanced?: boolean}> = ({windowRangeStr: windowRange, setWindowRangeStr: setWindowRange}) => {
     return (
         <div>
             Window range (sec):<br />
@@ -347,9 +442,11 @@ export const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {
 type PrefsComponentProps = {
     prefs: PSTHPrefs
     prefsDispatch: (x: PSTHPrefsAction) => void
+    advanced: boolean
+    onOpenAdvanced: (() => void) | undefined
 }
 
-const PrefsComponent: FunctionComponent<PrefsComponentProps> = ({prefs, prefsDispatch}) => {
+const PrefsComponent: FunctionComponent<PrefsComponentProps> = ({prefs, prefsDispatch, advanced, onOpenAdvanced}) => {
     const handleSetNumBins = useCallback((numBins: number) => {
         prefsDispatch({type: 'SET_PREF', key: 'numBins', value: numBins})
     }, [prefsDispatch])
@@ -366,14 +463,12 @@ const PrefsComponent: FunctionComponent<PrefsComponentProps> = ({prefs, prefsDis
         <div>
             <input type="checkbox" checked={prefs.showRaster} onChange={() => {}} onClick={handleToggleShowRaster} /> Show raster
             <br />
-            <hr />
             <input type="checkbox" checked={prefs.showHist} onChange={() => {}} onClick={handleToggleShowHist} /> Show histogram
             <br />
             <NumBinsComponent numBins={prefs.numBins} setNumBins={handleSetNumBins} />
             <br />
             <input type="checkbox" checked={prefs.smoothedHist} onChange={() => {}} onClick={handleToggleSmoothedHist} /> Smoothed
             <br />
-            <hr />
             Height:&nbsp;
             <select
                 value={prefs.height}
@@ -385,6 +480,12 @@ const PrefsComponent: FunctionComponent<PrefsComponentProps> = ({prefs, prefsDis
                 <option value="medium">Medium</option>
                 <option value="large">Large</option>
             </select>
+            <hr />
+            {
+                !advanced && onOpenAdvanced && (
+                    <button onClick={onOpenAdvanced}>Advanced</button>
+                )
+            }
         </div>
     )
 }

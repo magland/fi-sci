@@ -14,11 +14,12 @@ type Props = {
     unitId: string | number
     alignToVariables: string[]
     groupByVariable: string
+    groupByVariableCategories: string[] | undefined
     windowRange: {start: number, end: number}
     prefs: PSTHPrefs
 }
 
-const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTrainsClient, unitId, alignToVariables, groupByVariable, windowRange, prefs}) => {
+const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTrainsClient, unitId, alignToVariables, groupByVariable, groupByVariableCategories, windowRange, prefs}) => {
     const topBarHeight = 40
     const groupLegendWidth = groupByVariable ? 100 : 0
     const W = (width - groupLegendWidth) / (alignToVariables.length || 1)
@@ -53,6 +54,7 @@ const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTra
                             height={height - topBarHeight}
                             path={path}
                             groupByVariable={groupByVariable}
+                            groupByVariableCategories={groupByVariableCategories}
                         />
                     </div>
                 )
@@ -69,6 +71,7 @@ const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTra
                                 unitId={unitId}
                                 alignToVariable={alignToVariable}
                                 groupByVariable={groupByVariable}
+                                groupByVariableCategories={groupByVariableCategories}
                                 windowRange={windowRange}
                                 prefs={prefs}
                             />
@@ -92,11 +95,12 @@ type PSTHUnitAlignToWidgetProps = {
     unitId: string | number
     alignToVariable: string
     groupByVariable: string
+    groupByVariableCategories: string[] | undefined
     windowRange: {start: number, end: number}
     prefs: PSTHPrefs
 }
 
-const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({width, height, path, spikeTrain, unitId, alignToVariable, groupByVariable, windowRange, prefs}) => {
+const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({width, height, path, spikeTrain, unitId, alignToVariable, groupByVariable, groupByVariableCategories, windowRange, prefs}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
@@ -161,11 +165,12 @@ const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({w
         const vals = trials.map(t => t.group)
         const uniqueVals = Array.from(new Set(vals))
         uniqueVals.sort()
-        return uniqueVals.map((val, i) => ({
+        const uniqueVals2 = groupByVariableCategories ? uniqueVals.filter(v => groupByVariableCategories.includes(v + '')) : uniqueVals
+        return uniqueVals2.map((val, i) => ({
             group: val,
             color: groupColorForIndex(i)
         }))
-    }, [trials])
+    }, [trials, groupByVariableCategories])
 
     const sortedTrials = useMemo(() => {
         if (!trials) return undefined
@@ -238,9 +243,10 @@ type PSTHGroupLegendProps = {
     height: number
     path: string
     groupByVariable: string
+    groupByVariableCategories: string[] | undefined
 }
 
-const PSTHGroupLegend: FunctionComponent<PSTHGroupLegendProps> = ({width, height, path, groupByVariable}) => {
+const PSTHGroupLegend: FunctionComponent<PSTHGroupLegendProps> = ({width, height, path, groupByVariable, groupByVariableCategories}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
@@ -251,11 +257,15 @@ const PSTHGroupLegend: FunctionComponent<PSTHGroupLegendProps> = ({width, height
             const vals = await nwbFile.getDatasetData(path + '/' + groupByVariable, {})
             if (!vals) throw Error(`Unable to load ${path}/${groupByVariable}`)
             if (canceled) return
-            setValues(Array.from(vals))
+            let vv = Array.from(vals)
+            if (groupByVariableCategories) {
+                vv = vv.filter(v => groupByVariableCategories.includes(v + ''))
+            }
+            setValues(Array.from(vv))
         }
         load()
         return () => {canceled = true}
-    }, [nwbFile, path, groupByVariable])
+    }, [nwbFile, path, groupByVariable, groupByVariableCategories])
 
     const groups: {group: any, color: string}[] = useMemo(() => {
         const vals = values
