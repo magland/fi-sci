@@ -61,9 +61,15 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     // status bar text
     const {setCustomStatusBarElement} = useCustomStatusBarElements()
     useEffect(() => {
+        let lastStatsString = ''
         const timer = setInterval(() => {
             if (!nwbFile) return
             const x = globalRemoteH5FileStats
+
+            // important to do this check so the context state is not constantly changing
+            if (JSONStringifyDeterministic(x) === lastStatsString) return
+            lastStatsString = JSONStringifyDeterministic(x)
+
             const s = <span style={{}}>
                 {
                     x.numPendingRequests > 0 && (
@@ -330,5 +336,17 @@ const getAssetPathForAssetId = async (dandisetId: string, dandisetVersion: strin
     const obj = await resp.json()
     return obj['path']
 }
+
+// Thanks: https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const JSONStringifyDeterministic = (obj: any, space: string | number | undefined = undefined) => {
+    const allKeys: string[] = [];
+    JSON.stringify(obj, function (key, value) {
+      allKeys.push(key);
+      return value;
+    });
+    allKeys.sort();
+    return JSON.stringify(obj, allKeys, space);
+};
 
 export default NwbPage

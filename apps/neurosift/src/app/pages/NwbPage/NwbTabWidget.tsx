@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { FunctionComponent, useContext, useMemo, useReducer } from "react";
+import { FunctionComponent, useMemo, useReducer } from "react";
+import TabWidget from "../../TabWidget/TabWidget";
 import { SetupTimeseriesSelection } from "../../package/context-timeseries-selection";
-import { defaultUnitSelection, UnitSelectionContext, unitSelectionReducer } from "../../package/context-unit-selection";
+import { UnitSelectionContext, defaultUnitSelection, unitSelectionReducer } from "../../package/context-unit-selection";
 import NeurodataItemsView from "./NeurodataItemView/NeurodataItemsView";
 import ViewItemWidget from "./NeurodataItemView/ViewItemWidget";
-import { NwbFileContext, useNwbFile } from "./NwbFileContext";
+import { useNwbFile } from "./NwbFileContext";
 import NwbMainView from "./NwbMainView/NwbMainView";
 import { useNwbOpenTabs } from "./NwbOpenTabsContext";
 import TimeseriesAlignmentView from "./TimeseriesAlignmentView/TimeseriesAlignmentView";
 import viewPlugins, { findViewPluginsForType } from "./viewPlugins/viewPlugins";
-import TabWidget from "../../TabWidget/TabWidget";
 
 const NwbTabWidget: FunctionComponent<{width: number, height: number}> = ({width, height}) => {
     const {openTabs, currentTabName, setCurrentTab, closeTab, initialTimeSelections} = useNwbOpenTabs()

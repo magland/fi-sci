@@ -329,12 +329,12 @@ export const GroupBySelectionComponent: FunctionComponent<GroupBySelectionCompon
 
     // determine which columns are categorical -- but don't let this slow down the UI
     // while it is calculating, we can use the full list of options
-    const [categoricalOptions, setCategoricalOptions] = useState<{variableName: string, categories: any[]}[] | undefined>(undefined)
+    const [categoricalOptions, setCategoricalOptions] = useState<{variableName: string, categories: string[]}[] | undefined>(undefined)
     useEffect(() => {
         if (!group) return
         let canceled = false
         const load = async () => {
-            const categoricalOptions: {variableName: string, categories: any[]}[] = []
+            const categoricalOptions: {variableName: string, categories: string[]}[] = []
             for (const option of options) {
                 const ds = group.datasets.find(ds => (ds.name === option))
                 if (!ds) continue
@@ -343,7 +343,8 @@ export const GroupBySelectionComponent: FunctionComponent<GroupBySelectionCompon
                 const dd = await nwbFile.getDatasetData(path + '/' + option, {slice})
                 if (!dd) throw Error(`Unable to get data for ${path}/${option}`)
                 if (canceled) return
-                const uniqueValues = [...new Set(dd)]
+                const stringValues = [...dd].map(x => (x.toString()))
+                const uniqueValues: string[] = [...new Set(stringValues)]
                 if (uniqueValues.length <= dd.length / 2) {
                     categoricalOptions.push({variableName: option, categories: uniqueValues})
                 }
