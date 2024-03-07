@@ -7,11 +7,17 @@ import { GetAllAnnotationsForNwbFileRequest, GetRepoAnnotationForNwbFile, NwbFil
 export type NeurosiftAnnotationItem = {
     repo: string
     id: string
-    type: string
     timestamp: number
     user: string
-    data: {[key: string]: any}
-}
+} & (
+    {
+        type: 'note'
+        data: {
+            path: string
+            text: string
+        }
+    }
+)
 
 type NwbFileAnnotationsContextType = {
     nwbFileAnnotationItems?: NeurosiftAnnotationItem[]

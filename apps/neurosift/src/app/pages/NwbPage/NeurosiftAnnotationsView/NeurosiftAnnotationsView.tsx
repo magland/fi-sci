@@ -26,8 +26,8 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
         <div style={{ position: 'absolute', width: width - padding * 2, height: height - padding * 2, backgroundColor: '#eee', padding, overflowY: 'auto' }}>
             <div>
                 <p>
-                    Use neurosift-annotations to annotate your NWB file, with results
-                    being stored in a GitHub repository.
+                    Use neurosift-annotations to annotate this NWB file, with results
+                    stored in a GitHub repository.
                 </p>
             </div>
             <NeurosiftAnnotationsLoginView
