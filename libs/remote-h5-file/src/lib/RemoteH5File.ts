@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import RemoteH5FileZarr from './RemoteH5FileZarr';
+import RemoteH5FileZarr, { getRemoteH5FileZarr } from './RemoteH5FileZarr';
 import { Canceler, postRemoteH5WorkerRequest } from './helpers';
+import RemoteH5FileKerchunk, { getRemoteH5FileKerchunk } from './kerchunk/RemoteH5FileKerchunk';
 
-export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr;
+export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr | RemoteH5FileKerchunk
 
 export type RemoteH5Group = {
   path: string;
@@ -205,12 +206,26 @@ export class RemoteH5File {
 }
 
 export class MergedRemoteH5File {
-  #files: RemoteH5File[];
-  constructor(files: RemoteH5File[]) {
+  #files: RemoteH5FileX[];
+  constructor(files: RemoteH5FileX[]) {
     this.#files = files;
   }
   get dataIsRemote() {
-    return this.#files.some((f) => f.dataIsRemote);
+    return this.#files.some((f) => {
+      if (f instanceof RemoteH5File) {
+        return f.dataIsRemote
+      }
+      else if (f instanceof RemoteH5FileZarr) {
+        return f.dataIsRemote
+      }
+      else if (f instanceof MergedRemoteH5File) {
+        // this case shouldn't happen - unfortunately we can't call f.dataIsRemote here because typescript doesn't allow it
+        return false
+      }
+      else {
+        throw Error('Unexpected')
+      }
+    });
   }
   async getGroup(path: string): Promise<RemoteH5Group | undefined> {
     const allGroups: RemoteH5Group[] = [];
@@ -340,15 +355,32 @@ export const getRemoteH5File = async (url: string, metaUrl: string | undefined) 
 };
 
 const globalMergedRemoteH5Files: { [kk: string]: MergedRemoteH5File } = {};
-export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | undefined)[]) => {
+export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | undefined)[], storageType: ('h5' | 'zarr' | 'kc')[]) => {
   if (urls.length === 0) throw Error(`Length of urls must be > 0`);
   if (metaUrls.length !== urls.length) throw Error(`Length of metaUrls must be equal to length of urls`);
+  if (storageType.length !== urls.length) throw Error(`Length of storageType must be equal to length of urls`);
   if (urls.length === 1) {
-    return await getRemoteH5File(urls[0], metaUrls[0]);
+    if (storageType[0] === 'zarr') {
+      return await getRemoteH5FileZarr(urls[0], metaUrls[0]);
+    } else if (storageType[0] === 'kc') {
+      return await getRemoteH5FileKerchunk(urls[0]);
+    } else {
+      return await getRemoteH5File(urls[0], metaUrls[0]);
+    }
   }
   const kk = urls.join('|') + '|||' + metaUrls.join('|');
   if (!globalMergedRemoteH5Files[kk]) {
-    const files = await Promise.all(urls.map((url, i) => getRemoteH5File(url, metaUrls[i])));
+    const files = await Promise.all(urls.map((url, i) => {
+      if (storageType[i] === 'zarr') {
+        return getRemoteH5FileZarr(url, metaUrls[i]);
+      }
+      else if (storageType[i] === 'kc') {
+        return getRemoteH5FileKerchunk(url);
+      }
+      else {
+        return getRemoteH5File(url, metaUrls[i])
+      }
+    }));
     globalMergedRemoteH5Files[kk] = new MergedRemoteH5File(files);
   }
   return globalMergedRemoteH5Files[kk];

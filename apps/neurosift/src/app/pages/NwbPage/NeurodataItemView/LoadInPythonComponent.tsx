@@ -1,7 +1,7 @@
 import { FunctionComponent, useMemo } from "react"
 import { useModalDialog } from "../../../ApplicationBar"
 import { useNwbFile } from "../NwbFileContext"
-import { MergedRemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { findViewPluginsForType, ViewPlugin } from "../viewPlugins/viewPlugins"
 import { Hyperlink } from "@fi-sci/misc"
 import ModalWindow from "@fi-sci/modal-window"
@@ -38,7 +38,13 @@ const LoadInPythonWindow: FunctionComponent<Props> = ({path, group, viewName}) =
 
     let nwbFileUrl: string
     if (nwbFile instanceof MergedRemoteH5File) {
-        nwbFileUrl = nwbFile.getFiles()[0].url
+        const f = nwbFile.getFiles()[0]
+        if (f instanceof RemoteH5File) {
+            nwbFileUrl = f.url
+        }
+        else {
+            nwbFileUrl = 'unknown'
+        }
     }
     else {
         nwbFileUrl = nwbFile.url

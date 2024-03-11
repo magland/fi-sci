@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
+export type StorageType = 'h5' | 'zarr' | 'kc'
+
 export type Route = {
     page: 'home'
 } | {
@@ -15,7 +17,7 @@ export type Route = {
     url: string[]
     dandisetId?: string
     dandisetVersion?: string
-    isZarr?: boolean
+    storageType: StorageType[]
 } | {
     page: 'dandiset'
     dandisetId: string
@@ -68,12 +70,29 @@ const useRoute = () => {
             }
         }
         else if (p === '/nwb') {
+            const urlList = typeof query.url === 'string' ? [query.url] : query.url // actually a list of urls
+            const storageType: StorageType[] = []
+            if (!query.st) {
+                for (let i = 0; i < urlList.length; i++) {
+                    storageType.push('h5')
+                }
+            }
+            else if (typeof query.st === 'string') {
+                for (let i = 0; i < urlList.length; i++) {
+                    storageType.push(query.st as StorageType)
+                }
+            }
+            else {
+                for (let i = 0; i < urlList.length; i++) {
+                    storageType.push(query.st[i] as StorageType)
+                }
+            }
             return {
                 page: 'nwb',
-                url: typeof query.url === 'string' ? [query.url] : query.url,
+                url: urlList,
                 dandisetId: (query.dandisetId || '') as string,
                 dandisetVersion: (query.dandisetVersion || '') as string,
-                isZarr: query.zarr === '1'
+                storageType
             }
         }
         else if (p === '/dandiset') {
@@ -143,12 +162,12 @@ const useRoute = () => {
                     delete newQuery.dandisetVersion
                 }
             }
-            if (r.isZarr) {
-                newQuery.zarr = '1'
+            if (r.storageType.some(t => t !== 'h5')) { // if any of storageType is not h5
+                newQuery.st = r.storageType
             }
             else {
-                if (newQuery.zarr) {
-                    delete newQuery.zarr
+                if (newQuery.storageType) {
+                    delete newQuery.storageType
                 }
             }
         }
@@ -174,8 +193,8 @@ const useRoute = () => {
             if (newQuery.url) {
                 delete newQuery.url
             }
-            if (newQuery.zarr) {
-                delete newQuery.zarr
+            if (newQuery.storageType) {
+                delete newQuery.storageType
             }
         }
         else if (r.page === 'dandi') {
@@ -197,8 +216,8 @@ const useRoute = () => {
             if (newQuery.dandisetVersion) {
                 delete newQuery.dandisetVersion
             }
-            if (newQuery.zarr) {
-                delete newQuery.zarr
+            if (newQuery.storageType) {
+                delete newQuery.storageType
             }
         }
         else if (r.page === 'neurosift-annotations-login') {

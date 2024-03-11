@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileKerchunk, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileKerchunk, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
 import { useCustomStatusBarElements } from "../../StatusBar"
-import useRoute from "../../useRoute"
+import useRoute, { StorageType } from "../../useRoute"
 import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
 import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
 import { NwbFileContext } from "./NwbFileContext"
@@ -89,39 +89,39 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
     useEffect(() => {
         let canceled = false
         const load = async () => {
-            const urlListResolved = !route.isZarr ? await getResolvedUrls(urlList) : urlList
-            const metaUrls = !route.isZarr ? await getMetaUrls(urlListResolved) : []
+            const dandisetId = route.dandisetId
+            const {urls: urlListResolved, storageTypes: storageTypeResolved} = await getResolvedUrls(urlList, route.storageType, {dandisetId})
+            const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
             if (canceled) return
-            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr
+            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileKerchunk
             if (urlListResolved.length === 1) {
-                if (route.isZarr) {
+                if (storageTypeResolved[0] === 'zarr') {
                     f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
+                }
+                else if (storageTypeResolved[0] === 'kc') {
+                    f = await getRemoteH5FileKerchunk(urlListResolved[0])
                 }
                 else {
                     f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
                 }
             }
             else {
-                if (route.isZarr) {
-                    throw Error('Merging zarr files not yet implemented yet')
-                }
-                f = await getMergedRemoteH5File(urlListResolved, metaUrls)
+                f = await getMergedRemoteH5File(urlListResolved, metaUrls, storageTypeResolved)
             }
             if (canceled) return
             setNwbFile(f)
         }
         load()
         return () => {canceled = true}
-    }, [urlList, route.isZarr])
+    }, [urlList, route.storageType, route.dandisetId])
 
     const [dandiAssetContextValue, setDandiAssetContextValue] = useState<DandiAssetContextType>(defaultDandiAssetContext)
     useEffect(() => {
         let canceled = false;
         (async () => {
-            const query = new URLSearchParams(window.location.search)
-            const assetUrl = query.get('url')
-            const dandisetId = query.get('dandisetId')
-            const dandisetVersion = query.get('dandisetVersion')
+            const assetUrl = route.url[0]
+            const dandisetId = route.dandisetId
+            const dandisetVersion = route.dandisetVersion
             if (!assetUrl) return
             if (!dandisetId) return
             if (!dandisetVersion) return
@@ -177,7 +177,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             })
         })()
         return () => {canceled = true}
-    }, [])
+    }, [route.url, route.dandisetId, route.dandisetVersion])
 
     if (!nwbFile) return <div>Loading {urlList}</div>
     return (
@@ -243,7 +243,9 @@ export const getEtag = async (url: string) => {
 const urlQueryString = window.location.search
 const urlQueryParams = new URLSearchParams(urlQueryString)
 
-const getMetaUrl = async (url: string): Promise<string | undefined> => {
+const getMetaUrl = async (url: string, storageType: StorageType): Promise<string | undefined> => {
+    if (storageType === 'zarr') return undefined
+    if (storageType === 'kc') return undefined
     if (urlQueryParams.get('no-meta') === '1') return undefined
 
     const etag = await getEtag(url)
@@ -279,26 +281,57 @@ const getMetaUrl = async (url: string): Promise<string | undefined> => {
     // return undefined
 }
 
-const getMetaUrls = async (urlList: string[]) => {
-    const metaUrls = await Promise.all(urlList.map(url => getMetaUrl(url)))
+const getMetaUrls = async (urlList: string[], storageType: StorageType[]) => {
+    const metaUrls = await Promise.all(urlList.map((url, i) => getMetaUrl(url, storageType[i])))
     return metaUrls
 }
 
-const getResolvedUrl = async (url: string) => {
+const getResolvedUrl = async (url: string, storageType: StorageType, o: {dandisetId?: string}): Promise<{url: string, storageType: StorageType}> => {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const queryParams = Object.fromEntries(urlSearchParams.entries());
+    if (storageType === 'zarr') return {url, storageType}
+    if (storageType === 'kc') return {url, storageType}
     if (isDandiAssetUrl(url)) {
         const authorizationHeader = getAuthorizationHeaderForUrl(url)
         const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
-        const redirectUrl = await getRedirectUrl(url, headers)
-        if (redirectUrl) {
-            return redirectUrl
+        const redirectUrl = await getRedirectUrl(url, headers) || url
+        const kerchunkUrl = o.dandisetId && !(queryParams.kerchunk === '0') ? await tryGetKerchunkUrl(url, o.dandisetId) : undefined
+        if (kerchunkUrl) {
+            console.info(`Using kerchunk ${url} -> ${kerchunkUrl}`)
+            return {url: kerchunkUrl, storageType: 'kc'}
         }
+        return {url: redirectUrl, storageType}
     }
-    return url
+    return {url, storageType}
 }
 
-const getResolvedUrls = async (urlList: string[]) => {
-    const urlListResolved = await Promise.all(urlList.map(url => getResolvedUrl(url)))
-    return urlListResolved
+const tryGetKerchunkUrl = async (url: string, dandisetId: string) => {
+    let assetId: string
+    let staging: boolean
+    if (url.startsWith('https://api-staging.dandiarchive.org/api/assets/')) {
+        staging = true
+        assetId = url.split('/')[5]
+    }
+    else if (url.startsWith('https://api.dandiarchive.org/api/assets/')) {
+        staging = false
+        assetId = url.split('/')[5]
+    }
+    else {
+        return undefined
+    }
+    const aa = staging ? 'dandi-staging' : 'dandi'
+    const tryUrl = `https://kerchunk.neurosift.org/${aa}/dandisets/${dandisetId}/assets/${assetId}.zarr.json`
+    const resp = await fetch(tryUrl, {method: 'HEAD'})
+    if (resp.ok) return tryUrl
+    return undefined
+}
+
+const getResolvedUrls = async (urlList: string[], storageType: StorageType[], o: {dandisetId?: string}) => {
+    const a = await Promise.all(urlList.map((url, i) => getResolvedUrl(url, storageType[i], o)))
+    return {
+        urls: a.map(x => x.url),
+        storageTypes: a.map(x => x.storageType)
+    }
 }
 
 const getRedirectUrl = async (url: string, headers: any) => {

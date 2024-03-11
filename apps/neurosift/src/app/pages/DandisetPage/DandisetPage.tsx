@@ -19,7 +19,8 @@ const DandisetPage: FunctionComponent<DandisetPageProps> = ({width, height}) => 
             page: 'nwb',
             dandisetId: route.dandisetId,
             dandisetVersion: route.dandisetVersion,
-            url: assetUrls
+            url: assetUrls,
+            storageType: assetUrls.map(url => 'h5')
         })
     }, [route, setRoute])
     return (

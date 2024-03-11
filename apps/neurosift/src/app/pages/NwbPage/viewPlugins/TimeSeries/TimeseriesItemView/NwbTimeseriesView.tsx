@@ -1,18 +1,18 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
+import ModalWindow from "@fi-sci/modal-window"
 import { QuestionMark } from "@mui/icons-material"
-import { FunctionComponent, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
 import { useModalDialog } from "../../../../../ApplicationBar"
+import { ToolbarItem } from "../../../../../package/ViewToolbar/Toolbars"
 import TimeScrollView2, { useTimeScrollView2 } from "../../../../../package/component-time-scroll-view-2/TimeScrollView2"
 import { useTimeRange, useTimeseriesSelectionInitialization } from "../../../../../package/context-timeseries-selection"
-import { ToolbarItem } from "../../../../../package/ViewToolbar/Toolbars"
-import { NwbFileContext, useNwbFile } from "../../../NwbFileContext"
+import { useNwbFile } from "../../../NwbFileContext"
 import { useDataset } from "../../../NwbMainView/NwbMainView"
 import { useNwbTimeseriesDataClient } from "./NwbTimeseriesDataClient"
 import TimeseriesDatasetChunkingClient from "./TimeseriesDatasetChunkingClient"
 import { timeSelectionBarHeight } from "./TimeseriesSelectionBar"
 import { DataSeries, Opts } from "./WorkerTypes"
-import ModalWindow from "@fi-sci/modal-window"
 
 type Props = {
     width: number
@@ -307,7 +307,7 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
             {
                 loading && !zoomInRequired && (
                     <div style={{position: 'absolute', top: timeSelectionBarHeight + margins.top, left: margins.left, userSelect: 'none'}}>
-                        <div style={{fontSize: 20, color: 'gray'}}>Loading...</div>
+                        <div style={{fontSize: 20, color: 'blue'}}>Loading...</div>
                     </div>
                 )
             }
