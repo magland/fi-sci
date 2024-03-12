@@ -11,7 +11,7 @@ import { useNwbOpenTabs } from "./NwbOpenTabsContext";
 import TimeseriesAlignmentView from "./TimeseriesAlignmentView/TimeseriesAlignmentView";
 import viewPlugins, { findViewPluginsForType } from "./viewPlugins/viewPlugins";
 
-const NwbTabWidget: FunctionComponent<{width: number, height: number}> = ({width, height}) => {
+const NwbTabWidget: FunctionComponent<{width: number, height: number, usingKerchunk: boolean}> = ({width, height, usingKerchunk}) => {
     const {openTabs, currentTabName, setCurrentTab, closeTab, initialTimeSelections} = useNwbOpenTabs()
     return (
         <TabWidget
@@ -31,7 +31,7 @@ const NwbTabWidget: FunctionComponent<{width: number, height: number}> = ({width
             onCloseTab={fileName => closeTab(fileName)}
         >
             {openTabs.map(({tabName}) => (
-                <TabChild key={tabName} tabName={tabName} initialTimeSelection={initialTimeSelections[tabName]} width={0} height={0} />
+                <TabChild key={tabName} tabName={tabName} usingKerchunk={usingKerchunk} initialTimeSelection={initialTimeSelections[tabName]} width={0} height={0} />
             ))}
         </TabWidget>
     )
@@ -43,9 +43,10 @@ type TabChildProps = {
     height: number
     initialTimeSelection?: {t1?: number, t2?: number, t0?: number}
     condensed?: boolean
+    usingKerchunk: boolean
 }
 
-const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection}) => {
+const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, usingKerchunk}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
     const [unitSelection, unitSelectionDispatch] = useReducer(unitSelectionReducer, defaultUnitSelection)
@@ -75,7 +76,7 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
             <UnitSelectionContext.Provider value={{unitSelection, unitSelectionDispatch}}>
                 {
                     tabName === 'main' ? (
-                        <NwbMainView key={tabName} width={width} height={height} />
+                        <NwbMainView key={tabName} width={width} height={height} usingKerchunk={usingKerchunk} />
                     ) : tabName.startsWith('neurodata-item:') || tabName.startsWith('view:') ? (
                         viewPlugin ? (
                             <ViewItemWidget

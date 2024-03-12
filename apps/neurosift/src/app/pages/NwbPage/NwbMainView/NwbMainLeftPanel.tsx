@@ -1,21 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Hyperlink } from "@fi-sci/misc"
-import { MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import useRoute from "../../../useRoute"
 import { serializeBigInt, valueToString } from "../BrowseNwbView/BrowseNwbView"
 import { useDandiAssetContext } from "../DandiAssetContext"
 import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
+import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
-import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 
 type Props = {
     width: number
     height: number
     nwbFile: RemoteH5FileX
+    usingKerchunk: boolean
 }
 
 const labelMap: {name: string, newName: string, renderer?: (val: any) => string}[] = [
@@ -38,7 +39,7 @@ const labelMap: {name: string, newName: string, renderer?: (val: any) => string}
     {name: 'file_create_date', newName: 'File creation'},
 ]
 
-const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile}) => {
+const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usingKerchunk}) => {
     const rootGroup = useGroup(nwbFile, '/')
     const generalGroup = useGroup(nwbFile, '/general')
 
@@ -82,6 +83,14 @@ const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile}) =>
         <div className="LeftPanel" style={{position: 'absolute', width, height}}>
             <div className="MainArea" style={{position: 'absolute', width, height: height - bottomBarHeight, overflowY: 'auto'}}>
                 <DandiTable />
+                {
+                    usingKerchunk && (
+                        <div>
+                            <div style={{color: 'darkgreen'}}>using kerchunk</div>
+                            <hr />
+                        </div>
+                    )
+                }
                 <table
                     className="nwb-table"
                 >

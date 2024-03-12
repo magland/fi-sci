@@ -86,6 +86,8 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
         return () => {clearInterval(timer)}
     }, [nwbFile, setCustomStatusBarElement])
 
+    const [usingKerchunk, setUsingKerchunk] = useState<boolean>(false)
+
     useEffect(() => {
         let canceled = false
         const load = async () => {
@@ -94,6 +96,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
             if (canceled) return
             let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileKerchunk
+            setUsingKerchunk(storageTypeResolved.includes('kc'))
             if (urlListResolved.length === 1) {
                 if (storageTypeResolved[0] === 'zarr') {
                     f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
@@ -189,6 +192,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
                             <NwbTabWidget
                                 width={width}
                                 height={height}
+                                usingKerchunk={usingKerchunk}
                             />
                         </SetupNwbFileAnnotationsProvider>
                     </SetupNwbOpenTabs>
