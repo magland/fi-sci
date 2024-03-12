@@ -133,7 +133,7 @@ const DatasetDataView: FunctionComponent<DatasetDataViewProps> = ({nwbFile, path
         )
     }
     return <span>{
-        renderer ? renderer(datasetData) : valueToString2(datasetData)
+        renderer ? renderer(datasetData) : abbreviate(valueToString2(datasetData), 500)
     }</span>
 }
 
@@ -159,6 +159,11 @@ const valueToString2 = (val: any): string => {
     else {
         return '<>'
     }
+}
+
+const abbreviate = (str: string, maxLength: number) => {
+    if (str.length <= maxLength) return str
+    return str.slice(0, maxLength) + '...'
 }
 
 // type DandiAssetInfo = {

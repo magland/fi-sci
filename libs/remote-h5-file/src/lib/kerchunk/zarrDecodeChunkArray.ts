@@ -161,6 +161,19 @@ const applyFilter = async (chunk: ArrayBuffer, filter: any) => {
     else if (filter.id === 'blosc') {
         return new Blosc().decode(chunk);
     }
+    else if (filter.id === 'shuffle') {
+        const elementSize = filter.elementsize;
+        const view = new DataView(chunk);
+        const ret = new Uint8Array(chunk.byteLength);
+        const a = chunk.byteLength / elementSize;
+        for (let i = 0; i < chunk.byteLength; i++) {
+            const b = i % elementSize;
+            const c = Math.floor(i / elementSize) * elementSize;
+            const j = b * a + c;
+            ret[j] = view.getUint8(i);
+        }
+        return ret.buffer;
+    }
     console.warn('Filter not yet implemented', filter);
     throw Error('Filter not yet implemented');
 }

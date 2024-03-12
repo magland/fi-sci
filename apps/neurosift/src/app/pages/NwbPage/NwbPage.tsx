@@ -250,18 +250,18 @@ const getMetaUrl = async (url: string, storageType: StorageType): Promise<string
 
     const etag = await getEtag(url)
     if (!etag) return undefined
-    const computedAssetBaseUrl = `https://neurosift.org/computed/nwb/ETag/${etag.slice(0, 2)}/${etag.slice(2, 4)}/${etag.slice(4, 6)}/${etag}`
-    const metaNwbUrl = `${computedAssetBaseUrl}/meta.1.nwb`
-    let headResponse2
-    try {
-        headResponse2 = await fetch(metaNwbUrl, {method: 'HEAD'})
-        if (headResponse2.status === 200) {
-            return metaNwbUrl
-        }
-    }
-    catch(err: any) {
-        console.warn(`Unable to HEAD ${metaNwbUrl}: ${err.message}`)
-    }
+    // const computedAssetBaseUrl = `https://neurosift.org/computed/nwb/ETag/${etag.slice(0, 2)}/${etag.slice(2, 4)}/${etag.slice(4, 6)}/${etag}`
+    // const metaNwbUrl = `${computedAssetBaseUrl}/meta.1.nwb`
+    // let headResponse2
+    // try {
+    //     headResponse2 = await fetch(metaNwbUrl, {method: 'HEAD'})
+    //     if (headResponse2.status === 200) {
+    //         return metaNwbUrl
+    //     }
+    // }
+    // catch(err: any) {
+    //     console.warn(`Unable to HEAD ${metaNwbUrl}: ${err.message}`)
+    // }
     return undefined
 
     // const aa = 'https://dandiarchive.s3.amazonaws.com/'
@@ -320,7 +320,7 @@ const tryGetKerchunkUrl = async (url: string, dandisetId: string) => {
         return undefined
     }
     const aa = staging ? 'dandi-staging' : 'dandi'
-    const tryUrl = `https://kerchunk.neurosift.org/${aa}/dandisets/${dandisetId}/assets/${assetId}.zarr.json`
+    const tryUrl = `https://kerchunk.neurosift.org/${aa}/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
     const resp = await fetch(tryUrl, {method: 'HEAD'})
     if (resp.ok) return tryUrl
     return undefined

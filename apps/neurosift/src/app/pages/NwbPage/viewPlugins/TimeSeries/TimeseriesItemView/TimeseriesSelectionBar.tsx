@@ -21,7 +21,6 @@ const TimeseriesSelectionBar: FunctionComponent<Props> = ({width, height, hideVi
     const {timeseriesSelection} = useContext(TimeseriesSelectionContext)
     const {timeseriesStartTimeSec, timeseriesEndTimeSec, currentTimeSec} = timeseriesSelection
 
-
     const fracToPixel = useMemo(() => (frac: number) => {
         return frac * width
     }, [width])
@@ -93,6 +92,13 @@ const TimeseriesSelectionBar: FunctionComponent<Props> = ({width, height, hideVi
         setIsDragging(false)
     }, [setCurrentTime, fracToPixel, timeseriesStartTimeSec, timeseriesEndTimeSec, pixelToFrac, visibleStartTimeSec, visibleEndTimeSec, setVisibleTimeRange, currentTimeSec])
 
+    if ((!validNumber(x0)) || (!validNumber(x1)) || (!validNumber(x2)) || (!validNumber(y1)) || (!validNumber(y2))) {
+        console.warn('Invalid number', {
+            x0, x1, x2, y1, y2
+        })
+        return <div style={{position: 'absolute', left: 0, top: 0, width, height, backgroundColor: 'white'}} />
+    }
+
     return (
         <div style={{position: 'absolute', left: 0, top: 0, width, height, backgroundColor: 'white', userSelect: 'none'}}
             onMouseUp={handleMouseUp}
@@ -115,6 +121,10 @@ const TimeseriesSelectionBar: FunctionComponent<Props> = ({width, height, hideVi
             }
         </div>
     )
+}
+
+const validNumber = (x: number | undefined): x is number => {
+    return (x !== undefined) && (!isNaN(x))
 }
 
 export default TimeseriesSelectionBar

@@ -131,6 +131,7 @@ class RemoteH5FileKerchunk {
     path: string,
     o: {
       slice?: [number, number][];
+      scalar?: boolean;
       allowBigInt?: boolean;
       canceler?: Canceler;
     }
@@ -166,6 +167,15 @@ class RemoteH5FileKerchunk {
       zarray,
       slice: o.slice || []
     })
+    if (o.scalar) {
+      if (ret) {
+        if (ret.length !== 1) {
+          console.warn('Expected scalar', path, ret);
+          throw Error('Expected scalar');
+        }
+        return ret[0];
+      }
+    }
     return ret
   }
 }

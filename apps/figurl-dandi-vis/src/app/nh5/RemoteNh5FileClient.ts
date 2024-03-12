@@ -141,14 +141,15 @@ export class RemoteNh5FileClient {
     path: string,
     o: {
       slice?: [number, number][];
+      scalar?: boolean;
       allowBigInt?: boolean;
       canceler?: Canceler;
     }
-  ): Promise<DatasetDataType | undefined> {
+  ): Promise<DatasetDataType | number | undefined> {
     const d = this.header.datasets.find((d) => d.path === path);
     if (!d) return undefined;
 
-    const k = `${path}|${o.slice ? JSON.stringify(o.slice) : ''}`;
+    const k = `${path}|${o.slice ? JSON.stringify(o.slice) : ''}|${o.scalar ? 'scalar' : ''}`;
     if (this.#fetchCache.has(k)) {
       return this.#fetchCache.get(k);
     }
@@ -215,7 +216,7 @@ export class RemoteNh5FileClient {
         throw Error(`Aborted: ${path}`)
       }
       if (!buffer) {throw Error('Unexpected: no buffer')};
-      let ret: DatasetDataType;
+      let ret: DatasetDataType | number;
       if (dtype === 'int8') ret = new Int8Array(buffer);
       else if (dtype === 'uint8') ret = new Uint8Array(buffer);
       else if (dtype === 'int16') ret = new Int16Array(buffer);
@@ -225,6 +226,10 @@ export class RemoteNh5FileClient {
       else if (dtype === 'float32') ret = new Float32Array(buffer);
       else if (dtype === 'float64') ret = new Float64Array(buffer);
       else throw Error(`Unexpected dtype: ${dtype}`);
+      if (o.scalar) {
+        if (ret.length !== 1) throw Error(`Unexpected: ret.length !== 1`);
+        ret = ret[0];
+      }
       this.#fetchCache.set(k, ret);
       return ret;
     }
