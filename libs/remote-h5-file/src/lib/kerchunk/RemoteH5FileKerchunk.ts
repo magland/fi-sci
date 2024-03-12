@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DatasetDataType, RemoteH5Dataset, RemoteH5Group, RemoteH5Subdataset, RemoteH5Subgroup, globalRemoteH5FileStats } from '../RemoteH5File';
+import { DatasetDataType, RemoteH5Dataset, RemoteH5Group, RemoteH5Subdataset, RemoteH5Subgroup, getRemoteH5File, globalRemoteH5FileStats } from '../RemoteH5File';
 import { Canceler } from '../helpers';
 
 import ReferenceFileSystemClient, { ReferenceFileSystemObject } from './ReferenceFileSystemClient';
@@ -160,6 +160,12 @@ class RemoteH5FileKerchunk {
     // const { slice, allowBigInt, canceler } = o;
     
     globalRemoteH5FileStats.getDatasetDataCount++;
+
+    const externalHdf5 = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.external_hdf5')
+    if (externalHdf5) {
+      const a = await getRemoteH5File(externalHdf5.url, undefined);
+      return a.getDatasetData(externalHdf5.name, o);
+    }
 
     const ret = await kerchunkDatasetDataLoader({
       client: this.kerchunkFileSystemClient,

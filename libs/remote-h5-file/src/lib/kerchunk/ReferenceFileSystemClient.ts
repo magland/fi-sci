@@ -17,11 +17,34 @@ export class ReferenceFileSystemClient {
   async readJson(path: string): Promise<{[key: string]: any} | undefined> {
     const buf = await this.readBinary(path, {decodeArray: false});
     if (!buf) return undefined;
-    let text = new TextDecoder().decode(buf);
+    const text = new TextDecoder().decode(buf);
     // replace NaN by "NaN" so that JSON.parse doesn't choke on it
-    text = text.replace(/NaN/g, '"___NaN___"'); // This is not ideal. See: https://stackoverflow.com/a/15228712
+    // text = text.replace(/NaN/g, '"___NaN___"'); // This is not ideal. See: https://stackoverflow.com/a/15228712
+    // BUT we want to make sure we don't replace NaN within quoted strings
+    // Here's an example where this matters: https://neurosift.app/?p=/nwb&dandisetId=000409&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/54b277ce-2da7-4730-b86b-cfc8dbf9c6fd/download/
+    //    raw/intervals/contrast_left
+    let newText: string
+    if (text.includes('NaN')) {
+      newText = '';
+      let inString = false;
+      let isEscaped = false;
+      for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (c === '"' && !isEscaped) inString = !inString;
+          if (!inString && c === 'N' && text.slice(i, i + 3) === 'NaN') {
+              newText += '"___NaN___"';
+              i += 2;
+          } else {
+              newText += c;
+          }
+          isEscaped = c === '\\' && !isEscaped;
+      }
+    }
+    else {
+      newText = text;
+    }
     try {
-      return JSON.parse(text, (key, value) => {
+      return JSON.parse(newText, (key, value) => {
         if (value === '___NaN___') return NaN;
         return value;
       })
