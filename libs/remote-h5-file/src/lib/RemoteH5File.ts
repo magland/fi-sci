@@ -273,6 +273,13 @@ export class MergedRemoteH5File {
   getFiles() {
     return this.#files;
   }
+  isLindi() {
+    if (this.#files.length === 0) return false;
+    const ff = this.#files[0];
+    if ((ff as any).isLindi) {
+      return (ff as any).isLindi();
+    }
+  }
 }
 
 const mergeGroups = (groups: RemoteH5Group[]): RemoteH5Group => {

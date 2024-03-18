@@ -106,7 +106,6 @@ class IrregularTimeseriesDataClient {
         return await this.#timestampFinder!.getDataIndexForTime(time)
     }
     async getTimestampsForDataIndices(i1: number, i2: number): Promise<DatasetDataType | undefined> {
-        console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA getTimestampsForDataIndices', i1, i2);
         const ret = await this.nwbFile.getDatasetData(`${this.objectPath}/timestamps`, {slice: [[i1, i2]]})
         if (!ret) throw Error(`Unable to get timestamps: ${this.objectPath}/timestamps`)
         return ret

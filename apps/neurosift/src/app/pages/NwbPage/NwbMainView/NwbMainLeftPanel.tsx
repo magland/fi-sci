@@ -45,6 +45,8 @@ const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usi
 
     const {openTab} = useNwbOpenTabs()
 
+    const isLindi = (nwbFile as any).isLindi && (nwbFile as any).isLindi()
+
     const items = useMemo(() => {
         const ret: {name: string, path: string, renderer?: (val: any) => string}[] = []
         rootGroup?.datasets.forEach(ds => {
@@ -86,7 +88,19 @@ const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usi
                 {
                     usingKerchunk && (
                         <div>
-                            <div style={{color: 'darkgreen'}}>using kerchunk</div>
+                            <div style={{color: 'darkgreen'}}>
+                                {
+                                    isLindi ? (
+                                        <span>
+                                            Using LINDI
+                                        </span>
+                                    ) : (
+                                        <span>
+                                            Using kerchunk
+                                        </span>
+                                    )
+                                }
+                            </div>
                             <hr />
                         </div>
                     )

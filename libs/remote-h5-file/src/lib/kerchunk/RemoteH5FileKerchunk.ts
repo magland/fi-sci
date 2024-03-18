@@ -23,7 +23,7 @@ export type ZMetaDataZArray = {
 }
 
 class RemoteH5FileKerchunk {
-  constructor(public url: string, private kerchunkFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}) {
+  constructor(public url: string, private kerchunkFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}, private _isLindi: boolean) {
     
   }
   static async create(url: string) {
@@ -46,7 +46,11 @@ class RemoteH5FileKerchunk {
         }
       }
     }
-    return new RemoteH5FileKerchunk(url, new ReferenceFileSystemClient(obj), pathsByParentPath);
+    const _isLindi = (obj as any).generationMetadata && (obj as any).generationMetadata['generatedBy'] === 'dandi_lindi';
+    return new RemoteH5FileKerchunk(url, new ReferenceFileSystemClient(obj), pathsByParentPath, _isLindi);
+  }
+  isLindi() {
+    return this._isLindi;
   }
   get dataIsRemote() {
     return !this.url.startsWith('http://localhost');

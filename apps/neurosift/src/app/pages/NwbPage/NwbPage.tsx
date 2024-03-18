@@ -299,7 +299,7 @@ const getResolvedUrl = async (url: string, storageType: StorageType, o: {dandise
         const authorizationHeader = getAuthorizationHeaderForUrl(url)
         const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
         const redirectUrl = await getRedirectUrl(url, headers) || url
-        const kerchunkUrl = o.dandisetId && !(queryParams.kerchunk === '0') ? await tryGetKerchunkUrl(url, o.dandisetId) : undefined
+        const kerchunkUrl = o.dandisetId && !(queryParams.lindi === '0') ? await tryGetKerchunkUrl(url, o.dandisetId) : undefined
         if (kerchunkUrl) {
             console.info(`Using kerchunk ${url} -> ${kerchunkUrl}`)
             return {url: kerchunkUrl, storageType: 'kc'}
