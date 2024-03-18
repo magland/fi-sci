@@ -171,6 +171,13 @@ class RemoteH5FileKerchunk {
       return a.getDatasetData(externalHdf5.name, o);
     }
 
+    const zattrs = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
+    if (zattrs['_EXTERNAL_ARRAY_LINK']) {
+      const externalArrayLink = zattrs['_EXTERNAL_ARRAY_LINK'];
+      const a = await getRemoteH5File(externalArrayLink.url, undefined);
+      return a.getDatasetData(externalArrayLink.name, o);
+    }
+
     const ret = await kerchunkDatasetDataLoader({
       client: this.kerchunkFileSystemClient,
       path: pathWithoutBeginningSlash,
