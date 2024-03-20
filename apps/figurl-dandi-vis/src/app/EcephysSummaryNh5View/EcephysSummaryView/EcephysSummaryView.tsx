@@ -69,10 +69,10 @@ export class BinnedArrayClient {
     return result;
   }
   async _getChunkData(startBinIndex: number, endBinIndex: number) {
-    const minData = await this.fileClient.getDatasetData(this.minPath, { slice: [[startBinIndex, endBinIndex]] });
+    const minData = await this.fileClient.getDatasetData(this.minPath, { slice: [[startBinIndex, endBinIndex]] }) as any as number[] | undefined;
     if (!minData) console.warn('no min data', this.minPath, startBinIndex, endBinIndex);
     if (!minData) return undefined;
-    const maxData = await this.fileClient.getDatasetData(this.maxPath, { slice: [[startBinIndex, endBinIndex]] });
+    const maxData = await this.fileClient.getDatasetData(this.maxPath, { slice: [[startBinIndex, endBinIndex]] }) as any as number[] | undefined;
     if (!maxData) return console.warn('no max data', this.maxPath, startBinIndex, endBinIndex);
     if (!maxData) return undefined;
     const data = maxData?.map((v, i) => v - minData[i]);

@@ -190,7 +190,7 @@ export class AutocorrelgramsNh5Client {
     if (!binEdgesSec) throw Error('Unable to get bin_edges_sec dataset data');
     const binCountsDataset = await nh5Client.getDataset(`/autocorrelograms/bin_counts`);
     if (!binCountsDataset) throw Error('Unable to get bin_counts dataset');
-    const binCountsData = await nh5Client.getDatasetData(`/autocorrelograms/bin_counts`, {});
+    const binCountsData = await nh5Client.getDatasetData(`/autocorrelograms/bin_counts`, {}) as DatasetDataType;
     if (!binCountsData) throw Error('Unable to get bin_counts dataset data');
     const binCounts: number[][] = make2DArray(binCountsData, binCountsDataset.shape);
     return new AutocorrelgramsNh5Client(nh5Client, rootGroup, binEdgesSec as any as number[], binCounts);
