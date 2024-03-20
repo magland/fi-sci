@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
-import { FunctionComponent, useEffect, useState } from "react"
+import { Hyperlink } from "@fi-sci/misc"
+import { DatasetDataType, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import RasterPlotView3 from "./RasterPlotView3/RasterPlotView3"
 
@@ -28,32 +29,19 @@ const DirectRasterPlotUnitsItemView: FunctionComponent<Props> = ({width, height,
         return () => {canceled = true}
     }, [nwbFile, path])
 
+    const [visibleUnitIds, setVisibleUnitIds] = useState<(number | string)[]>([])
+
     const [spikeTrainsClient2, setSpikeTrainsClient2] = useState<DirectSpikeTrainsClientUnitSlice | DirectSpikeTrainsClient | undefined>(undefined)
     useEffect(() => {
         if (!spikeTrainsClient) return
-        const maxNumSpikes = 2e6
-        const ids = spikeTrainsClient.unitIds
-        let ct = 0
-        let unitIdsToInclude: (number | string)[] = []
-        for (const id of ids) {
-            const numSpikes = spikeTrainsClient.numSpikesForUnit(id)
-            ct += numSpikes || 0
-            if (ct > maxNumSpikes) break
-            unitIdsToInclude.push(id)
-        }
-        if (unitIdsToInclude.length === 0) {
-            // include at least one unit.
-            // if no units, then use the first
-            unitIdsToInclude = [ids[0]]
-        }
-        if (unitIdsToInclude.length < ids.length) {
-            const client = new DirectSpikeTrainsClientUnitSlice(spikeTrainsClient, unitIdsToInclude)
+        if (visibleUnitIds.length < spikeTrainsClient.unitIds.length) {
+            const client = new DirectSpikeTrainsClientUnitSlice(spikeTrainsClient, visibleUnitIds)
             setSpikeTrainsClient2(client)
         }
         else {
             setSpikeTrainsClient2(spikeTrainsClient)
         }
-    }, [spikeTrainsClient])
+    }, [spikeTrainsClient, visibleUnitIds])
 
 
     if (!spikeTrainsClient2) {
@@ -65,13 +53,21 @@ const DirectRasterPlotUnitsItemView: FunctionComponent<Props> = ({width, height,
     //     return <div>Too many spikes to display ({spikeTrainsClient.totalNumSpikes} &gt; {maxNumSpikes})</div>
     // }
 
+    const bottomBarHeight = 25
+
     return (
-        <RasterPlotView3
-            width={width}
-            height={height}
-            spikeTrainsClient={spikeTrainsClient2}
-            infoMessage={spikeTrainsClient !== spikeTrainsClient2 ? `Showing ${spikeTrainsClient2.unitIds.length} of ${spikeTrainsClient?.unitIds.length} units` : undefined}
-        />
+        <div style={{position: 'absolute', width, height}}>
+            <RasterPlotView3
+                width={width}
+                height={height - bottomBarHeight}
+                spikeTrainsClient={spikeTrainsClient2}
+                // infoMessage={spikeTrainsClient !== spikeTrainsClient2 ? `Showing ${spikeTrainsClient2.unitIds.length} of ${spikeTrainsClient?.unitIds.length} units` : undefined}
+                infoMessage=""
+            />
+            <div style={{position: 'absolute', top: height - bottomBarHeight, width, height: bottomBarHeight}}>
+                <VisibleUnitsSelector visibleUnitIds={visibleUnitIds} setVisibleUnitIds={setVisibleUnitIds} spikeTrainsClient={spikeTrainsClient} />
+            </div>
+        </div>
     )
 }
 
@@ -216,6 +212,108 @@ export class DirectSpikeTrainsClient {
             return []
         }
     }
+}
+
+type VisibleUnitsSelectorProps = {
+    visibleUnitIds: (number | string)[]
+    setVisibleUnitIds: (ids: (number | string)[]) => void
+    spikeTrainsClient?: DirectSpikeTrainsClient
+}
+
+const VisibleUnitsSelector: FunctionComponent<VisibleUnitsSelectorProps> = ({visibleUnitIds, setVisibleUnitIds, spikeTrainsClient}) => {
+    const [maxNumSpikesPerViewRange, setMaxNumSpikesPerViewRange] = useState(2e5)
+    const viewRanges: [number, number][] | undefined = useMemo(() => {
+        if (!spikeTrainsClient) return undefined
+        const ret: [number, number][] = []
+        let ct = 0
+        let minIndex = 0
+        for (let i = 0; i < spikeTrainsClient.unitIds.length; i++) {
+            const id = spikeTrainsClient.unitIds[i]
+            const numSpikes = spikeTrainsClient.numSpikesForUnit(id)
+            ct += numSpikes || 0
+            if (ct > maxNumSpikesPerViewRange) {
+                ret.push([minIndex, i])
+                minIndex = i
+                ct = 0
+            }
+        }
+        if (minIndex < spikeTrainsClient.unitIds.length) {
+            ret.push([minIndex, spikeTrainsClient.unitIds.length])
+        }
+        return ret
+    }, [spikeTrainsClient, maxNumSpikesPerViewRange])
+
+    const [currentViewRangeIndex, setCurrentViewRangeIndex] = useState(0)
+
+    const visibleUnitIndexRange = useMemo(() => {
+        if (!viewRanges) return [0, 0]
+        return viewRanges[currentViewRangeIndex]
+    }, [viewRanges, currentViewRangeIndex])
+
+    useEffect(() => {
+        if (!spikeTrainsClient) return
+        const x: (number | string)[] = []
+        for (let i = visibleUnitIndexRange[0]; i < visibleUnitIndexRange[1]; i++) {
+            x.push(spikeTrainsClient.unitIds[i])
+        }
+        setVisibleUnitIds(x)
+    }, [visibleUnitIndexRange, spikeTrainsClient, setVisibleUnitIds])
+
+    const nextButton = useMemo(() => {
+        if (!viewRanges) return undefined
+        if (currentViewRangeIndex >= viewRanges.length - 1) return undefined
+        return <Hyperlink onClick={() => {setCurrentViewRangeIndex(currentViewRangeIndex + 1)}}>next</Hyperlink>
+    }, [currentViewRangeIndex, viewRanges])
+
+    const prevButton = useMemo(() => {
+        if (!viewRanges) return undefined
+        if (currentViewRangeIndex <= 0) return undefined
+        return <Hyperlink onClick={() => {setCurrentViewRangeIndex(currentViewRangeIndex - 1)}}>prev</Hyperlink>
+    }, [currentViewRangeIndex, viewRanges])
+
+    const viewMoreUnitsButton = useMemo(() => {
+        if (!viewRanges) return undefined
+        if (viewRanges.length === 1) return undefined
+        return <Hyperlink onClick={() => {
+            setMaxNumSpikesPerViewRange(x => x * 3)
+            setCurrentViewRangeIndex(0)
+        }}>view more units</Hyperlink>
+    }, [viewRanges])
+
+    const viewFewerUnitsButton = useMemo(() => {
+        if (!viewRanges) return undefined
+        return <Hyperlink onClick={() => {
+            setMaxNumSpikesPerViewRange(x => x / 3)
+            setCurrentViewRangeIndex(0)
+        }}>view fewer units</Hyperlink>
+    }, [viewRanges])
+
+
+    if (!spikeTrainsClient) return <div>Loading...</div>
+    if (visibleUnitIndexRange[1] === visibleUnitIndexRange[0]) return <div>...</div>
+    return (
+        <div style={{ userSelect: 'none' }}>
+            Viewing units&nbsp;
+            {visibleUnitIndexRange[0] + 1} - {visibleUnitIndexRange[1]} of {spikeTrainsClient.unitIds.length}
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            {
+                prevButton && prevButton
+            }
+            &nbsp;
+            {
+                nextButton && nextButton
+            }
+            &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;
+            {
+                viewMoreUnitsButton && viewMoreUnitsButton
+            }
+            &nbsp;|&nbsp;
+            {
+                viewFewerUnitsButton && viewFewerUnitsButton
+            }
+            &nbsp;|
+        </div>
+    )
 }
 
 export default DirectRasterPlotUnitsItemView

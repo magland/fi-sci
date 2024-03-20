@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { DatasetDataType, MergedRemoteH5File, RemoteH5File, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
