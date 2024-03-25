@@ -86,9 +86,8 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         return () => {canceled = true}
     }, [dandisetId, dandisetResponse, dsVersion, stagingStr, useStaging])
 
+    const [maxNumPages, setMaxNumPages] = useState(1)
     useEffect(() => {
-        const maxNumPages = 10
-
         let canceled = false
         setAssetsResponses([])
         setIncomplete(false)
@@ -97,7 +96,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         if (!V) return
         ; (async () => {
             let rr: AssetsResponse[] = []
-            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${V.version}/assets/?page_size=1000`
+            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${V.version}/assets/?page_size=1000&glob=*.nwb`
             const authorizationHeader = uu ? getAuthorizationHeaderForUrl(uu) : ''
             const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
             let count = 0
@@ -122,7 +121,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
             }
         })()
         return () => {canceled = true}
-    }, [dandisetId, dandisetResponse, V, stagingStr, useStaging])
+    }, [dandisetId, dandisetResponse, V, stagingStr, useStaging, maxNumPages])
 
     const allAssets = useMemo(() => {
         const rr: AssetsResponseItem[] = []
@@ -206,7 +205,9 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                     {
                         incomplete && (
                             <div style={{fontSize: 14, padding: 5}}>
-                                <span style={{color: 'red'}}>Warning: only showing first {assetsResponses.length} pages of assets</span>
+                                <span style={{color: 'red'}}>Warning: only showing first {allAssets.length} assets.</span>
+                                &nbsp;
+                                <Hyperlink onClick={() => setMaxNumPages(maxNumPages + 2)}>Load more</Hyperlink>
                             </div>
                         )
                     }
