@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { AssetsResponse, AssetsResponseItem, DandisetSearchResultItem, DandisetVersionInfo } from "./types";
@@ -30,6 +31,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
     useEffect(() => {
         let canceled = false
         setDandisetResponse(null)
+        if (!dandisetId) return
         ; (async () => {
             const url = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}`
             const authorizationHeader = getAuthorizationHeaderForUrl(url)
@@ -211,7 +213,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                             </div>
                         )
                     }
-                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} onClickAsset={handleClickAsset} />
+                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} onClickAsset={handleClickAsset} dandisetId={dandisetId} />
                     {
                         changesContent && (
                             <div>
@@ -294,9 +296,10 @@ type AssetsBrowserProps = {
     selectedAssetsDispatch: (action: SelectedAssetsAction) => void
     canSelect?: boolean
     onClickAsset?: (asset: AssetsResponseItem) => void
+    dandisetId?: string
 }
 
-const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset}) => {
+const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset, dandisetId}) => {
     const folders: string[] = useMemo(() => {
         const folders = assetItems.filter(a => (a.path.includes('/'))).map(assetItem => assetItem.path.split('/')[0])
         const uniqueFolders = [...new Set(folders)].sort()
@@ -326,6 +329,7 @@ const AssetsBrowser: FunctionComponent<AssetsBrowserProps> = ({assetItems, selec
                                 selectedAssetsDispatch={selectedAssetsDispatch}
                                 canSelect={canSelect}
                                 onClickAsset={onClickAsset}
+                                dandisetId={dandisetId}
                             />
                         )}
                         {/* {
@@ -348,9 +352,10 @@ type AssetItemsTableProps = {
     selectedAssetsDispatch: (action: SelectedAssetsAction) => void
     canSelect?: boolean
     onClickAsset?: (asset: AssetsResponseItem) => void
+    dandisetId?: string
 }
 
-const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset}) => {
+const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, selectedAssets, selectedAssetsDispatch, canSelect, onClickAsset, dandisetId}) => {
     const selectAllCheckedState = useMemo(() => {
         const numSelected = assetItems.filter(assetItem => selectedAssets.assetPaths.includes(assetItem.path)).length
         if (numSelected === 0) return false
@@ -367,7 +372,7 @@ const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, s
     }, [assetItems, selectAllCheckedState, selectedAssetsDispatch])
 
     return (
-        <table className="table1">
+        <table className="nwb-table">
             <thead>
             </thead>
             <tbody>
@@ -389,6 +394,7 @@ const AssetItemsTable: FunctionComponent<AssetItemsTableProps> = ({assetItems, s
                             onToggleSelection={() => selectedAssetsDispatch({type: 'toggle', assetPath: assetItem.path})}
                             canSelect={canSelect}
                             onClick={onClickAsset ? () => onClickAsset(assetItem) : undefined}
+                            dandisetId={dandisetId}
                         />
                     ))
                 }
@@ -403,12 +409,15 @@ type AssetItemRowProps = {
     onToggleSelection: () => void
     canSelect?: boolean
     onClick?: () => void
+    dandisetId?: string
 }
 
-const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected, onToggleSelection, canSelect, onClick}) => {
+const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected, onToggleSelection, canSelect, onClick, dandisetId}) => {
     const {modified, path, size} = assetItem
 
     const label = path.split('/').slice(1).join('/')
+
+    const lindiAssetInfo = useLindiAssetInfo({dandisetId, assetId: assetItem.asset_id})
 
     return (
         <tr>
@@ -431,6 +440,9 @@ const AssetItemRow: FunctionComponent<AssetItemRowProps> = ({assetItem, selected
             </td>
             <td>
                 {formatByteCount(size)}
+            </td>
+            <td>
+                {lindiAssetInfo ? lindiAssetInfo.neurodataTypes.join(', ') : ''}
             </td>
         </tr>
     )
@@ -456,6 +468,107 @@ const formatTime2 = (time: string) => {
     const date = new Date(time)
     // include date only
     return date.toLocaleDateString()
+}
+
+type LindiAssetInfo = {
+    neurodataTypes: string[]
+}
+
+class LindiAssetInfoFetcher {
+    #queuedFetches: string[] = []
+    #fetched: {[key: string]: LindiAssetInfo | null} = {}
+    #numFailures: number = 0
+    async fetch({dandisetId, assetId}: {dandisetId: string, assetId: string}): Promise<LindiAssetInfo | null> {
+        const key = `${dandisetId}/${assetId}`
+        if (this.#fetched[key]) return this.#fetched[key]
+        if (!this.#queuedFetches.includes(key)) {
+            this.#queuedFetches.push(key)
+        }
+        while (this.#fetched[key] === undefined) {
+            await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        return this.#fetched[key]
+    }
+    removeFromQueue({dandisetId, assetId}: {dandisetId: string, assetId: string}) {
+        const key = `${dandisetId}/${assetId}`
+        const index = this.#queuedFetches.indexOf(key)
+        if (index !== -1) {
+            this.#queuedFetches.splice(index, 1)
+        }
+    }
+    async start() {
+        while (true) {
+            if (this.#queuedFetches.length === 0) {
+                await new Promise(resolve => setTimeout(resolve, 1000))
+                continue
+            }
+            const key = this.#queuedFetches.shift()
+            if (!key) throw Error('Unexpected missing key')
+            const [dandisetId, assetId] = key.split('/')
+            const url = `https://kerchunk.neurosift.org/dandi/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
+            const response = await fetch(url)
+            if (response.status === 200) {
+                const json = await response.json()
+                try {
+                    const x = parseLindiAssetInfo(json)
+                    this.#fetched[key] = x
+                }
+                catch (e) {
+                    console.error(`Error parsing Lindi asset info: ${e}`)
+                    this.#fetched[key] = null
+                }
+            }
+            else {
+                this.#numFailures += 1
+                this.#fetched[key] = null
+            }
+            if (this.#numFailures > 10) {
+                console.warn(`Too many failures fetching Lindi asset info. Stopping.`)
+                break
+            }
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+    }
+}
+const lindiAssetInfoFetcher = new LindiAssetInfoFetcher()
+lindiAssetInfoFetcher.start()
+
+const parseLindiAssetInfo = (json: any): LindiAssetInfo => {
+    const neurodataTypes: string[] = []
+    for (const fname in json.refs) {
+        if (fname.endsWith('.zattrs')) {
+            const zattrs = JSON.parse(json.refs[fname])
+            if (zattrs.neurodata_type) {
+                if (!neurodataTypes.includes(zattrs.neurodata_type)) {
+                    neurodataTypes.push(zattrs.neurodata_type)
+                }
+            }
+        }
+    }
+    neurodataTypes.sort()
+    return {neurodataTypes}
+}
+
+const useLindiAssetInfo = ({dandisetId, assetId}: {dandisetId?: string, assetId: string}): LindiAssetInfo | null | undefined => {
+    const [lindiAssetInfo, setLindiAssetInfo] = useState<LindiAssetInfo | null | undefined>(undefined)
+    useEffect(() => {
+        let canceled = false
+        setLindiAssetInfo(undefined)
+        if (!dandisetId) {
+            setLindiAssetInfo(null)
+            return
+        }
+        ; (async () => {
+            const x = await lindiAssetInfoFetcher.fetch({dandisetId, assetId})
+            if (canceled) return
+            setLindiAssetInfo(x)
+        })()
+        return () => {
+            canceled = true;
+            lindiAssetInfoFetcher.removeFromQueue({dandisetId, assetId})
+        }
+    }, [dandisetId, assetId])
+    return lindiAssetInfo
 }
 
 export default DandisetView
