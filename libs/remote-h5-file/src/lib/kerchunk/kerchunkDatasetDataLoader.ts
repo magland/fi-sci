@@ -18,7 +18,30 @@ const kerchunkDatasetDataLoader = async (o: {
     if (!dtype) throw Error('No dtype for ' + path);
     const ndims = shape.length;
     if (ndims !== chunkShape.length) throw Error('Mismatched ndims and chunk shape for ' + path);
+
     const macroChunkShape = chunkShape.map((cs, i) => Math.ceil(shape[i] / cs));
+    
+    // check if we have a single chunk with no filters or compression (single contiguous block of data)
+    // It's important to handle this case specially because in this situation we don't need to download
+    // the entire chunk, we can just download the slice we need.
+    const singleChunk = macroChunkShape.reduce((a, b) => a * b, 1) === 1;
+    const noFiltersOrCompression = !zarray.compressor && (!zarray.filters || zarray.filters.length === 0);
+    if (singleChunk && noFiltersOrCompression && slice && slice.length >0 ) {
+        if (slice.length > 1) {
+            throw Error('For now, you can only slice one dimension at a time for single chunk contiguous data');
+        }
+        const dtypeByteSize = getDtypeByteSize(dtype);
+        const startByte = slice[0][0] * shape.slice(1).reduce((a, b) => a * b, 1) * dtypeByteSize;
+        const endByte = slice[0][1] * shape.slice(1).reduce((a, b) => a * b, 1) * dtypeByteSize;
+        let singleChunkPath = path + '/0';
+        for (let i = 1; i < ndims; i++) {
+            singleChunkPath += '.0';
+        }
+        const dd = await client.readBinary(singleChunkPath, {decodeArray: false, startByte, endByte});
+        const ret = createDataView(dd, dtype)
+        return ret;
+    }
+
     const prodChunkSizeOfAllButFirstDimension = chunkShape.slice(1).reduce((a, b) => a * b, 1);
     const prodShapeSizeOfAllButFirstTwoDimensions = shape.slice(2).reduce((a, b) => a * b, 1);
     const prodMacroChunkShapeAllButFirstTwoDimensions = macroChunkShape.slice(2).reduce((a, b) => a * b, 1);
@@ -215,6 +238,34 @@ const allocateArrayWithDtype = (size: number, dtype: string) => {
         return ret;
     }
     if (dtype === '|O') return new Array(size);
+    throw Error(`Unsupported dtype: ${dtype}`);
+}
+
+const createDataView = (dd: ArrayBuffer, dtype: string) => {
+    if (dtype === '<f4') return new Float32Array(dd);
+    if (dtype === '<f8') return new Float64Array(dd);
+    if (dtype === '<i1') return new Int8Array(dd);
+    if (dtype === '<i2') return new Int16Array(dd);
+    if (dtype === '<i4') return new Int32Array(dd);
+    if (dtype === '<i8') return new BigInt64Array(dd);
+    if (dtype === '<u1') return new Uint8Array(dd);
+    if (dtype === '<u2') return new Uint16Array(dd);
+    if (dtype === '<u4') return new Uint32Array(dd);
+    if (dtype === '<u8') return new BigUint64Array(dd);
+    throw Error(`Unsupported dtype: ${dtype}`);
+}
+
+const getDtypeByteSize = (dtype: string) => {
+    if (dtype === '<f4') return 4;
+    if (dtype === '<f8') return 8;
+    if (dtype === '<i1') return 1;
+    if (dtype === '<i2') return 2;
+    if (dtype === '<i4') return 4;
+    if (dtype === '<i8') return 8;
+    if (dtype === '<u1') return 1;
+    if (dtype === '<u2') return 2;
+    if (dtype === '<u4') return 4;
+    if (dtype === '<u8') return 8;
     throw Error(`Unsupported dtype: ${dtype}`);
 }
 

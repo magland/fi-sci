@@ -165,6 +165,7 @@ class RemoteH5FileKerchunk {
     
     globalRemoteH5FileStats.getDatasetDataCount++;
 
+    // old system (not used by lindi)
     const externalHdf5 = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.external_hdf5')
     if (externalHdf5) {
       const a = await getRemoteH5File(externalHdf5.url, undefined);
@@ -172,7 +173,7 @@ class RemoteH5FileKerchunk {
     }
 
     const zattrs = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
-    if (zattrs['_EXTERNAL_ARRAY_LINK']) {
+    if (zattrs && zattrs['_EXTERNAL_ARRAY_LINK']) {
       const externalArrayLink = zattrs['_EXTERNAL_ARRAY_LINK'];
       const a = await getRemoteH5File(externalArrayLink.url, undefined);
       return a.getDatasetData(externalArrayLink.name, o);

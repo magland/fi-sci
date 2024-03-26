@@ -77,6 +77,8 @@ const RasterPlotView3: FunctionComponent<Props> = ({spikeTrainsClient, width, he
         return {blockStartIndex, blockEndIndex, zoomInRequired: false}
     }, [spikeTrainsClient, visibleStartTimeSec, visibleEndTimeSec, endTimeSec])
 
+    const [loadingMessage, setLoadingMessage] = useState<string | undefined>(undefined)
+
     useEffect(() => {
         let canceled = false
         if (!worker) return
@@ -84,6 +86,7 @@ const RasterPlotView3: FunctionComponent<Props> = ({spikeTrainsClient, width, he
         if (blockEndIndex === undefined) return
 
         (async () => {
+            setLoadingMessage('Loading spike data...')
             const dd = await spikeTrainsClient.getData(blockStartIndex, blockEndIndex, {})
             if (canceled) return
             const plotData = {
@@ -92,6 +95,7 @@ const RasterPlotView3: FunctionComponent<Props> = ({spikeTrainsClient, width, he
                     spikeTimesSec: unit.spikeTimesSec
                 }))
             }
+            setLoadingMessage('')
             worker.postMessage({
                 plotData
             })
@@ -115,12 +119,12 @@ const RasterPlotView3: FunctionComponent<Props> = ({spikeTrainsClient, width, he
             hoveredUnitId,
             selectedUnitIds: [...selectedUnitIds],
             zoomInRequired,
-            infoMessage
+            infoMessage: infoMessage || loadingMessage
         }
         worker.postMessage({
             opts
         })
-    }, [canvasWidth, canvasHeight, margins, visibleStartTimeSec, visibleEndTimeSec, worker, hoveredUnitId, selectedUnitIds, zoomInRequired, infoMessage])
+    }, [canvasWidth, canvasHeight, margins, visibleStartTimeSec, visibleEndTimeSec, worker, hoveredUnitId, selectedUnitIds, zoomInRequired, infoMessage, loadingMessage])
 
     const unitIds = useMemo(() => (
         spikeTrainsClient.unitIds!

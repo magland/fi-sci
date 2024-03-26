@@ -55,6 +55,7 @@ async function draw() {
         canvasContext.textBaseline = 'top'
         canvasContext.font = '20px Arial'
         canvasContext.fillText(infoMessage, canvasWidth / 2, 0)
+        canvasContext.fillStyle = 'black'
     }
 
     if (zoomInRequired) {
@@ -121,7 +122,7 @@ const paintPanel = (context: CanvasRenderingContext2D, pixelPlots: PixelPlot[]) 
     if (!opts) return
     const { margins, canvasWidth, canvasHeight } = opts
 
-    context.clearRect(0, 0, canvasWidth, canvasHeight)
+    // context.clearRect(0, 0, canvasWidth, canvasHeight)
 
     const pixelsPerUnit = canvasHeight / pixelPlots.length
 
