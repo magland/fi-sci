@@ -87,6 +87,20 @@ const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compress
         else if (dtype === '|b1') {
             ret = new Uint8Array(ret);
         }
+        else if (dtype.startsWith('<U')) {
+            const fixedLength = parseInt(dtype.slice(2));
+            const nn = ret.byteLength / (fixedLength * 4);
+            const ret2 = []
+            for (let i = 0; i < nn; i++) {
+                const ret1 = new Uint32Array(ret, i * fixedLength * 4, fixedLength);
+                const ret0 = new Uint8Array(fixedLength);
+                for (let j = 0; j < fixedLength; j++) {
+                    ret0[j] = ret1[j];
+                }
+                ret2.push(new TextDecoder().decode(ret0));
+            }
+            ret = ret2;
+        }
         else {
             throw Error('Unhandled dtype ' + dtype);
         }
