@@ -27,8 +27,8 @@ const kerchunkDatasetDataLoader = async (o: {
     const singleChunk = macroChunkShape.reduce((a, b) => a * b, 1) === 1;
     const noFiltersOrCompression = !zarray.compressor && (!zarray.filters || zarray.filters.length === 0);
     if (singleChunk && noFiltersOrCompression && slice && slice.length >0 ) {
-        if (slice.length > 1) {
-            throw Error('For now, you can only slice one dimension at a time for single chunk contiguous data');
+        if (slice.length > 2) {
+            throw Error('For now, you can only slice two dimensions at a time for single chunk contiguous data');
         }
         const dtypeByteSize = getDtypeByteSize(dtype);
         const startByte = slice[0][0] * shape.slice(1).reduce((a, b) => a * b, 1) * dtypeByteSize;
@@ -38,8 +38,22 @@ const kerchunkDatasetDataLoader = async (o: {
             singleChunkPath += '.0';
         }
         const dd = await client.readBinary(singleChunkPath, {decodeArray: false, startByte, endByte});
-        const ret = createDataView(dd, dtype)
-        return ret;
+        let a = createDataView(dd, dtype)
+        if (slice.length === 2) {
+            const ss = shape.slice(2).reduce((a, b) => a * b, 1);
+            const newRet = allocateArrayWithDtype((slice[0][1] - slice[0][0]) * (slice[1][1] - slice[1][0]) * ss, dtype);
+            let iRet = 0;
+            for (let i = 0; i < slice[0][1] - slice[0][0]; i++) {
+                for (let j = slice[1][0]; j < slice[1][1]; j++) {
+                    for (let k = 0; k < ss; k++) {
+                        newRet[iRet] = a[(i * shape[1] + j) * ss + k];
+                        iRet++;
+                    }
+                }
+            }
+            a = newRet as any
+        }
+        return a;
     }
 
     const prodChunkSizeOfAllButFirstDimension = chunkShape.slice(1).reduce((a, b) => a * b, 1);
