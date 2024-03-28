@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ReferenceFileSystemClient from "./ReferenceFileSystemClient";
-import { ZMetaDataZArray } from "./RemoteH5FileKerchunk";
+import { ZMetaDataZArray } from "./RemoteH5FileLindi";
 
-const kerchunkDatasetDataLoader = async (o: {
+const lindiDatasetDataLoader = async (o: {
     client: ReferenceFileSystemClient,
     path: string
     zarray: ZMetaDataZArray;
@@ -167,7 +167,7 @@ const kerchunkDatasetDataLoader = async (o: {
     }) => {
         const { slice1, slice2 } = o;
         const sliceA = [slice1, slice2];
-        const xx = await kerchunkDatasetDataLoader({
+        const xx = await lindiDatasetDataLoader({
             client,
             path,
             zarray,
@@ -283,4 +283,4 @@ const getDtypeByteSize = (dtype: string) => {
     throw Error(`Unsupported dtype: ${dtype}`);
 }
 
-export default kerchunkDatasetDataLoader;
+export default lindiDatasetDataLoader;

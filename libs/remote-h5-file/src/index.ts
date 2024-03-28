@@ -14,5 +14,5 @@ export type {
   RemoteH5Subgroup,
   DatasetDataType,
 } from './lib/RemoteH5File';
-export { default as RemoteH5FileKerchunk, getRemoteH5FileKerchunk } from './lib/kerchunk/RemoteH5FileKerchunk';
+export { default as RemoteH5FileLindi, getRemoteH5FileLindi } from './lib/lindi/RemoteH5FileLindi';
 export type { Canceler } from './lib/helpers';

@@ -1,4 +1,4 @@
-import { ZMetaDataZArray } from "./RemoteH5FileKerchunk";
+import { ZMetaDataZArray } from "./RemoteH5FileLindi";
 import zarrDecodeChunkArray from "./zarrDecodeChunkArray";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

@@ -9,10 +9,10 @@ import NwbMainViewMainPanel from "./NwbMainViewMainPanel"
 type Props = {
     width: number
     height: number
-    usingKerchunk: boolean
+    usingLindi: boolean
 }
 
-const NwbMainView: FunctionComponent<Props> = ({width, height, usingKerchunk}) => {
+const NwbMainView: FunctionComponent<Props> = ({width, height, usingLindi}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     return (
@@ -26,7 +26,7 @@ const NwbMainView: FunctionComponent<Props> = ({width, height, usingKerchunk}) =
                 width={0}
                 height={0}
                 nwbFile={nwbFile}
-                usingKerchunk={usingKerchunk}
+                usingLindi={usingLindi}
             />
             <NwbMainViewMainPanel
                 width={0}

@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import RemoteH5FileZarr, { getRemoteH5FileZarr } from './RemoteH5FileZarr';
 import { Canceler, postRemoteH5WorkerRequest } from './helpers';
-import RemoteH5FileKerchunk, { getRemoteH5FileKerchunk } from './kerchunk/RemoteH5FileKerchunk';
+import RemoteH5FileLindi, { getRemoteH5FileLindi } from './lindi/RemoteH5FileLindi';
 
-export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr | RemoteH5FileKerchunk
+export type RemoteH5FileX = RemoteH5File | MergedRemoteH5File | RemoteH5FileZarr | RemoteH5FileLindi
 
 export type RemoteH5Group = {
   path: string;
@@ -273,13 +273,6 @@ export class MergedRemoteH5File {
   getFiles() {
     return this.#files;
   }
-  isLindi() {
-    if (this.#files.length === 0) return false;
-    const ff = this.#files[0];
-    if ((ff as any).isLindi) {
-      return (ff as any).isLindi();
-    }
-  }
 }
 
 const mergeGroups = (groups: RemoteH5Group[]): RemoteH5Group => {
@@ -362,15 +355,15 @@ export const getRemoteH5File = async (url: string, metaUrl: string | undefined) 
 };
 
 const globalMergedRemoteH5Files: { [kk: string]: MergedRemoteH5File } = {};
-export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | undefined)[], storageType: ('h5' | 'zarr' | 'kc')[]) => {
+export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | undefined)[], storageType: ('h5' | 'zarr' | 'lindi')[]) => {
   if (urls.length === 0) throw Error(`Length of urls must be > 0`);
   if (metaUrls.length !== urls.length) throw Error(`Length of metaUrls must be equal to length of urls`);
   if (storageType.length !== urls.length) throw Error(`Length of storageType must be equal to length of urls`);
   if (urls.length === 1) {
     if (storageType[0] === 'zarr') {
       return await getRemoteH5FileZarr(urls[0], metaUrls[0]);
-    } else if (storageType[0] === 'kc') {
-      return await getRemoteH5FileKerchunk(urls[0]);
+    } else if (storageType[0] === 'lindi') {
+      return await getRemoteH5FileLindi(urls[0]);
     } else {
       return await getRemoteH5File(urls[0], metaUrls[0]);
     }
@@ -381,8 +374,8 @@ export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | 
       if (storageType[i] === 'zarr') {
         return getRemoteH5FileZarr(url, metaUrls[i]);
       }
-      else if (storageType[i] === 'kc') {
-        return getRemoteH5FileKerchunk(url);
+      else if (storageType[i] === 'lindi') {
+        return getRemoteH5FileLindi(url);
       }
       else {
         return getRemoteH5File(url, metaUrls[i])

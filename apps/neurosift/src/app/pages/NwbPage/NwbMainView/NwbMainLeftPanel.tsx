@@ -16,7 +16,7 @@ type Props = {
     width: number
     height: number
     nwbFile: RemoteH5FileX
-    usingKerchunk: boolean
+    usingLindi: boolean
 }
 
 const labelMap: {name: string, newName: string, renderer?: (val: any) => string}[] = [
@@ -39,13 +39,11 @@ const labelMap: {name: string, newName: string, renderer?: (val: any) => string}
     {name: 'file_create_date', newName: 'File creation'},
 ]
 
-const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usingKerchunk}) => {
+const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usingLindi}) => {
     const rootGroup = useGroup(nwbFile, '/')
     const generalGroup = useGroup(nwbFile, '/general')
 
     const {openTab} = useNwbOpenTabs()
-
-    const isLindi = (nwbFile as any).isLindi && (nwbFile as any).isLindi()
 
     const items = useMemo(() => {
         const ret: {name: string, path: string, renderer?: (val: any) => string}[] = []
@@ -86,20 +84,10 @@ const NwbMainLeftPanel: FunctionComponent<Props> = ({width, height, nwbFile, usi
             <div className="MainArea" style={{position: 'absolute', width, height: height - bottomBarHeight, overflowY: 'auto'}}>
                 <DandiTable />
                 {
-                    usingKerchunk && (
+                    usingLindi && (
                         <div>
-                            <div style={{color: 'darkgreen'}}>
-                                {
-                                    isLindi ? (
-                                        <span>
-                                            Using LINDI
-                                        </span>
-                                    ) : (
-                                        <span>
-                                            Using kerchunk
-                                        </span>
-                                    )
-                                }
+                            <div style={{color: 'darkgreen', fontSize: 10}}>
+                                Using LINDI
                             </div>
                             <hr />
                         </div>

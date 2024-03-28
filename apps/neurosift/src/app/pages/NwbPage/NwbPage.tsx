@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { MergedRemoteH5File, RemoteH5File, RemoteH5FileKerchunk, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileKerchunk, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
+import { MergedRemoteH5File, RemoteH5File, RemoteH5FileLindi, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileLindi, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useReducer, useState } from "react"
 import { useCustomStatusBarElements } from "../../StatusBar"
 import useRoute, { StorageType } from "../../useRoute"
@@ -86,7 +86,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
         return () => {clearInterval(timer)}
     }, [nwbFile, setCustomStatusBarElement])
 
-    const [usingKerchunk, setUsingKerchunk] = useState<boolean>(false)
+    const [usingLindi, setUsingLindi] = useState<boolean>(false)
 
     useEffect(() => {
         let canceled = false
@@ -95,14 +95,14 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             const {urls: urlListResolved, storageTypes: storageTypeResolved} = await getResolvedUrls(urlList, route.storageType, {dandisetId})
             const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
             if (canceled) return
-            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileKerchunk
-            setUsingKerchunk(storageTypeResolved.includes('kc'))
+            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileLindi
+            setUsingLindi(storageTypeResolved.includes('lindi'))
             if (urlListResolved.length === 1) {
                 if (storageTypeResolved[0] === 'zarr') {
                     f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
                 }
-                else if (storageTypeResolved[0] === 'kc') {
-                    f = await getRemoteH5FileKerchunk(urlListResolved[0])
+                else if (storageTypeResolved[0] === 'lindi') {
+                    f = await getRemoteH5FileLindi(urlListResolved[0])
                 }
                 else {
                     f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
@@ -192,7 +192,7 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
                             <NwbTabWidget
                                 width={width}
                                 height={height}
-                                usingKerchunk={usingKerchunk}
+                                usingLindi={usingLindi}
                             />
                         </SetupNwbFileAnnotationsProvider>
                     </SetupNwbOpenTabs>
@@ -249,7 +249,7 @@ const urlQueryParams = new URLSearchParams(urlQueryString)
 
 const getMetaUrl = async (url: string, storageType: StorageType): Promise<string | undefined> => {
     if (storageType === 'zarr') return undefined
-    if (storageType === 'kc') return undefined
+    if (storageType === 'lindi') return undefined
     if (urlQueryParams.get('no-meta') === '1') return undefined
 
     const etag = await getEtag(url)
@@ -294,22 +294,22 @@ const getResolvedUrl = async (url: string, storageType: StorageType, o: {dandise
     const urlSearchParams = new URLSearchParams(window.location.search);
     const queryParams = Object.fromEntries(urlSearchParams.entries());
     if (storageType === 'zarr') return {url, storageType}
-    if (storageType === 'kc') return {url, storageType}
+    if (storageType === 'lindi') return {url, storageType}
     if (isDandiAssetUrl(url)) {
         const authorizationHeader = getAuthorizationHeaderForUrl(url)
         const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
         const redirectUrl = await getRedirectUrl(url, headers) || url
-        const kerchunkUrl = o.dandisetId && !(queryParams.lindi === '0') ? await tryGetKerchunkUrl(url, o.dandisetId) : undefined
-        if (kerchunkUrl) {
-            console.info(`Using kerchunk ${url} -> ${kerchunkUrl}`)
-            return {url: kerchunkUrl, storageType: 'kc'}
+        const lindiUrl = o.dandisetId && !(queryParams.lindi === '0') ? await tryGetLindiUrl(url, o.dandisetId) : undefined
+        if (lindiUrl) {
+            console.info(`Using lindi ${url} -> ${lindiUrl}`)
+            return {url: lindiUrl, storageType: 'lindi'}
         }
         return {url: redirectUrl, storageType}
     }
     return {url, storageType}
 }
 
-const tryGetKerchunkUrl = async (url: string, dandisetId: string) => {
+const tryGetLindiUrl = async (url: string, dandisetId: string) => {
     let assetId: string
     let staging: boolean
     if (url.startsWith('https://api-staging.dandiarchive.org/api/assets/')) {

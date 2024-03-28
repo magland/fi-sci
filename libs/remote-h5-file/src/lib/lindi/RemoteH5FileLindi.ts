@@ -3,7 +3,7 @@ import { DatasetDataType, RemoteH5Dataset, RemoteH5Group, RemoteH5Subdataset, Re
 import { Canceler } from '../helpers';
 
 import ReferenceFileSystemClient, { ReferenceFileSystemObject } from './ReferenceFileSystemClient';
-import kerchunkDatasetDataLoader from './kerchunkDatasetDataLoader';
+import lindiDatasetDataLoader from './lindiDatasetDataLoader';
 
 type ZMetaDataZAttrs = {[key: string]: any}
 
@@ -22,13 +22,13 @@ export type ZMetaDataZArray = {
     zarr_format?: 2
 }
 
-class RemoteH5FileKerchunk {
-  constructor(public url: string, private kerchunkFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}, private _isLindi: boolean) {
+class RemoteH5FileLindi {
+  constructor(public url: string, private lindiFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}) {
     
   }
   static async create(url: string) {
     const r = await fetch(url);
-    if (!r.ok) throw Error('Failed to fetch kerchunk file' + url);
+    if (!r.ok) throw Error('Failed to fetch LINDI file' + url);
     const obj: ReferenceFileSystemObject = await r.json();
     console.info(`reference file system for ${url}`, obj);
     const pathsByParentPath: {[key: string]: string[]} = {};
@@ -46,11 +46,7 @@ class RemoteH5FileKerchunk {
         }
       }
     }
-    const _isLindi = (obj as any).generationMetadata && (obj as any).generationMetadata['generatedBy'] === 'dandi_lindi';
-    return new RemoteH5FileKerchunk(url, new ReferenceFileSystemClient(obj), pathsByParentPath, _isLindi);
-  }
-  isLindi() {
-    return this._isLindi;
+    return new RemoteH5FileLindi(url, new ReferenceFileSystemClient(obj), pathsByParentPath);
   }
   get dataIsRemote() {
     return !this.url.startsWith('http://localhost');
@@ -62,21 +58,21 @@ class RemoteH5FileKerchunk {
     let zgroup: ZMetaDataZGroup | undefined
     let zattrs: ZMetaDataZAttrs | undefined
     if (path === '/') {
-      zgroup = (await this.kerchunkFileSystemClient.readJson('.zgroup')) as ZMetaDataZGroup | undefined
-      zattrs = (await this.kerchunkFileSystemClient.readJson('.zattrs')) as ZMetaDataZAttrs | undefined
+      zgroup = (await this.lindiFileSystemClient.readJson('.zgroup')) as ZMetaDataZGroup | undefined
+      zattrs = (await this.lindiFileSystemClient.readJson('.zattrs')) as ZMetaDataZAttrs | undefined
     }
     else {
-      zgroup = (await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zgroup')) as ZMetaDataZGroup | undefined
-      zattrs = (await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs')) as ZMetaDataZAttrs | undefined
+      zgroup = (await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zgroup')) as ZMetaDataZGroup | undefined
+      zattrs = (await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs')) as ZMetaDataZAttrs | undefined
     }
     if (zgroup) {
       const subgroups: RemoteH5Subgroup[] = [];
       const subdatasets: RemoteH5Subdataset[] = [];
       const childPaths: string[] = this.pathsByParentPath[pathWithoutBeginningSlash] || [];
       for (const childPath of childPaths) {
-        const childZgroup = await this.kerchunkFileSystemClient.readJson(childPath + '/.zgroup');
-        const childZarray = await this.kerchunkFileSystemClient.readJson(childPath + '/.zarray');
-        const childZattrs = await this.kerchunkFileSystemClient.readJson(childPath + '/.zattrs');
+        const childZgroup = await this.lindiFileSystemClient.readJson(childPath + '/.zgroup');
+        const childZarray = await this.lindiFileSystemClient.readJson(childPath + '/.zarray');
+        const childZattrs = await this.lindiFileSystemClient.readJson(childPath + '/.zattrs');
         if (childZgroup) {
           subgroups.push({
             name: getNameFromPath(childPath),
@@ -113,8 +109,8 @@ class RemoteH5FileKerchunk {
   }
   async getDataset(path: string): Promise<RemoteH5Dataset | undefined> {
     const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
-    const zarray = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray;
-    const zattrs = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
+    const zarray = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray;
+    const zattrs = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
     let dataset: RemoteH5Dataset | undefined;
     if (zarray) {
       dataset = {
@@ -155,7 +151,7 @@ class RemoteH5FileKerchunk {
     }
 
     const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
-    const zarray = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray | undefined;
+    const zarray = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray | undefined;
     if (!zarray) {
       console.warn('No .zarray for', path);
       return undefined;
@@ -166,21 +162,21 @@ class RemoteH5FileKerchunk {
     globalRemoteH5FileStats.getDatasetDataCount++;
 
     // old system (not used by lindi)
-    const externalHdf5 = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.external_hdf5')
+    const externalHdf5 = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.external_hdf5')
     if (externalHdf5) {
       const a = await getRemoteH5File(externalHdf5.url, undefined);
       return a.getDatasetData(externalHdf5.name, o);
     }
 
-    const zattrs = await this.kerchunkFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
+    const zattrs = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
     if (zattrs && zattrs['_EXTERNAL_ARRAY_LINK']) {
       const externalArrayLink = zattrs['_EXTERNAL_ARRAY_LINK'];
       const a = await getRemoteH5File(externalArrayLink.url, undefined);
       return a.getDatasetData(externalArrayLink.name, o);
     }
 
-    const ret = await kerchunkDatasetDataLoader({
-      client: this.kerchunkFileSystemClient,
+    const ret = await lindiDatasetDataLoader({
+      client: this.lindiFileSystemClient,
       path: pathWithoutBeginningSlash,
       zarray,
       slice: o.slice || []
@@ -205,20 +201,20 @@ const getNameFromPath = (path: string) => {
 }
 
 const lock1: {locked: boolean} = {locked: false};
-const globalKerchunkRemoteH5Files: { [url: string]: RemoteH5FileKerchunk } = {};
-export const getRemoteH5FileKerchunk = async (url: string) => {
+const globalLindiRemoteH5Files: { [url: string]: RemoteH5FileLindi } = {};
+export const getRemoteH5FileLindi = async (url: string) => {
   while (lock1.locked) await new Promise(resolve => setTimeout(resolve, 100));
   try {
     lock1.locked = true;
     const kk = url;
-    if (!globalKerchunkRemoteH5Files[kk]) {
-      globalKerchunkRemoteH5Files[kk] = await RemoteH5FileKerchunk.create(url);
+    if (!globalLindiRemoteH5Files[kk]) {
+      globalLindiRemoteH5Files[kk] = await RemoteH5FileLindi.create(url);
     }
-    return globalKerchunkRemoteH5Files[kk];
+    return globalLindiRemoteH5Files[kk];
   }
   finally {
     lock1.locked = false;
   }
 };
 
-export default RemoteH5FileKerchunk;
+export default RemoteH5FileLindi;

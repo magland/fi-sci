@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 
-export type StorageType = 'h5' | 'zarr' | 'kc'
+export type StorageType = 'h5' | 'zarr' | 'lindi'
 
 export type Route = {
     page: 'home'
