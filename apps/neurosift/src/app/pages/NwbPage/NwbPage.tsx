@@ -324,7 +324,7 @@ const tryGetKerchunkUrl = async (url: string, dandisetId: string) => {
         return undefined
     }
     const aa = staging ? 'dandi-staging' : 'dandi'
-    const tryUrl = `https://kerchunk.neurosift.org/${aa}/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
+    const tryUrl = `https://lindi.neurosift.org/${aa}/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
     const resp = await fetch(tryUrl, {method: 'HEAD'})
     if (resp.ok) return tryUrl
     return undefined

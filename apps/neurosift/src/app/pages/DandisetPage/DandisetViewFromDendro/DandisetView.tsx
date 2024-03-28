@@ -505,7 +505,7 @@ class LindiAssetInfoFetcher {
             const key = this.#queuedFetches.shift()
             if (!key) throw Error('Unexpected missing key')
             const [dandisetId, assetId] = key.split('/')
-            const url = `https://kerchunk.neurosift.org/dandi/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
+            const url = `https://lindi.neurosift.org/dandi/dandisets/${dandisetId}/assets/${assetId}/zarr.json`
             const response = await fetch(url)
             if (response.status === 200) {
                 const json = await response.json()

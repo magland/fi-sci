@@ -21,6 +21,8 @@ const TimeSeriesViewToolbar: FunctionComponent<Props> = ({width, height, objectP
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const dataDataset = useDataset(nwbFile, `${objectPath}/data`)
     const numChannels = dataDataset ? dataDataset.shape[1] : undefined
+    if (numChannels === undefined) return <span />
+    if (numChannels <= 1) return <span />
     return (
         <div style={{display: 'flex'}}>
             <NumVisibleChannelsSelector totalNumChannels={numChannels} value={timeSeriesViewOpts.numVisibleChannels} setValue={numVisibleChannels => setTimeSeriesViewOpts({...timeSeriesViewOpts, numVisibleChannels})} />
