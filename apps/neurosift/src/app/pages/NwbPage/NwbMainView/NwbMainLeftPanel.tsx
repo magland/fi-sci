@@ -3,7 +3,7 @@ import { Hyperlink } from "@fi-sci/misc"
 import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import useRoute from "../../../useRoute"
-import { serializeBigInt, valueToString } from "../BrowseNwbView/BrowseNwbView"
+import { serializeBigInt, valueToElement } from "../BrowseNwbView/BrowseNwbView"
 import { useDandiAssetContext } from "../DandiAssetContext"
 import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
@@ -161,7 +161,7 @@ const valueToString2 = (val: any): string => {
     }
     else if (typeof(val) === 'object') {
         if (Array.isArray(val)) {
-            return `${val.map(x => valueToString(x)).join(', ')}`
+            return `${val.map(x => valueToElement(x)).join(', ')}`
         }
         else {
             return JSON.stringify(serializeBigInt(val))

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useReducer } from "react"
-import { valueToString } from "../../BrowseNwbView/BrowseNwbView"
+import { valueToElement } from "../../BrowseNwbView/BrowseNwbView"
 import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
 import { SmallIconButton } from "@fi-sci/misc"
@@ -312,7 +312,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                             <tr key={i}>
                                 {
                                     rowItem.columnValues.map((val, j) => (
-                                        <td key={j}>{valueToString(val)}</td>
+                                        <td key={j}>{valueToElement(val)}</td>
                                     ))
                                 }
                             </tr>

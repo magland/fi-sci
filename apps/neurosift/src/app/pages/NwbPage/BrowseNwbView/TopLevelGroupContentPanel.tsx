@@ -6,7 +6,7 @@ import { FaEye, FaRegCircle } from "react-icons/fa"
 import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
-import { valueToString } from "./BrowseNwbView"
+import { valueToElement } from "./BrowseNwbView"
 import './nwb-attributes-table.css'
 
 type Props = {
@@ -314,7 +314,7 @@ const TableRow: FunctionComponent<TableRowProps> = ({tableItem, groupsDatasetsDi
                             <span style={datasetStyle}>{tableItem.name}</span>
                             {
                                 tableItem.data && (
-                                    <span>&nbsp;{abbreviateString(valueToString(tableItem.data), 300)}</span>
+                                    <span>&nbsp;{abbreviateString(valueToElement(tableItem.data), 300)}</span>
                                 )
                             }
                         </div>
@@ -327,7 +327,7 @@ const TableRow: FunctionComponent<TableRowProps> = ({tableItem, groupsDatasetsDi
                     <td style={indentStyle}>
                         <div>
                             <span>&nbsp;</span>&nbsp;
-                            <span style={attributeStyle}>{`${tableItem.name}: ${valueToString(tableItem.value)}`}</span>
+                            <span style={attributeStyle}>{`${tableItem.name}: ${valueToElement(tableItem.value)}`}</span>
                         </div>
                     </td>
                 </tr>
@@ -338,10 +338,10 @@ const TableRow: FunctionComponent<TableRowProps> = ({tableItem, groupsDatasetsDi
                     <td style={indentStyle}>
                         <div>
                             <span>&nbsp;</span>&nbsp;
-                            <span style={datasetStyle}>{`${tableItem.dataset.dtype} ${valueToString(tableItem.dataset.shape)}`}</span>
+                            <span style={datasetStyle}>{`${tableItem.dataset.dtype} ${valueToElement(tableItem.dataset.shape)}`}</span>
                             {
                                 tableItem.data ? (
-                                    <span>&nbsp;{valueToString(tableItem.data)}</span>
+                                    <span>&nbsp;{valueToElement(tableItem.data)}</span>
                                 ) : (
                                     <span>
                                         &nbsp;&nbsp;

@@ -137,7 +137,7 @@ type DatasetTitlePanelTextProps = {
 
 const DatasetTitlePanelText: FunctionComponent<DatasetTitlePanelTextProps> = ({name, dataset, nwbFile}) => {
     if (!dataset) return <span>-</span>
-    return <span> (dtype: {dataset.dtype}; shape: {valueToString(dataset.shape)})</span>
+    return <span> (dtype: {dataset.dtype}; shape: {valueToElement(dataset.shape)})</span>
 }
 
 type TopLevelDatasetContentPanelProps = {
@@ -153,7 +153,7 @@ const TopLevelDatasetContentPanel: FunctionComponent<TopLevelDatasetContentPanel
         <div>
             <div>&nbsp;</div>
             {
-                data ? valueToString(data) : ''
+                data ? valueToElement(data) : ''
             }
             <hr />
             <AttributesView
@@ -179,7 +179,7 @@ const AttributesView: FunctionComponent<{attrs: {[key: string]: any}}>= ({attrs}
                             Object.keys(attrs).sort().map((key: string) => (
                                 <tr key={key}>
                                     <td>{key}</td>
-                                    <td>{valueToString(attrs[key])}</td>
+                                    <td>{valueToElement(attrs[key])}</td>
                                 </tr>
                             ))
                         }
@@ -189,7 +189,7 @@ const AttributesView: FunctionComponent<{attrs: {[key: string]: any}}>= ({attrs}
         )
 }
 
-export const valueToString = (val: any): string => {
+export const valueToElement = (val: any): any => {
     if (typeof(val) === 'string') {
         return val
     }
@@ -201,15 +201,48 @@ export const valueToString = (val: any): string => {
     }
     else if (typeof(val) === 'object') {
         if (Array.isArray(val)) {
-            return `[${val.map(x => valueToString(x)).join(', ')}]`
+            if (val.length < 200) {
+                return `[${val.map(x => valueToElement(x)).join(', ')}]`
+            }
+            else {
+                return `[${val.slice(0, 200).map(x => valueToElement(x)).join(', ')} ...]`
+            }
+        }
+        // check for Float64Array, Int32Array, etc.
+        else if (val.constructor && val.constructor.name) {
+            const array = Array.from(val)
+            return valueToElement(array)
         }
         else {
-            return JSON.stringify(serializeBigInt(val))
+            if ('_REFERENCE' in val) {
+                return <ReferenceComponent value={val['_REFERENCE']} />
+            }
+            else {
+                return JSON.stringify(serializeBigInt(val))
+            }
         }
     }
     else {
         return '<>'
     }
+}
+
+type ReferenceValue = {
+    path: string
+    object_id: string
+    source: string
+    source_object_id: string
+}
+
+const ReferenceComponent: FunctionComponent<{value: ReferenceValue}> = ({value}) => {
+    return (
+        <span
+            style={{color: 'darkgreen'}}
+            title={JSON.stringify(value)}
+        >
+            {value.path}
+        </span>
+    )
 }
 
 const product = (arr: number[]) => {
