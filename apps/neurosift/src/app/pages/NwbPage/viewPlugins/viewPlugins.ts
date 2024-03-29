@@ -17,6 +17,7 @@ import TwoPhotonSeriesItemView from "./TwoPhotonSeries/TwoPhotonSeriesItemView"
 import DirectRasterPlotUnitsItemView from "./Units/DirectRasterPlotUnitsItemView"
 import UnitsItemView from "./Units/UnitsItemView"
 import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
+import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
 
 type Props = {
     width: number,
@@ -202,6 +203,22 @@ viewPlugins.push({
     component: DirectRasterPlotUnitsItemView,
     isTimeView: true,
     getCustomPythonCode: getCustomPythonCodeForUnits
+})
+viewPlugins.push({
+    name: 'AverageWaveforms',
+    neurodataType: 'Units',
+    defaultForNeurodataType: false,
+    buttonLabel: 'average waveforms',
+    component: AverageWaveformsUnitsItemView,
+    isTimeView: false,
+    getCustomPythonCode: getCustomPythonCodeForUnits,
+    checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
+        const x = await nwbFile.getGroup(path)
+        if (!x) return false
+        const colnames = x.attrs.colnames
+        if (!colnames) return false
+        return colnames.includes('waveform_mean')
+    }
 })
 // viewPlugins.push({
 //     name: 'RasterPlot',
