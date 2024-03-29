@@ -18,6 +18,7 @@ import DirectRasterPlotUnitsItemView from "./Units/DirectRasterPlotUnitsItemView
 import UnitsItemView from "./Units/UnitsItemView"
 import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
 import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
+import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView"
 
 type Props = {
     width: number,
@@ -215,9 +216,23 @@ viewPlugins.push({
     checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
         const x = await nwbFile.getGroup(path)
         if (!x) return false
-        const colnames = x.attrs.colnames
-        if (!colnames) return false
-        return colnames.includes('waveform_mean')
+        const ds = x.datasets.find(ds => (ds.name === 'waveform_mean'))
+        return !!ds
+    }
+})
+viewPlugins.push({
+    name: 'Autocorrelograms',
+    neurodataType: 'Units',
+    defaultForNeurodataType: false,
+    buttonLabel: 'autocorrelograms',
+    component: AutocorrelogramsUnitsItemView,
+    isTimeView: false,
+    getCustomPythonCode: getCustomPythonCodeForUnits,
+    checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
+        const x = await nwbFile.getGroup(path)
+        if (!x) return false
+        const ds = x.datasets.find(ds => (ds.name === 'autocorrelogram'))
+        return !!ds
     }
 })
 // viewPlugins.push({
