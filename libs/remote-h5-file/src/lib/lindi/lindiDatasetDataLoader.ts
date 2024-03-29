@@ -227,7 +227,7 @@ const lindiDatasetDataLoader = async (o: {
 const allocateArrayWithDtype = (size: number, dtype: string) => {
     if (dtype === '<f4') return new Float32Array(size);
     if (dtype === '<f8') return new Float64Array(size);
-    if (dtype === '<i1') return new Int8Array(size);
+    if ((dtype === '<i1') || (dtype === '|i1')) return new Int8Array(size)
     if (dtype === '<i2') return new Int16Array(size);
     if (dtype === '<i4') return new Int32Array(size);
     if (dtype === '<i8') {
@@ -239,7 +239,7 @@ const allocateArrayWithDtype = (size: number, dtype: string) => {
         }
         return ret;
     }
-    if (dtype === '<u1') return new Uint8Array(size);
+    if ((dtype === '<u1') || (dtype === '|u1')) return new Uint8Array(size);
     if (dtype === '<u2') return new Uint16Array(size);
     if (dtype === '<u4') return new Uint32Array(size);
     if (dtype === '<u8') {
@@ -258,11 +258,11 @@ const allocateArrayWithDtype = (size: number, dtype: string) => {
 const createDataView = (dd: ArrayBuffer, dtype: string) => {
     if (dtype === '<f4') return new Float32Array(dd);
     if (dtype === '<f8') return new Float64Array(dd);
-    if (dtype === '<i1') return new Int8Array(dd);
+    if ((dtype === '<i1') || (dtype === '|i1')) return new Int8Array(dd);
     if (dtype === '<i2') return new Int16Array(dd);
     if (dtype === '<i4') return new Int32Array(dd);
     if (dtype === '<i8') return new BigInt64Array(dd);
-    if (dtype === '<u1') return new Uint8Array(dd);
+    if ((dtype === '<u1') || (dtype === '|u1')) return new Uint8Array(dd);
     if (dtype === '<u2') return new Uint16Array(dd);
     if (dtype === '<u4') return new Uint32Array(dd);
     if (dtype === '<u8') return new BigUint64Array(dd);
@@ -272,11 +272,11 @@ const createDataView = (dd: ArrayBuffer, dtype: string) => {
 const getDtypeByteSize = (dtype: string) => {
     if (dtype === '<f4') return 4;
     if (dtype === '<f8') return 8;
-    if (dtype === '<i1') return 1;
+    if ((dtype === '<i1') || (dtype === '|i1')) return 1;
     if (dtype === '<i2') return 2;
     if (dtype === '<i4') return 4;
     if (dtype === '<i8') return 8;
-    if (dtype === '<u1') return 1;
+    if ((dtype === '<u1') || (dtype === '|u1')) return 1;
     if (dtype === '<u2') return 2;
     if (dtype === '<u4') return 4;
     if (dtype === '<u8') return 8;

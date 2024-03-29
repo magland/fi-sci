@@ -50,7 +50,7 @@ const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compress
         else if (dtype === '<f8') {
             ret = new Float64Array(ret);
         }
-        else if (dtype === '<i1') {
+        else if ((dtype === '<i1') || (dtype === '|i1')) {
             ret = new Int8Array(ret);
         }
         else if (dtype === '<i2') {
@@ -67,7 +67,7 @@ const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compress
                 ret[i] = Number(ret0[i]);
             }
         }
-        else if (dtype === '<u1') {
+        else if ((dtype === '<u1') || (dtype === '|u1')) {
             ret = new Uint8Array(ret);
         }
         else if (dtype === '<u2') {
