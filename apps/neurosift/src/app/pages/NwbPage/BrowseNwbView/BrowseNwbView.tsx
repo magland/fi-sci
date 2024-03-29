@@ -209,7 +209,7 @@ export const valueToElement = (val: any): any => {
             }
         }
         // check for Float64Array, Int32Array, etc.
-        else if (val.constructor && val.constructor.name) {
+        else if (val.constructor && ['Float64Array', 'Int32Array', 'Uint32Array', 'Uint8Array', 'Uint16Array', 'Int8Array', 'Int16Array'].includes(val.constructor.name)) {
             const array = Array.from(val)
             return valueToElement(array)
         }
