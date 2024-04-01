@@ -476,18 +476,19 @@ type LindiAssetInfo = {
 
 class LindiAssetInfoFetcher {
     #queuedFetches: string[] = []
-    #fetched: {[key: string]: LindiAssetInfo | null} = {}
+    #completedFetches: string[] = []
+    #fetchCache: {[key: string]: LindiAssetInfo | null} = {}
     #numFailures: number = 0
     async fetch({dandisetId, assetId}: {dandisetId: string, assetId: string}): Promise<LindiAssetInfo | null> {
         const key = `${dandisetId}/${assetId}`
-        if (this.#fetched[key]) return this.#fetched[key]
+        if (this.#fetchCache[key]) return this.#fetchCache[key]
         if (!this.#queuedFetches.includes(key)) {
             this.#queuedFetches.push(key)
         }
-        while (this.#fetched[key] === undefined) {
+        while (this.#fetchCache[key] === undefined) {
             await new Promise(resolve => setTimeout(resolve, 100))
         }
-        return this.#fetched[key]
+        return this.#fetchCache[key]
     }
     removeFromQueue({dandisetId, assetId}: {dandisetId: string, assetId: string}) {
         const key = `${dandisetId}/${assetId}`
@@ -495,10 +496,14 @@ class LindiAssetInfoFetcher {
         if (index !== -1) {
             this.#queuedFetches.splice(index, 1)
         }
+        const index2 = this.#completedFetches.indexOf(key)
+        if (index2 !== -1) {
+            this.#completedFetches.splice(index2, 1)
+        }
     }
     async start() {
         while (true) {
-            if (this.#queuedFetches.length === 0) {
+            if ((this.#queuedFetches.length === 0) || (this.#completedFetches.length > 10)) {
                 await new Promise(resolve => setTimeout(resolve, 1000))
                 continue
             }
@@ -511,16 +516,19 @@ class LindiAssetInfoFetcher {
                 const json = await response.json()
                 try {
                     const x = parseLindiAssetInfo(json)
-                    this.#fetched[key] = x
+                    this.#fetchCache[key] = x
+                    if (!this.#completedFetches.includes(key)) {
+                        this.#completedFetches.push(key)
+                    }
                 }
                 catch (e) {
                     console.error(`Error parsing Lindi asset info: ${e}`)
-                    this.#fetched[key] = null
+                    this.#fetchCache[key] = null
                 }
             }
             else {
                 this.#numFailures += 1
-                this.#fetched[key] = null
+                this.#fetchCache[key] = null
             }
             if (this.#numFailures > 10) {
                 console.warn(`Too many failures fetching Lindi asset info. Stopping.`)
