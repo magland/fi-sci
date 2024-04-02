@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 
 type PSTHWidgetProps = {
@@ -7,12 +8,18 @@ type PSTHWidgetProps = {
     groups: {group: any, color: string}[]
     windowRange: {start: number, end: number}
     alignmentVariableName: string
+    showXAxisLabels: boolean
 }
 
-const PSTHRasterWidget: FunctionComponent<PSTHWidgetProps> = ({width, height, trials, groups, windowRange, alignmentVariableName}) => {
+const PSTHRasterWidget: FunctionComponent<PSTHWidgetProps> = ({width, height, trials, groups, windowRange, alignmentVariableName, showXAxisLabels}) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null)
 
-    const margins = useMemo(() => ({left: 50, right: 20, top: 20, bottom: 40}), [])
+    const margins = useMemo(() => ({
+        left: 50,
+        right: 20,
+        top: 20,
+        bottom: showXAxisLabels ? 40 : 10
+    }), [showXAxisLabels])
 
     const coordToPixel = useMemo(() => ((t: number, iTrial: number) => {
         const x = margins.left + (t - windowRange.start) / (windowRange.end - windowRange.start) * (width - margins.left - margins.right)
@@ -60,15 +67,18 @@ const PSTHRasterWidget: FunctionComponent<PSTHWidgetProps> = ({width, height, tr
         ctx.fillText(yAxisLabel, 0, 0)
         ctx.restore()
 
+
         // x axis labels
-        ctx.fillStyle = 'black'
-        ctx.textAlign = 'center'
-        ctx.textBaseline = 'top'
-        ctx.fillText('0', p2.x, p2.y + 4)
-        ctx.fillText(windowRange.start.toString(), margins.left, height - margins.bottom + 4)
-        ctx.fillText(windowRange.end.toString(), width - margins.right, height - margins.bottom + 4)
-        const labelText = 'Time offset (s)'
-        ctx.fillText(labelText, margins.left + (width - margins.left - margins.right) / 2, height - margins.bottom + 20)
+        if (showXAxisLabels) {
+            ctx.fillStyle = 'black'
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'top'
+            ctx.fillText('0', p2.x, p2.y + 4)
+            ctx.fillText(windowRange.start.toString(), margins.left, height - margins.bottom + 4)
+            ctx.fillText(windowRange.end.toString(), width - margins.right, height - margins.bottom + 4)
+            const labelText = 'Time offset (s)'
+            ctx.fillText(labelText, margins.left + (width - margins.left - margins.right) / 2, height - margins.bottom + 20)
+        }
 
         // x axis
         ctx.strokeStyle = 'gray'

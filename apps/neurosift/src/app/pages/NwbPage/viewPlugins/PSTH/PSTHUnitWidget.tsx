@@ -48,7 +48,7 @@ const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTra
             </div>
             {
                 groupLegendWidth && (
-                    <div style={{position: 'absolute', width: groupLegendWidth, height: height - topBarHeight, top: topBarHeight, left: width - groupLegendWidth, overflow: 'hidden'}}>
+                    <div className="legend-container" style={{position: 'absolute', width: groupLegendWidth, height: height - topBarHeight, top: topBarHeight, left: width - groupLegendWidth, overflow: 'hidden'}}>
                         <PSTHGroupLegend
                             width={groupLegendWidth}
                             height={height - topBarHeight}
@@ -62,7 +62,7 @@ const PSTHUnitWidget: FunctionComponent<Props> = ({width, height, path, spikeTra
             {
                 spikeTrain ? (
                     alignToVariables.map((alignToVariable, i) => (
-                        <div key={alignToVariable} style={{position: 'absolute', width: W, height: height - topBarHeight, top: topBarHeight, left: i * W}}>
+                        <div className="align-to-widget-container" key={alignToVariable} style={{position: 'absolute', width: W, height: height - topBarHeight, top: topBarHeight, left: i * W}}>
                             <PSTHUnitAlignToWidget
                                 width={W}
                                 height={height - topBarHeight}
@@ -210,10 +210,10 @@ const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({w
 
     return (
         <div style={{position: 'absolute', width, height}}>
-            <div style={{position: 'absolute', width, height: titleHeight, fontWeight: 'bold', textAlign: 'center'}}>
+            <div className="align-to-variable" style={{position: 'absolute', width, height: titleHeight, fontWeight: 'bold', textAlign: 'center'}}>
                 {alignToVariable}
             </div>
-            <div style={{position: 'absolute', width, height: rasterWidgetHeight, top: titleHeight}}>
+            <div className="raster-widget-container" style={{position: 'absolute', width, height: rasterWidgetHeight, top: titleHeight}}>
                 {prefs.showRaster && <PSTHRasterWidget
                     width={width}
                     height={rasterWidgetHeight}
@@ -221,9 +221,10 @@ const PSTHUnitAlignToWidget: FunctionComponent<PSTHUnitAlignToWidgetProps> = ({w
                     groups={groups}
                     windowRange={windowRange}
                     alignmentVariableName={alignToVariable}
+                    showXAxisLabels={!prefs.showHist} // don't show x axis labels if hist is shown
                 />}
             </div>
-            <div style={{position: 'absolute', width, height: histWidgetHeight, top: titleHeight + rasterWidgetHeight}}>
+            <div className="hist-widget-container" style={{position: 'absolute', width, height: histWidgetHeight, top: titleHeight + rasterWidgetHeight}}>
                 {prefs.showHist && <PSTHHistWidget
                     width={width}
                     height={histWidgetHeight}

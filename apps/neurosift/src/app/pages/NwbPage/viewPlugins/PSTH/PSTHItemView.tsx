@@ -156,7 +156,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
     // }, [unitIds, selectedUnitIds, setSelectedUnitIds])
 
     return (
-        <div style={{position: 'absolute', width, height}}>
+        <div className="PSTHItemView" style={{position: 'absolute', width, height, overflow: 'hidden'}}>
             <div style={{position: 'absolute', width: unitsTableWidth, height: unitsTableHeight - 20, overflowY: 'auto'}}>
                 {unitsTable}
             </div>
@@ -174,7 +174,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
                 {prefsComponent}
                 <hr />
             </div>
-            <div style={{position: 'absolute', left: unitsTableWidth, width: width - unitsTableWidth, height, overflowY: 'auto'}}>
+            <div className="psth-item-view-right" style={{position: 'absolute', left: unitsTableWidth, width: width - unitsTableWidth, height, overflowY: 'auto', overflowX: 'hidden'}}>
                 {
                     spikeTrainsClient && selectedUnitIds.map((unitId, i) => (
                         <div key={unitId} style={{position: 'absolute', top: i * unitWidgetHeight, width: width - unitsTableWidth, height: unitWidgetHeight}}>
@@ -183,7 +183,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
                                 height={unitWidgetHeight}
                             >
                                 <PSTHUnitWidget
-                                    width={width - unitsTableWidth}
+                                    width={width - unitsTableWidth - 20} // leave some room for scrollbar
                                     height={unitWidgetHeight}
                                     path={path}
                                     spikeTrainsClient={spikeTrainsClient}
