@@ -125,13 +125,13 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             const assetUrl = route.url[0]
             const dandisetId = route.dandisetId
             const dandisetVersion = route.dandisetVersion
+            let assetId = route.dandiAssetId
             if (!assetUrl) return
             if (!dandisetId) return
             if (!dandisetVersion) return
             // todo: get the asset ID and the asset path
-            let assetId: string | undefined = undefined
             // https://api.dandiarchive.org/api/assets/26e85f09-39b7-480f-b337-278a8f034007/download/
-            if (isDandiAssetUrl(assetUrl)) {
+            if ((isDandiAssetUrl(assetUrl)) && (!assetId)) {
                 const aa = assetUrl.split('/')
                 assetId = aa[5]
             }

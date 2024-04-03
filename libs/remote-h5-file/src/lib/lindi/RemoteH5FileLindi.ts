@@ -145,9 +145,9 @@ class RemoteH5FileLindi {
         }
       }
     }
-    if ((o.slice) && (o.slice.length > 2)) {
-      console.warn('Tried to slice more than two dimensions at a time', path, o.slice);
-      throw Error(`For now, you can't slice more than two dimensions at a time. You tried to slice ${o.slice.length} dimensions for ${path}.`);
+    if ((o.slice) && (o.slice.length > 3)) {
+      console.warn('Tried to slice more than three dimensions at a time', path, o.slice);
+      throw Error(`For now, you can't slice more than three dimensions at a time. You tried to slice ${o.slice.length} dimensions for ${path}.`);
     }
 
     const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);

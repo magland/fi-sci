@@ -17,6 +17,7 @@ export type Route = {
     url: string[]
     dandisetId?: string
     dandisetVersion?: string
+    dandiAssetId?: string
     storageType: StorageType[]
 } | {
     page: 'dandiset'
@@ -92,6 +93,7 @@ const useRoute = () => {
                 url: urlList,
                 dandisetId: (query.dandisetId || '') as string,
                 dandisetVersion: (query.dandisetVersion || '') as string,
+                dandiAssetId: (query.dandiAssetId || '') as string,
                 storageType
             }
         }
@@ -162,6 +164,14 @@ const useRoute = () => {
                     delete newQuery.dandisetVersion
                 }
             }
+            if (r.dandiAssetId) {
+                newQuery.dandiAssetId = r.dandiAssetId
+            }
+            else {
+                if (newQuery.dandiAssetId) {
+                    delete newQuery.dandiAssetId
+                }
+            }
             if (r.storageType.some(t => t !== 'h5')) { // if any of storageType is not h5
                 newQuery.st = r.storageType
             }
@@ -181,6 +191,9 @@ const useRoute = () => {
                 if (newQuery.dandisetVersion) {
                     delete newQuery.dandisetVersion
                 }
+            }
+            if (newQuery.dandiAssetId) {
+                delete newQuery.dandiAssetId
             }
             if (r.staging) {
                 newQuery.staging = '1'
@@ -215,6 +228,9 @@ const useRoute = () => {
             }
             if (newQuery.dandisetVersion) {
                 delete newQuery.dandisetVersion
+            }
+            if (newQuery.dandiAssetId) {
+                delete newQuery.dandiAssetId
             }
             if (newQuery.storageType) {
                 delete newQuery.storageType

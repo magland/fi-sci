@@ -10,6 +10,7 @@ const lindiDatasetDataLoader = async (o: {
     assertSingleChunkInFirstTwoDimensions?: boolean;
 }) => {
     const { client, zarray, path, slice, assertSingleChunkInFirstTwoDimensions } = o;
+
     const chunkShape = zarray.chunks;
     const shape = zarray.shape;
     const dtype = zarray.dtype;
@@ -19,6 +20,38 @@ const lindiDatasetDataLoader = async (o: {
     const ndims = shape.length;
     if (ndims !== chunkShape.length) throw Error('Mismatched ndims and chunk shape for ' + path);
 
+    if (o.slice.length === 3) {
+        // in this case we slice by two and then return the result of slicing by the third
+        const slice1 = slice.slice(0, 2);
+        const sN1 = slice1[0][1] - slice1[0][0];
+        const sN2 = slice1[1][1] - slice1[1][0];
+        const sN3 = o.slice[2][1] - o.slice[2][0];
+        const sNother = shape.slice(3).reduce((a, b) => a * b, 1);
+        const xx = await lindiDatasetDataLoader({
+            client,
+            path,
+            zarray,
+            slice: slice1,
+            assertSingleChunkInFirstTwoDimensions
+        });
+        const xxRet = allocateArrayWithDtype(sN1 * sN2 * sN3 * sNother, dtype);
+        let iRet = 0;
+        for (let i1 = 0; i1 < sN1; i1++) {
+            for (let i2 = 0; i2 < sN2; i2++) {
+                for (let i3 = o.slice[2][0]; i3 < o.slice[2][1]; i3++) {
+                    for (let i4 = 0; i4 < sNother; i4++) {
+                        xxRet[iRet] = xx[i4 + sNother * (i3 + sN3 * (i2 + sN2 * i1))];
+                        iRet++;
+                    }
+                }
+            }
+        }
+        return xxRet;
+    }
+    if (o.slice.length > 3) {
+        throw Error(`For now, you can't slice more than three dimensions at a time. You tried to slice ${o.slice.length} dimensions for ${path}.`);
+    }
+
     const macroChunkShape = chunkShape.map((cs, i) => Math.ceil(shape[i] / cs));
     
     // check if we have a single chunk with no filters or compression (single contiguous block of data)
@@ -26,7 +59,7 @@ const lindiDatasetDataLoader = async (o: {
     // the entire chunk, we can just download the slice we need.
     const singleChunk = macroChunkShape.reduce((a, b) => a * b, 1) === 1;
     const noFiltersOrCompression = !zarray.compressor && (!zarray.filters || zarray.filters.length === 0);
-    if (singleChunk && noFiltersOrCompression && slice && slice.length >0 ) {
+    if (singleChunk && noFiltersOrCompression && slice && slice.length > 0 ) {
         if (slice.length > 2) {
             throw Error('For now, you can only slice two dimensions at a time for single chunk contiguous data');
         }

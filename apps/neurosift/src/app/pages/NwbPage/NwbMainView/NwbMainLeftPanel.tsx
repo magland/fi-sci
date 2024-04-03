@@ -11,6 +11,9 @@ import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
 import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
+import { DendroFile } from "../../../dendro/dendro-types"
+import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
+import SupplementalDendroFilesView from "./SupplementalDendroFilesView"
 
 type Props = {
     width: number
@@ -198,7 +201,7 @@ const DandiTable = () => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
 
-    const {assetUrl, dandisetId, dandisetVersion, assetPath} = useDandiAssetContext()
+    const {assetUrl, dandisetId, dandisetVersion, assetPath, assetId} = useDandiAssetContext()
 
     // const [dandiAssetInfo, setDandiAssetInfo] = useState<DandiAssetInfo | undefined>(undefined)
 
@@ -244,7 +247,16 @@ const DandiTable = () => {
 
     const {setRoute} = useRoute()
 
+    const supplementalDendroFiles = useSupplementalDendroFiles({
+        dandisetId,
+        dandisetVersion,
+        dandiAssetId: assetId,
+        thisUrl: assetUrl
+    })
+    const {handleOpen: openSupplementalFiles, handleClose: closeSupplementalFiles, visible: supplementalFilesVisible} = useModalWindow()
+
     if (!dandisetId) return <span />
+
 
     return (
         <div>
@@ -275,10 +287,29 @@ const DandiTable = () => {
                     </Hyperlink>/{assetPathFileName}
                 </p>
             )}
+            {
+                supplementalDendroFiles && supplementalDendroFiles.length > 0 && (
+                    <div>
+                        <Hyperlink
+                            onClick={openSupplementalFiles}
+                        >
+                            {supplementalDendroFiles.length} supplemental {supplementalDendroFiles.length === 1 ? 'file' : 'files'}
+                        </Hyperlink>
+                    </div>
+                )
+            }
             <ViewObjectNoteIconThing
                 objectPath="/"
             />
             <hr />
+            <ModalWindow
+                visible={supplementalFilesVisible}
+                onClose={closeSupplementalFiles}
+            >
+                <SupplementalDendroFilesView
+                    files={supplementalDendroFiles || []}
+                />
+            </ModalWindow>
         </div>
     )
 }
@@ -301,6 +332,44 @@ export const useDandisetInfo = (dandisetId: string, dandisetVersion: string, sta
         getDandisetInfo()
     }, [dandisetId, dandisetVersion, staging])
     return dandisetInfo
+}
+
+export const useSupplementalDendroFiles = (a: {dandisetId: string, dandisetVersion: string, dandiAssetId?: string, thisUrl: string}): DendroFile[] | undefined => {
+    const {dandisetId, dandisetVersion, dandiAssetId} = a
+    const [supplementalDendroFiles, setSupplementalDendroFiles] = useState<DendroFile[] | undefined>(undefined)
+    useEffect(() => {
+        if (!dandisetId) return
+        if (!dandisetVersion) return
+        if (!dandiAssetId) return
+        let canceled = false
+        ; (async () => {
+            const url = 'https://dendro.vercel.app/api/gui/find_files_with_metadata'
+            const data = {
+                'query': {
+                    dandisetId,
+                    dandisetVersion,
+                    dandiAssetId,
+                    supplemental: true
+                }
+            }
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            if (!resp.ok) return
+            const obj = await resp.json()
+            if (canceled) return
+            setSupplementalDendroFiles(obj.files.filter((x: any) => (x.content !== 'url:' + a.thisUrl))) // don't include this one
+        })()
+        return () => {canceled = true}
+    }, [dandisetId, dandisetVersion, dandiAssetId, a.thisUrl])
+    if (!dandisetId) return undefined
+    if (!dandisetVersion) return undefined
+    if (!dandiAssetId) return undefined
+    return supplementalDendroFiles
 }
 
 // type AssociatedDendroProjectsComponentProps = {
