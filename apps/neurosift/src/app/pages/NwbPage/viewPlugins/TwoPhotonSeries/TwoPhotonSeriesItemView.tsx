@@ -133,7 +133,8 @@ const TwoPhotonSeriesItemView: FunctionComponent<Props> = ({width, height, path}
             }
             else {
                 // read from nwb file
-                const slice = [[frameIndex, frameIndex + 1], [0, N2], [0, N3]] as [number, number][]
+                // const slice = [[frameIndex, frameIndex + 1], [0, N2], [0, N3]] as [number, number][]
+                const slice = [[frameIndex, frameIndex + 1]] as [number, number][]
                 if (dataDataset.shape.length === 4) {
                     slice.push([currentPlane, currentPlane + 1])
                 }
