@@ -133,6 +133,9 @@ export class ReferenceFileSystemClient {
       this.#inProgressReads[kk] = false;
     }
   }
+  get _refs() {
+    return this.obj.refs;
+  }
 }
 
 function _base64ToArrayBuffer(base64: string) {

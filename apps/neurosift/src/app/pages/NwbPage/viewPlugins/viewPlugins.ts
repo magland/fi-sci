@@ -19,6 +19,7 @@ import UnitsItemView from "./Units/UnitsItemView"
 import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
 import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
 import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView"
+import TestVideoItemView from "./TestVideo/TestVideoItemView"
 
 type Props = {
     width: number,
@@ -270,6 +271,15 @@ viewPlugins.push({
     neurodataType: 'BehavioralEvents',
     defaultForNeurodataType: true,
     component: BehavioralEventsItemView,
+    isTimeView: true
+})
+
+// test_video
+viewPlugins.push({
+    name: 'test_video',
+    neurodataType: 'test_video',
+    defaultForNeurodataType: true,
+    component: TestVideoItemView,
     isTimeView: true
 })
 

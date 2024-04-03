@@ -192,6 +192,9 @@ class RemoteH5FileLindi {
     }
     return ret
   }
+  get _lindiFileSystemClient() {
+    return this.lindiFileSystemClient;
+  }
 }
 
 const getNameFromPath = (path: string) => {

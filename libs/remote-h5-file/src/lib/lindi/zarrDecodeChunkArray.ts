@@ -12,6 +12,10 @@ const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compress
                 ret = ret.buffer;
             }
         }
+        else if (compressor.id === 'neurosift.mp4') {
+            // ret = await decodeMp4(chunk, shape![0], shape![1], shape![2]);
+            throw Error('neurosift.mp4 decoder not yet implemented');
+        }
         else {
             throw Error('Unhandled compressor ' + compressor.id);
         }
