@@ -131,7 +131,6 @@ class RemoteH5FileLindi {
     path: string,
     o: {
       slice?: [number, number][];
-      scalar?: boolean;
       allowBigInt?: boolean;
       canceler?: Canceler;
     }
@@ -181,12 +180,10 @@ class RemoteH5FileLindi {
       zarray,
       slice: o.slice || []
     })
-    if (o.scalar) {
-      if (ret) {
-        if (ret.length !== 1) {
-          console.warn('Expected scalar', path, ret);
-          throw Error('Expected scalar');
-        }
+    if (ret.length === 1) {
+      // candidate for scalar, need to check for _SCALAR attribute
+      const ds = await this.getDataset(path);
+      if (ds && ds.attrs['_SCALAR']) {
         return ret[0];
       }
     }

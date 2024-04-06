@@ -42,7 +42,7 @@ const TestVideoItemView: FunctionComponent<Props> = ({width, height, path}) => {
         ;(async () => {
             while (true) {
                 const elapsed = (Date.now() - timer) / 1000
-                const t0 = elapsed * 20
+                const t0 = elapsed
                 if (t0 !== videoRef.currentTime) {
                     videoRef.currentTime = t0
                     await waitForSeeked(videoRef)

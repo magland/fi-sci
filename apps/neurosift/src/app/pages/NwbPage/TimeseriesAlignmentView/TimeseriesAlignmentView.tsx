@@ -185,6 +185,8 @@ const TAItemView: FunctionComponent<TAItemViewProps> = ({item, startTime, endTim
     const p2 = (item.endTime - (startTime || 0)) / ((endTime || 1) - (startTime || 0)) * width
     const color = getColorForNeurodataType(item.neurodataType)
     const {openTab} = useNwbOpenTabs()
+    if (item.startTime === undefined) return <div>item.startTime is undefined</div>
+    if (item.endTime === undefined) return <div>item.endTime is undefined</div>
     return (
         <div style={{position: 'relative', width, height: h1 + h2 + h3}}>
             <div style={{position: 'absolute', width, height: h1, color, fontSize: 14}}>

@@ -121,7 +121,7 @@ class RegularTimeseriesDataClient {
     }
     async initialize() {
         const startingTimeDataset = await this.nwbFile.getDataset(`${this.objectPath}/starting_time`)
-        const startingTime = (await this.nwbFile.getDatasetData(`${this.objectPath}/starting_time`, {scalar: true})) as any as number
+        const startingTime = (await this.nwbFile.getDatasetData(`${this.objectPath}/starting_time`, {})) as any as number
         const dataDataset = await this.nwbFile.getDataset(`${this.objectPath}/data`)
         if (!startingTimeDataset) throw Error(`Unable to get starting_time dataset: ${this.objectPath}/starting_time`)
         if (!dataDataset) throw Error(`Unable to get data dataset: ${this.objectPath}/data`)

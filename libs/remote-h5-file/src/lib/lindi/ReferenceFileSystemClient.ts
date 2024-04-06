@@ -90,7 +90,8 @@ export class ReferenceFileSystemClient {
           buf = buf.slice(o.startByte, o.endByte);
         }
       }
-      else {
+      else if ((typeof ref === 'object') && (Array.isArray(ref))) {
+        if (ref.length !== 3) throw Error(`Invalid ref for ${path}`);
         const refUrl = ref[0];
         let start = ref[1];
         let numBytes = ref[2];
@@ -105,6 +106,12 @@ export class ReferenceFileSystemClient {
         });
         if (!r.ok) throw Error('Failed to fetch ' + refUrl);
         buf = await r.arrayBuffer();
+      }
+      else if (typeof ref === 'object') {
+        buf = new TextEncoder().encode(JSON.stringify(ref)).buffer;
+      }
+      else {
+        throw Error('Invalid ref for ' + path);
       }
       if (o.decodeArray) {
         const parentPath = path.split('/').slice(0, -1).join('/');
