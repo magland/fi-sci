@@ -64,7 +64,12 @@ const DandiBrowser: FunctionComponent<Props> = ({width, height}) => {
             heights={[topBarHeight, searchBarHeight, height - topBarHeight - searchBarHeight]}
         >
             <div style={{position: 'absolute', width, display: 'flex', justifyContent: 'right'}}>
-                {/* <Checkbox checked={staging} onClick={toggleStaging} label="use staging site" /> */}
+                <span style={{fontSize: 10}}><Hyperlink onClick={
+                    () => {
+                        setRoute({page: 'dandi-query', staging: staging})
+                    }
+                }>advanced query</Hyperlink></span>&nbsp;|&nbsp;
+                
                 <span style={{fontSize: 10}}><Hyperlink onClick={toggleStaging}>use {staging ? 'main site' : 'staging site'}</Hyperlink></span>
                 <div style={{width: 50}} />
             </div>
