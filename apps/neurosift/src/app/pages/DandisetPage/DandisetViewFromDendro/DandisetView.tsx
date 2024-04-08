@@ -62,7 +62,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                 page: 'dandiset',
                 dandisetId,
                 dandisetVersion: V.version
-            })
+            }, true)
         }
     }, [dandisetVersion, V, dandisetId, setRoute])
 

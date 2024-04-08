@@ -11,7 +11,7 @@ const NeurosiftAnnotationsLoginPage: FunctionComponent<Props> = () => {
     useEffect(() => {
         if (route.accessToken) {
             localStorage.setItem('neurosift-annotations-access-token', route.accessToken)
-            setRoute({page: 'neurosift-annotations-login', accessToken: ''})
+            setRoute({page: 'neurosift-annotations-login', accessToken: ''}, true)
         }
     }, [route, setRoute])
 

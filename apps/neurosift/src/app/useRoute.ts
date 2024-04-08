@@ -28,6 +28,9 @@ export type Route = {
     page: 'dandi'
     staging?: boolean
 } | {
+    page: 'dandi-query'
+    staging?: boolean
+} | {
     page: 'github-auth'
 } | {
     page: 'neurosift-annotations-login'
@@ -111,6 +114,12 @@ const useRoute = () => {
                 staging: query.staging === '1'
             }
         }
+        else if (p === '/dandi-query') {
+            return {
+                page: 'dandi-query',
+                staging: query.staging === '1'
+            }
+        }
         // no longer supported
         // else if (p === '/avi') {
         //     return {
@@ -131,7 +140,7 @@ const useRoute = () => {
         }
     }, [p, query])
 
-    const setRoute = useCallback((r: Route) => {
+    const setRoute = useCallback((r: Route, replaceHistory?: boolean) => {
         let newQuery = {...query}
         if (r.page === 'home') {
             newQuery = {p: '/'}    
@@ -236,6 +245,32 @@ const useRoute = () => {
                 delete newQuery.storageType
             }
         }
+        else if (r.page === 'dandi-query') {
+            newQuery.p = '/dandi-query'
+            if (r.staging) {
+                newQuery.staging = '1'
+            }
+            else {
+                if (newQuery.staging) {
+                    delete newQuery.staging
+                }
+            }
+            if (newQuery.url) {
+                delete newQuery.url
+            }
+            if (newQuery.dandisetId) {
+                delete newQuery.dandisetId
+            }
+            if (newQuery.dandisetVersion) {
+                delete newQuery.dandisetVersion
+            }
+            if (newQuery.dandiAssetId) {
+                delete newQuery.dandiAssetId
+            }
+            if (newQuery.storageType) {
+                delete newQuery.storageType
+            }
+        }
         else if (r.page === 'neurosift-annotations-login') {
             newQuery = {
                 p: '/neurosift-annotations-login',
@@ -248,12 +283,12 @@ const useRoute = () => {
         //     newQuery.url = r.url
         // }
         const newSearch = queryToQueryString(newQuery)
-        navigate(location.pathname + newSearch)
+        navigate(location.pathname + newSearch, {replace: replaceHistory})
     }, [navigate, location.pathname, query])
 
     useEffect(() => {
         if (p === '/') {
-            setRoute({page: 'dandi', staging: !!query.staging})
+            setRoute({page: 'dandi', staging: !!query.staging}, true)
         }
     }, [p, setRoute, query.staging])
 

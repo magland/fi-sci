@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useEffect, useMemo, useReducer } from "react"
+import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { valueToElement } from "../../BrowseNwbView/BrowseNwbView"
 import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
 import { SmallIconButton } from "@fi-sci/misc"
-import { Help } from "@mui/icons-material"
+import { Download, Help } from "@mui/icons-material"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import DynamicTableColumnInfoView from "./DynamicTableColumnInfoView"
 
@@ -145,10 +145,12 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         // }
         return c
     }, [group])
+    const [loading, setLoading] = useState(false)
     useEffect(() => {
         let canceled = false
         const load = async () => {
             if (!colnames) return
+            setLoading(true)
             for (const colname of colnames) {
                 const ds0 = await nwbFile.getDataset(path + '/' + colname)
                 if (!ds0) {
@@ -169,6 +171,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                 }
                 dataDispatch({type: 'set', key: colname, data: Array.from(d)})
             }
+            setLoading(false)
         }
         load()
         return () => {canceled = true}
@@ -269,6 +272,31 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         return ret
     }, [sortedRowItems, validColumnNames])
 
+    const handleExportAsCsv = useCallback(() => {
+        if (!validColumnNames) return
+        const lines: string[] = []
+        lines.push(validColumnNames.join(','))
+        for (const rowItem of sortedRowItems) {
+            const line = validColumnNames.map((colname) => {
+                const val = rowItem.columnValues[validColumnNames.indexOf(colname)]
+                if (val === undefined) return ''
+                if (typeof val === 'string') {
+                    return `"${val.replace(/"/g, '""')}"`
+                }
+                return val
+            }).join(',')
+            lines.push(line)
+        }
+        const csv = lines.join('\n')
+        const blob = new Blob([csv], {type: 'text/csv'})
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'data.csv'
+        a.click()
+        URL.revokeObjectURL(url)
+    }, [validColumnNames, sortedRowItems])
+
     const {visible: columnInfoVisible, handleClose: closeColumnInfo, handleOpen: openColumnInfo} = useModalWindow()
 
     if (!validColumnNames) return <div>Loading...</div>
@@ -277,6 +305,12 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             <div style={{color: 'gray', paddingBottom: 2}}>
                 <SmallIconButton onClick={openColumnInfo} icon={<Help />} title="View info about columns" />
+                <SmallIconButton
+                    onClick={handleExportAsCsv}
+                    disabled={loading || !sortedRowItems.length || !validColumnNames || !validColumnNames.length}
+                    icon={<Download />}
+                    title="Export as CSV"
+                />
             </div>
             {
                 sortedRowItemsAbbreviated.length < sortedRowItems.length && (

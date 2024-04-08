@@ -9,6 +9,7 @@ import NwbPage from "./pages/NwbPage/NwbPage";
 import useRoute from "./useRoute";
 import TestPage from "./pages/TestPage/TestPage";
 import NeurosiftAnnotationsLoginPage from "./pages/NeurosiftAnnotationsLoginPage/NeurosiftAnnotationsLoginPage";
+import DandiQueryPage from "./pages/DandiQueryPage/DandiQueryPage";
 
 type Props = {
     // none
@@ -52,6 +53,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                         />
                     ) : route.page === 'dandi' ? (
                         <DandiPage
+                            width={width}
+                            height={H}
+                        />
+                    ) : route.page === 'dandi-query' ? (
+                        <DandiQueryPage
                             width={width}
                             height={H}
                         />
