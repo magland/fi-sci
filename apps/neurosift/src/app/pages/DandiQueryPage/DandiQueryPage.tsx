@@ -50,6 +50,8 @@ const DandiQueryPage: FunctionComponent<DandiQueryPageProps> = ({width, height})
                 }
             }
         }
+        // sort by dandiset id alphabetical
+        results.matchingDandisets.sort((a, b) => a.dandisetId.localeCompare(b.dandisetId))
         return results
     }, [globalIndex, selectedNeurodataTypes])
 
@@ -60,7 +62,7 @@ const DandiQueryPage: FunctionComponent<DandiQueryPageProps> = ({width, height})
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             <div style={{padding: 25}}>
                 <h2>DANDI Query</h2>
-                <p style={{color: 'darkred'}}>NOTE: Only the first 100 assets of each Dandiset are included in the query.</p>
+                <p style={{color: 'darkred'}}>Only the first 100 assets of each Dandiset are included in the query. Results may not reflect recent updates to Dandisets.</p>
                 <NeurodataTypesSelector
                     allNeurodataTypes={allNeurodataTypes}
                     selectedNeurodataTypes={selectedNeurodataTypes}

@@ -2,12 +2,14 @@ import { FunctionComponent, useCallback } from "react"
 import { DendroFile } from "../../../dendro/dendro-types"
 import { timeAgoString } from "../../../timeStrings"
 import { Hyperlink } from "@fi-sci/misc"
+import { useSupplementalDendroFiles } from "../SupplementalDendroFilesContext"
 
 type SupplementalDendroFilesViewProps = {
-    files: DendroFile[]
+    //
 }
 
-const SupplementalDendroFilesView: FunctionComponent<SupplementalDendroFilesViewProps> = ({ files }) => {
+const SupplementalDendroFilesView: FunctionComponent<SupplementalDendroFilesViewProps> = () => {
+    const {supplementalFiles: files, setSelectedSupplementalFileIds, selectedSupplementalFileIds} = useSupplementalDendroFiles()
     const openSupplementalFile = useCallback((file: DendroFile) => {
         if (file.content.startsWith('url:')) {
             const url0 = file.content.substring('url:'.length)
@@ -32,6 +34,7 @@ const SupplementalDendroFilesView: FunctionComponent<SupplementalDendroFilesView
             <table className="nwb-table">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Project</th>
                         <th>User</th>
                         <th>File</th>
@@ -39,8 +42,17 @@ const SupplementalDendroFilesView: FunctionComponent<SupplementalDendroFilesView
                     </tr>
                 </thead>
                 <tbody>
-                    {files.map((file, i) => (
+                    {(files || []).map((file, i) => (
                         <tr key={i}>
+                            <td>
+                                <Checkbox checked={selectedSupplementalFileIds.includes(file.fileId)} onChange={(e) => {
+                                    if (e.target.checked) {
+                                        setSelectedSupplementalFileIds([...selectedSupplementalFileIds, file.fileId])
+                                    } else {
+                                        setSelectedSupplementalFileIds(selectedSupplementalFileIds.filter(id => id !== file.fileId))
+                                    }
+                                }} />
+                            </td>
                             <td>{file.projectId}</td>
                             <td>{file.userId}</td>
                             <td>
@@ -58,6 +70,17 @@ const SupplementalDendroFilesView: FunctionComponent<SupplementalDendroFilesView
                 </tbody>
             </table>
         </div>
+    )
+}
+
+type CheckboxProps = {
+    checked: boolean
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+}
+
+const Checkbox: FunctionComponent<CheckboxProps> = ({checked, onChange}) => {
+    return (
+        <input type="checkbox" checked={checked} onChange={onChange} />
     )
 }
 

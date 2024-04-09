@@ -203,6 +203,9 @@ export class RemoteH5File {
     globalRemoteH5FileStats.getDatasetDataCount++;
     return x;
   }
+  getUrls() {
+    return [this.url];
+  }
 }
 
 export class MergedRemoteH5File {
@@ -272,6 +275,9 @@ export class MergedRemoteH5File {
   }
   getFiles() {
     return this.#files;
+  }
+  getUrls(): string[] {
+    return this.#files.flatMap((f) => f.getUrls());
   }
 }
 

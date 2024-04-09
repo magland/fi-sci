@@ -274,6 +274,9 @@ class RemoteH5FileZarr {
     }
     return undefined
   }
+  getUrls() {
+    return [this.url];
+  }
 }
 
 const getNameFromPath = (path: string) => {

@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { MergedRemoteH5File, RemoteH5File, RemoteH5FileLindi, RemoteH5FileX, RemoteH5FileZarr, getMergedRemoteH5File, getRemoteH5File, getRemoteH5FileLindi, getRemoteH5FileZarr, globalRemoteH5FileStats } from "@fi-sci/remote-h5-file"
-import { FunctionComponent, useEffect, useReducer, useState } from "react"
+import { FunctionComponent, useEffect, useMemo, useReducer, useState } from "react"
 import { useCustomStatusBarElements } from "../../StatusBar"
 import useRoute, { StorageType } from "../../useRoute"
-import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext } from "./DandiAssetContext"
+import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext, useDandiAssetContext } from "./DandiAssetContext"
 import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
 import { NwbFileContext } from "./NwbFileContext"
 import { SetupNwbOpenTabs } from "./NwbOpenTabsContext"
 import NwbTabWidget from "./NwbTabWidget"
 import { SelectedItemViewsContext, selectedItemViewsReducer } from "./SelectedItemViewsContext"
 import getAuthorizationHeaderForUrl from "./getAuthorizationHeaderForUrl"
+import { SupplementalDendroFilesContext, useSupplementalDendroFiles } from "./SupplementalDendroFilesContext"
+import { DendroFile } from "../../dendro/dendro-types"
 
 type Props = {
     width: number
@@ -44,80 +46,21 @@ const NwbPage: FunctionComponent<Props> = ({width, height}) => {
         return <div style={{paddingLeft: 20}}>No url query parameter</div>
     }
     return (
-        <NwbPageChild
+        <NwbPageChild1
             width={width}
             height={height}
         />
     )
 }
 
-const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
+type NwbPageChild1Props = {
+    width: number
+    height: number
+}
+
+const NwbPageChild1: FunctionComponent<NwbPageChild1Props> = ({width, height}) => {
     const {route} = useRoute()
     if (route.page !== 'nwb') throw Error('Unexpected: route.page is not nwb')
-    const urlList = route.url
-    const [nwbFile, setNwbFile] = useState<RemoteH5FileX | undefined>(undefined)
-    const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
-
-    // status bar text
-    const {setCustomStatusBarElement} = useCustomStatusBarElements()
-    useEffect(() => {
-        let lastStatsString = ''
-        const timer = setInterval(() => {
-            if (!nwbFile) return
-            const x = globalRemoteH5FileStats
-
-            // important to do this check so the context state is not constantly changing
-            if (JSONStringifyDeterministic(x) === lastStatsString) return
-            lastStatsString = JSONStringifyDeterministic(x)
-
-            const s = <span style={{}}>
-                {
-                    x.numPendingRequests > 0 && (
-                        <span style={{color: 'darkblue'}}>Loading...</span>
-                    )
-                }&nbsp;
-                <span title="Number of groups fetched">{x.getGroupCount}</span>&nbsp;|&nbsp;
-                <span title="Number of datasets fetched">{x.getDatasetCount}</span>&nbsp;|&nbsp;
-                <span title="Number of datasets data fetched">{x.getDatasetDataCount}</span>&nbsp;|&nbsp;
-                <span title="Number of pending requests">{x.numPendingRequests}</span>
-            </span>
-            setCustomStatusBarElement && setCustomStatusBarElement('custom1', s)
-        }, 250)
-        return () => {clearInterval(timer)}
-    }, [nwbFile, setCustomStatusBarElement])
-
-    const [usingLindi, setUsingLindi] = useState<boolean>(false)
-
-    useEffect(() => {
-        let canceled = false
-        const load = async () => {
-            const dandisetId = route.dandisetId
-            const {urls: urlListResolved, storageTypes: storageTypeResolved} = await getResolvedUrls(urlList, route.storageType, {dandisetId})
-            const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
-            if (canceled) return
-            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileLindi
-            setUsingLindi(storageTypeResolved.includes('lindi'))
-            if (urlListResolved.length === 1) {
-                if (storageTypeResolved[0] === 'zarr') {
-                    f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
-                }
-                else if (storageTypeResolved[0] === 'lindi') {
-                    f = await getRemoteH5FileLindi(urlListResolved[0])
-                }
-                else {
-                    f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
-                }
-            }
-            else {
-                f = await getMergedRemoteH5File(urlListResolved, metaUrls, storageTypeResolved)
-            }
-            if (canceled) return
-            setNwbFile(f)
-        }
-        load()
-        return () => {canceled = true}
-    }, [urlList, route.storageType, route.dandisetId])
-
     const [dandiAssetContextValue, setDandiAssetContextValue] = useState<DandiAssetContextType>(defaultDandiAssetContext)
     useEffect(() => {
         let canceled = false;
@@ -180,25 +123,193 @@ const NwbPageChild: FunctionComponent<Props> = ({width, height}) => {
             })
         })()
         return () => {canceled = true}
-    }, [route.url, route.dandisetId, route.dandisetVersion])
+    }, [route.url, route.dandisetId, route.dandisetVersion, route.dandiAssetId])
 
-    if (!nwbFile) return <div>Loading {urlList}</div>
     return (
         <DandiAssetContext.Provider value={dandiAssetContextValue}>
-            <NwbFileContext.Provider value={{nwbFile, nwbFileUrls: urlList}}>
-                <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
-                    <SetupNwbOpenTabs>
-                        <SetupNwbFileAnnotationsProvider>
-                            <NwbTabWidget
-                                width={width}
-                                height={height}
-                                usingLindi={usingLindi}
-                            />
-                        </SetupNwbFileAnnotationsProvider>
-                    </SetupNwbOpenTabs>
-                </SelectedItemViewsContext.Provider>
-            </NwbFileContext.Provider>
+            <NwbPageChild2
+                width={width}
+                height={height}
+            />
         </DandiAssetContext.Provider>
+    )
+}
+
+type NwbPageChild2Props = {
+    width: number
+    height: number
+}
+
+const NwbPageChild2: FunctionComponent<NwbPageChild2Props> = ({width, height}) => {
+    const [selectedSupplementalFileIds, setSelectedSupplementalFileIds] = useState<string[]>([])
+
+    const {assetUrl, dandisetId, dandisetVersion, assetId} = useDandiAssetContext()
+    const supplementalDendroFiles = useSupplementalDendroFilesHelper({
+        dandisetId,
+        dandisetVersion,
+        dandiAssetId: assetId,
+        thisUrl: assetUrl
+    })
+
+    return (
+        <SupplementalDendroFilesContext.Provider value={{supplementalFiles: supplementalDendroFiles, selectedSupplementalFileIds, setSelectedSupplementalFileIds}}>
+            <NwbPageChild3
+                width={width}
+                height={height}
+            />
+        </SupplementalDendroFilesContext.Provider>
+    )
+}
+
+export const useSupplementalDendroFilesHelper = (a: {dandisetId: string, dandisetVersion: string, dandiAssetId?: string, thisUrl: string}): DendroFile[] | undefined => {
+    const {dandisetId, dandisetVersion, dandiAssetId} = a
+    const [supplementalDendroFiles, setSupplementalDendroFiles] = useState<DendroFile[] | undefined>(undefined)
+    useEffect(() => {
+        if (!dandisetId) return
+        if (!dandisetVersion) return
+        if (!dandiAssetId) return
+        let canceled = false
+        ; (async () => {
+            const url = 'https://dendro.vercel.app/api/gui/find_files_with_metadata'
+            const data = {
+                'query': {
+                    dandisetId,
+                    dandisetVersion,
+                    dandiAssetId,
+                    supplemental: true
+                }
+            }
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+            })
+            if (!resp.ok) return
+            const obj = await resp.json()
+            if (canceled) return
+            setSupplementalDendroFiles(obj.files.filter((x: any) => (x.content !== 'url:' + a.thisUrl))) // don't include this one
+        })()
+        return () => {canceled = true}
+    }, [dandisetId, dandisetVersion, dandiAssetId, a.thisUrl])
+    if (!dandisetId) return undefined
+    if (!dandisetVersion) return undefined
+    if (!dandiAssetId) return undefined
+    return supplementalDendroFiles
+}
+
+type NwbPageChild3Props = {
+    width: number
+    height: number
+}
+
+const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) => {
+    const {route} = useRoute()
+    if (route.page !== 'nwb') throw Error('Unexpected: route.page is not nwb')
+    const urlList = route.url
+    const [nwbFile, setNwbFile] = useState<RemoteH5FileX | undefined>(undefined)
+    const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
+
+    const {supplementalFiles, selectedSupplementalFileIds} = useSupplementalDendroFiles()
+
+    const selectedSupplementalUrls = useMemo(() => {
+        const ret: string[] = []
+        for (const id of selectedSupplementalFileIds) {
+            const file = supplementalFiles?.find(x => x.fileId === id)
+            if (file) {
+                if (file.content.startsWith('url:')) {
+                    ret.push(file.content.substring('url:'.length))
+                }
+            }
+        }
+        return ret
+    }, [selectedSupplementalFileIds, supplementalFiles])
+
+    // status bar text
+    const {setCustomStatusBarElement} = useCustomStatusBarElements()
+    useEffect(() => {
+        let lastStatsString = ''
+        const timer = setInterval(() => {
+            if (!nwbFile) return
+            const x = globalRemoteH5FileStats
+
+            // important to do this check so the context state is not constantly changing
+            if (JSONStringifyDeterministic(x) === lastStatsString) return
+            lastStatsString = JSONStringifyDeterministic(x)
+
+            const s = <span style={{}}>
+                {
+                    x.numPendingRequests > 0 && (
+                        <span style={{color: 'darkblue'}}>Loading...</span>
+                    )
+                }&nbsp;
+                <span title="Number of groups fetched">{x.getGroupCount}</span>&nbsp;|&nbsp;
+                <span title="Number of datasets fetched">{x.getDatasetCount}</span>&nbsp;|&nbsp;
+                <span title="Number of datasets data fetched">{x.getDatasetDataCount}</span>&nbsp;|&nbsp;
+                <span title="Number of pending requests">{x.numPendingRequests}</span>
+            </span>
+            setCustomStatusBarElement && setCustomStatusBarElement('custom1', s)
+        }, 250)
+        return () => {clearInterval(timer)}
+    }, [nwbFile, setCustomStatusBarElement])
+
+    const [usingLindi, setUsingLindi] = useState<boolean>(false)
+
+    useEffect(() => {
+        let canceled = false
+        const load = async () => {
+            const dandisetId = route.dandisetId
+            const urlListSupplemented = [...urlList, ...selectedSupplementalUrls]
+            const storageTypeListSupplemented = [...route.storageType, ...selectedSupplementalUrls.map(() => 'lindi' as StorageType)] // for now we assume all supplemental are lindi
+            const {urls: urlListResolved, storageTypes: storageTypeResolved} = await getResolvedUrls(urlListSupplemented, storageTypeListSupplemented, {dandisetId})
+            const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
+            if (canceled) return
+            let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileLindi
+            setUsingLindi(storageTypeResolved.includes('lindi'))
+            if (urlListResolved.length === 1) {
+                if (storageTypeResolved[0] === 'zarr') {
+                    f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
+                }
+                else if (storageTypeResolved[0] === 'lindi') {
+                    f = await getRemoteH5FileLindi(urlListResolved[0])
+                }
+                else {
+                    f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
+                }
+            }
+            else {
+                f = await getMergedRemoteH5File(urlListResolved, metaUrls, storageTypeResolved)
+            }
+            if (canceled) return
+            setNwbFile(f)
+        }
+        load()
+        return () => {canceled = true}
+    }, [urlList, route.storageType, route.dandisetId, selectedSupplementalUrls])
+
+    const nwbFileContextValue = useMemo(() => {
+        if (!nwbFile) return undefined
+        return {
+            nwbFile
+        }
+    }, [nwbFile])
+
+    if ((!nwbFile) || (!nwbFileContextValue)) return <div>Loading {urlList}</div>
+    return (
+        <NwbFileContext.Provider value={nwbFileContextValue}>
+            <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
+                <SetupNwbOpenTabs>
+                    <SetupNwbFileAnnotationsProvider>
+                        <NwbTabWidget
+                            width={width}
+                            height={height}
+                            usingLindi={usingLindi}
+                        />
+                    </SetupNwbFileAnnotationsProvider>
+                </SetupNwbOpenTabs>
+            </SelectedItemViewsContext.Provider>
+        </NwbFileContext.Provider>
     )
 }
 

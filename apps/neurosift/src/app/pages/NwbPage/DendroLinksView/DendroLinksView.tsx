@@ -1,9 +1,9 @@
 import { Hyperlink } from '@fi-sci/misc';
 import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { DendroFile, DendroJob } from '../../../dendro/dendro-types';
-import { useNwbFileUrls } from '../NwbFileContext';
 import { AssociatedDendroProject, useDandiAssetContext } from '../DandiAssetContext';
 import { formatUserId } from '../NwbMainView/NwbMainLeftPanel';
+import { useNwbFile } from '../NwbFileContext';
 
 type DendroLinksViewProps = {
   // none
@@ -75,7 +75,8 @@ const DendroLinksView: FunctionComponent<DendroLinksViewProps> = () => {
 }
 
 const DendroLinksViewForProject: FunctionComponent<{project:AssociatedDendroProject}> = ({project}) => {
-  const nwbFileUrls = useNwbFileUrls();
+  const nwbFile = useNwbFile();
+  const nwbFileUrls = nwbFile.getUrls()
   const nwbFileUrl = nwbFileUrls[0] || undefined;
   const { files, jobs } = useDendroProject(project.projectId);
   const inputFile = useMemo(() => (files?.find((a) => a.content === `url:${nwbFileUrl}`)), [files, nwbFileUrl]);
