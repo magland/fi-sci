@@ -62,6 +62,12 @@ export class ReferenceFileSystemClient {
     else if (o.endByte !== undefined) {
       throw Error('If you specify endByte, you must also specify startByte');
     }
+    if ((o.endByte !== undefined) && (o.startByte !== undefined) && (o.endByte < o.startByte)) {
+      throw Error(`endByte must be greater than or equal to startByte: ${o.startByte} ${o.endByte} for ${path}`);
+    }
+    if ((o.endByte !== undefined) && (o.startByte !== undefined) && (o.endByte === o.startByte)) {
+      return new ArrayBuffer(0);
+    }
     const kk = path + '|' + (o.decodeArray ? 'decode' : '') + '|' + (o.startByte) + '|' + (o.endByte);
     while (this.#inProgressReads[kk]) {
       await new Promise(resolve => setTimeout(resolve, 100));
