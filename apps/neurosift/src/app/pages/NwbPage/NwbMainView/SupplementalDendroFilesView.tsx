@@ -78,7 +78,7 @@ type CheckboxProps = {
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
-const Checkbox: FunctionComponent<CheckboxProps> = ({checked, onChange}) => {
+export const Checkbox: FunctionComponent<CheckboxProps> = ({checked, onChange}) => {
     return (
         <input type="checkbox" checked={checked} onChange={onChange} />
     )
