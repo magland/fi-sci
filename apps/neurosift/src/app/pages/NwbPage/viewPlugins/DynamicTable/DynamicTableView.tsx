@@ -302,7 +302,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
     if (!validColumnNames) return <div>Loading...</div>
 
     return (
-        <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
+        <div className="dynamic-table-view" style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             <div style={{color: 'gray', paddingBottom: 2}}>
                 <SmallIconButton onClick={openColumnInfo} icon={<Help />} title="View info about columns" />
                 <SmallIconButton

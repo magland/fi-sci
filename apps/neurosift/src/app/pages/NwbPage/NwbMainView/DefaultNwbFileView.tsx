@@ -110,7 +110,7 @@ const TopLevelHeadingView: FunctionComponent<TopLevelHeadingViewProps> = ({nwbFi
             </div>
             {
                 expanded && group && (
-                    <TopLevelContentPanel heading={heading} group={group} nwbFile={nwbFile} width={width - 10} />
+                    <TopLevelContentPanel heading={heading} group={group} nwbFile={nwbFile} width={width - 25} />
                 )
             }
         </div>
