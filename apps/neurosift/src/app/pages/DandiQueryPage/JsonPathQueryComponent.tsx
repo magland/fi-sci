@@ -7,6 +7,7 @@ import { Hyperlink } from "@fi-sci/misc"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import QueryHintsView from "./QueryHintsView"
 import useRoute from "../../useRoute"
+import { Splitter } from "@fi-sci/splitter"
 
 type JsonPathQueryComponentProps = {
     width: number
@@ -93,65 +94,72 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
         setRunningQuery(false)
     }, [runningQuery, dandisetIdVersions, jsonPathQuery])
 
-    const {handleOpen: openHints, handleClose: closeHints, visible: hintsVisible} = useModalWindow()
-
     const {setRoute} = useRoute()
 
     if (dandisetIdVersions.length === 0) return <div style={{padding: 20}}>Select at least one Dandiset.</div>
-    if (dandisetIdVersions.length > 10) return <div style={{padding: 20}}>Filter to at most 10 dandisets to perform a further query</div>
+    if (dandisetIdVersions.length > 50) return <div style={{padding: 20}}>Cannot select more than 50 Dandisets ({dandisetIdVersions.length} selected). Please refine your search.</div>
+    return (
+        <Splitter
+            direction="horizontal"
+            width={width}
+            height={height}
+            initialPosition={Math.min(600, Math.max(200, width / 2))}
+        >
+            <LeftPanel
+                width={0}
+                height={0}
+                jsonPathQuery={jsonPathQuery}
+                setJsonPathQuery={setJsonPathQuery}
+                onQuery={handleQuery}
+                runningQuery={runningQuery}
+                canceled={canceled}
+            />
+            <RightPanel
+                width={0}
+                height={0}
+                queryResults={queryResults}
+                setRoute={setRoute}
+            />
+        </Splitter>
+    )
+}
+
+
+type LeftPanelProps = {
+    width: number
+    height: number
+    jsonPathQuery: string
+    setJsonPathQuery: (value: string) => void
+    onQuery: () => void
+    runningQuery: boolean
+    canceled: React.MutableRefObject<boolean>
+}
+
+const LeftPanel: FunctionComponent<LeftPanelProps> = ({width, height, jsonPathQuery, setJsonPathQuery, onQuery, runningQuery, canceled}) => {
+    const {handleOpen: openHints, handleClose: closeHints, visible: hintsVisible} = useModalWindow()
+
+    const textAreaHeight = Math.max(100, height - 150)
+
     return (
         <div style={{position: 'absolute', left: 10, top: 10, width: width - 20, height: height - 20, overflowY: 'auto'}}>
             <div>
-                <Hyperlink onClick={openHints}>See example JSONPath queries</Hyperlink>
+                <Hyperlink onClick={openHints}>See example queries</Hyperlink>
             </div>
             <div>&nbsp;</div>
             <div>
             <textarea
                 value={jsonPathQuery}
                 onChange={e => setJsonPathQuery(e.target.value)}
-                style={{width: '100%', height: 50, fontFamily: 'monospace'}}
+                style={{width: width - 30, height: textAreaHeight, fontFamily: 'monospace'}}
+                spellCheck={false}
             />
                 <button
                     disabled={runningQuery}
-                    onClick={handleQuery}
+                    onClick={onQuery}
                 >Submit query</button>&nbsp;
                 {runningQuery && <button onClick={() => {
                     canceled.current = true
                 }}>Cancel</button>}
-            </div>
-            <div>&nbsp;</div>
-            <div>
-                <table className="nwb-table">
-                    <thead>
-                        <tr>
-                            <th>Dandiset ID</th>
-                            <th>Asset Path</th>
-                            <th>Results</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {queryResults.map((result, i) => (
-                            <tr key={i}>
-                                <td>
-                                    {result.dandisetId}
-                                </td>
-                                <td>
-                                    <Hyperlink onClick={() => {
-                                        const url = `https://api.dandiarchive.org/api/assets/${result.assetId}/download/`
-                                        setRoute({page: 'nwb', dandisetId: result.dandisetId, dandisetVersion: result.dandisetVersion, url: [url], storageType: []})
-                                    }}>
-                                        {result.assetPath}
-                                    </Hyperlink>
-                                </td>
-                                <td>
-                                    {result.results.map((r, j) => (
-                                        <div key={j}>{r.length < 10000 ? r : '<too-large>'}</div>
-                                    ))}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
             </div>
             <ModalWindow
                 visible={hintsVisible}
@@ -159,6 +167,51 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
             >
                 <QueryHintsView />
             </ModalWindow>
+        </div>
+    )
+}
+
+type RightPanelProps = {
+    width: number
+    height: number
+    queryResults: QueryResultsState
+    setRoute: (route: any) => void
+}
+
+const RightPanel: FunctionComponent<RightPanelProps> = ({width, height, queryResults, setRoute}) => {
+    return (
+        <div style={{position: 'absolute', left: 10, top: 10, width: width - 20, height: height - 20, overflowY: 'auto'}}>
+            <table className="nwb-table">
+                <thead>
+                    <tr>
+                        <th>Dandiset ID</th>
+                        <th>Asset Path</th>
+                        <th>Results</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {queryResults.map((result, i) => (
+                        <tr key={i}>
+                            <td>
+                                {result.dandisetId}
+                            </td>
+                            <td>
+                                <Hyperlink onClick={() => {
+                                    const url = `https://api.dandiarchive.org/api/assets/${result.assetId}/download/`
+                                    setRoute({page: 'nwb', dandisetId: result.dandisetId, dandisetVersion: result.dandisetVersion, url: [url], storageType: []})
+                                }}>
+                                    {result.assetPath}
+                                </Hyperlink>
+                            </td>
+                            <td>
+                                {result.results.map((r, j) => (
+                                    <div key={j}>{r.length < 10000 ? r : '<too-large>'}</div>
+                                ))}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     )
 }
@@ -178,6 +231,8 @@ type DandisetFileNwbMeta = {
 }
 
 const queryDandisetFile = (f: DandisetFileNwbMeta, jsonPathQuery: string, unique: boolean): string[] => {
+    const lines = jsonPathQuery.split('\n').filter(l => !l.startsWith('//'))
+    jsonPathQuery = lines.join('\n')
     const root = {}
     for (const k in f.nwb_meta.refs) {
         if (k.endsWith('.zattrs')) {
@@ -185,19 +240,51 @@ const queryDandisetFile = (f: DandisetFileNwbMeta, jsonPathQuery: string, unique
             const a = createItem(root, parentPath(k))
             a.attrs = attrs
         }
-        else if (k.endsWith('zarray')) {
+        else if (k.endsWith('.zarray')) {
             const arr = f.nwb_meta.refs[k]
             const a = createItem(root, parentPath(k))
             a._zarray = arr
         }
     }
-    const results = jp.query(root, jsonPathQuery)
-    // const results = JSONPath({path: jsonPathQuery, json: root})
-    let ret = results.map((r: any) => JSON.stringify(r))
-    if (unique) {
-        ret = [...new Set(ret)].sort()
+    if (jsonPathQuery.includes('return ')) {
+        const groups: [string, any][] = []
+        const joinKey = (a: string, b: string): string => {
+            if (a === '') return b
+            if (b === '') return a
+            return a + '/' + b
+        }
+        const collectGroups = (key: string, o: any): any => {
+            if (!o) return
+            if (typeof o !== 'object') return
+            if ((!o._zarray)) { // not an array
+                groups.push([key, o])
+                for (const k in o) {
+                    if (k === 'attrs') continue
+                    collectGroups(joinKey(key, k), o[k])
+                }
+            }
+        }
+        collectGroups('', root)
+        // we want to evaluate the javascript in the jsonPathQuery
+        // with groups as a variable, and return the results
+        // eslint-disable-next-line no-new-func
+        const func = Function('groups', jsonPathQuery)
+        const results = func(groups)
+        let ret = results.map((r: any) => JSON.stringify(r))
+        if (unique) {
+            ret = [...new Set(ret)].sort()
+        }
+        return ret
     }
-    return ret
+    else {
+        const results = jp.query(root, jsonPathQuery)
+        // const results = JSONPath({path: jsonPathQuery, json: root})
+        let ret = results.map((r: any) => JSON.stringify(r))
+        if (unique) {
+            ret = [...new Set(ret)].sort()
+        }
+        return ret
+    }
 }
 
 const createItem = (obj: any, path: string): any => {
@@ -205,7 +292,9 @@ const createItem = (obj: any, path: string): any => {
     let o = obj
     for (const part of parts) {
         if (part) {
-            if (!o[part]) o[part] = {}
+            if (!o[part]) o[part] = {
+                attrs: {}
+            }
             o = o[part]
         }
     }

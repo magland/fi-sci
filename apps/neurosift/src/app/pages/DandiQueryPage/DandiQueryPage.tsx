@@ -142,7 +142,18 @@ const ResultsView: FunctionComponent<ResultsViewProps> = ({results, selectedDand
         <table className="nwb-table">
             <thead>
                 <tr>
-                    <th></th>
+                    <th>
+                        <Checkbox
+                            checked={selectedDandisetIds.length === results.matchingDandisets.length}
+                            onChange={(e) => {
+                                if (e.target.checked) {
+                                    setSelectedDandisetIdVersions(results.matchingDandisets.map(x => x.dandisetId + '@' + x.dandisetVersion))
+                                } else {
+                                    setSelectedDandisetIdVersions([])
+                                }
+                            }}
+                        />
+                    </th>
                     <th>Dandiset ID</th>
                     <th>Number of Matching NWB Files</th>
                     <th>Neurodata types</th>
