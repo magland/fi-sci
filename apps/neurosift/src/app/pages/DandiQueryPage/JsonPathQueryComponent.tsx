@@ -97,7 +97,7 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
     const {setRoute} = useRoute()
 
     if (dandisetIdVersions.length === 0) return <div style={{padding: 20}}>Select at least one Dandiset.</div>
-    if (dandisetIdVersions.length > 50) return <div style={{padding: 20}}>Cannot select more than 50 Dandisets ({dandisetIdVersions.length} selected). Please refine your search.</div>
+    if (dandisetIdVersions.length > 200) return <div style={{padding: 20}}>Cannot select more than 200 Dandisets ({dandisetIdVersions.length} selected). Please refine your search.</div>
     return (
         <Splitter
             direction="horizontal"
