@@ -2,6 +2,7 @@
 import { FunctionComponent, useCallback, useReducer, useRef, useState } from "react"
 import pako from "pako"
 import jp from "jsonpath"
+// import {JSONPath} from "jsonpath-plus" // had problems with this
 import { Hyperlink } from "@fi-sci/misc"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import QueryHintsView from "./QueryHintsView"
@@ -60,10 +61,32 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
         for (const dandisetIdVersion of dandisetIdVersions) {
             const dandisetId = dandisetIdVersion.split('@')[0]
             const dandisetVersion = dandisetIdVersion.split('@')[1]
-            const results = await queryDandiset(dandisetId, dandisetVersion, jsonPathQuery)
-            if (canceled.current) break
-            for (const result of results) {
-                queryResultsDispatch({type: 'add', value: result})
+            const url = `https://lindi.neurosift.org/dandi/nwb_meta/${dandisetId}.json.gz`
+            try {
+                const x = await loadJsonGz(url)
+                let timer = Date.now()
+                for (const f of x.files) {
+                    if (canceled.current) break
+                    const rr = queryDandisetFile(f, jsonPathQuery, true)
+                    if (rr.length > 0) {
+                        queryResultsDispatch({type: 'add', value: {
+                            dandisetId,
+                            dandisetVersion,
+                            assetId: f.asset_id,
+                            assetPath: f.asset_path,
+                            results: rr
+                        }})
+                    }
+                    const elapsed = Date.now() - timer
+                    if (elapsed > 500) {
+                        await new Promise(resolve => setTimeout(resolve, 1))
+                        timer = Date.now()
+                    }
+                }
+                if (canceled.current) break
+            }
+            catch (e) {
+                console.error(e)
             }
         }
 
@@ -79,7 +102,7 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
     return (
         <div style={{position: 'absolute', left: 10, top: 10, width: width - 20, height: height - 20, overflowY: 'auto'}}>
             <div>
-                <Hyperlink onClick={openHints}>View example queries</Hyperlink>
+                <Hyperlink onClick={openHints}>See example JSONPath queries</Hyperlink>
             </div>
             <div>&nbsp;</div>
             <div>
@@ -140,36 +163,6 @@ const JsonPathQueryComponent: FunctionComponent<JsonPathQueryComponentProps> = (
     )
 }
 
-const queryDandiset = async (dandisetId: string, dandisetVersion: string, jsonPathQuery: string) => {
-    const url = `https://lindi.neurosift.org/dandi/nwb_meta/${dandisetId}.json.gz`
-    const ret: {
-        dandisetId: string
-        dandisetVersion: string
-        assetId: string
-        assetPath: string
-        results: string[]
-    }[] = []
-    try {
-        const x = await loadJsonGz(url)
-        for (const f of x.files) {
-            const a = queryDandisetFile(f, jsonPathQuery, true)
-            if (a.length > 0) {
-                ret.push({
-                    dandisetId: f.dandiset_id,
-                    dandisetVersion: f.dandiset_version,
-                    assetId: f.asset_id,
-                    assetPath: f.asset_path,
-                    results: a
-                })
-            }
-        }
-    }
-    catch (e) {
-        console.error(e)
-    }
-    return ret
-}
-
 type DandisetFileNwbMeta = {
     asset_id: string
     asset_path: string
@@ -199,6 +192,7 @@ const queryDandisetFile = (f: DandisetFileNwbMeta, jsonPathQuery: string, unique
         }
     }
     const results = jp.query(root, jsonPathQuery)
+    // const results = JSONPath({path: jsonPathQuery, json: root})
     let ret = results.map((r: any) => JSON.stringify(r))
     if (unique) {
         ret = [...new Set(ret)].sort()

@@ -31,6 +31,7 @@ class RemoteH5FileLindi {
     if (!r.ok) throw Error('Failed to fetch LINDI file' + url);
     const obj: ReferenceFileSystemObject = await r.json();
     console.info(`reference file system for ${url}`, obj);
+    console.info(`Meta only`, metaOnly(obj));
     const pathsByParentPath: {[key: string]: string[]} = {};
     for (const path in obj.refs) {
       if (path === '.zattrs' || path === '.zgroup') continue;
@@ -219,5 +220,18 @@ export const getRemoteH5FileLindi = async (url: string) => {
     lock1.locked = false;
   }
 };
+
+const metaOnly = (obj: ReferenceFileSystemObject) => {
+  const ret = {
+    refs: {} as any,
+    version: obj.version
+  };
+  for (const k in obj.refs) {
+    if (k.endsWith('.zattrs') || k.endsWith('.zgroup') || k.endsWith('.zarray')) {
+      ret.refs[k] = obj.refs[k];
+    }
+  }
+  return ret;
+}
 
 export default RemoteH5FileLindi;
