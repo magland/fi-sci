@@ -9,6 +9,7 @@ import IfHasBeenVisible from "./IfHasBeenVisible"
 import PSTHUnitWidget from "./PSTHUnitWidget"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import { Button } from "@mui/material"
+import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 
 type Props = {
     width: number
@@ -75,18 +76,19 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
         return sortIds([...selectedUnitIdsSet])
     }, [selectedUnitIdsSet])
 
+    const unitsPath = useMemo(() => (additionalPaths || []).length === 0 ? '/units' : (additionalPaths || [])[0], [additionalPaths])
+
     const [spikeTrainsClient, setSpikeTrainsClient] = useState<DirectSpikeTrainsClient | undefined>(undefined)
     useEffect(() => {
         let canceled = false
         const load = async () => {
-            const unitsPath = (additionalPaths || []).length === 0 ? '/units' : (additionalPaths || [])[0]
             const client = await DirectSpikeTrainsClient.create(nwbFile, unitsPath)
             if (canceled) return
             setSpikeTrainsClient(client)
         }
         load()
         return () => {canceled = true}
-    }, [nwbFile, additionalPaths])
+    }, [nwbFile, unitsPath])
 
     const unitIds = useMemo(() => {
         if (!spikeTrainsClient) return []
@@ -99,6 +101,32 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
     useEffect(() => {
         setGroupByVariableCategories(undefined)
     }, [groupByVariable])
+    const [sortUnitsByVariable, setSortUnitsByVariable] = useState<[string, 'asc' | 'desc'] | undefined>(undefined)
+
+    const sortUnitsByValues: {[unitId: string | number]: any} | undefined = useSortUnitsByValues(nwbFile, unitsPath, sortUnitsByVariable ? sortUnitsByVariable[0] : '')
+
+    const sortUnitsByDirection = sortUnitsByVariable ? sortUnitsByVariable[1] : 'asc'
+    const unitIdSortFunction = useMemo(() => ((a: string | number, b: string | number) => {
+        if (!sortUnitsByValues) return 0
+        const aVal = sortUnitsByValues[a]
+        const bVal = sortUnitsByValues[b]
+        if (aVal < bVal) return sortUnitsByDirection === 'asc' ? -1 : 1
+        if (aVal > bVal) return sortUnitsByDirection === 'asc' ? 1 : -1
+        return 0
+    }), [sortUnitsByValues, sortUnitsByDirection])
+
+    const sortedUnitIds = useMemo(() => {
+        if (!sortUnitsByVariable) return unitIds
+        const sortedUnitIds = [...unitIds].sort(unitIdSortFunction)
+        return sortedUnitIds
+    }, [unitIds, sortUnitsByVariable, unitIdSortFunction])
+
+    const sortedSelectedUnitIds = useMemo(() => {
+        if (!sortUnitsByVariable) return selectedUnitIds
+        const sortedSelectedUnitIds = [...selectedUnitIds].sort(unitIdSortFunction)
+        return sortedSelectedUnitIds
+    }, [selectedUnitIds, sortUnitsByVariable, unitIdSortFunction])
+
     const [windowRangeStr, setWindowRangeStr] = useState<{start: string, end: string}>({start: '-0.5', end: '1'})
     const windowRange = useMemo(() => {
         const t1 = parseFloat(windowRangeStr.start)
@@ -116,7 +144,15 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
 
     const [prefs, prefsDispatch] = useReducer(psthPrefsReducer, defaultPSTHPrefs)
 
-    const unitsTable = <UnitSelectionComponent unitIds={unitIds} selectedUnitIds={selectedUnitIds} setSelectedUnitIds={setSelectedUnitIds} />
+    const unitsTable = (
+        <UnitSelectionComponent
+            unitIds={sortedUnitIds}
+            selectedUnitIds={selectedUnitIds}
+            setSelectedUnitIds={setSelectedUnitIds}
+            sortUnitsByVariable={sortUnitsByVariable}
+            sortUnitsByValues={sortUnitsByValues}
+        />
+    )
 
     const alignToSelectionComponent = (
         <AlignToSelectionComponent alignToVariables={alignToVariables} setAlignToVariables={setAlignToVariables} path={path} />
@@ -176,7 +212,7 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
             </div>
             <div className="psth-item-view-right" style={{position: 'absolute', left: unitsTableWidth, width: width - unitsTableWidth, height, overflowY: 'auto', overflowX: 'hidden'}}>
                 {
-                    spikeTrainsClient && selectedUnitIds.map((unitId, i) => (
+                    spikeTrainsClient && sortedSelectedUnitIds.map((unitId, i) => (
                         <div key={unitId} style={{position: 'absolute', top: i * unitWidgetHeight, width: width - unitsTableWidth, height: unitWidgetHeight}}>
                             <IfHasBeenVisible
                                 width={width - unitsTableWidth}
@@ -211,14 +247,20 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
                 <div>
                     <WindowRangeSelectionComponent windowRangeStr={windowRangeStr} setWindowRangeStr={setWindowRangeStr} advanced={true} />
                     <hr />
-                        <GroupBySelectionComponent
-                            groupByVariable={groupByVariable}
-                            setGroupByVariable={setGroupByVariable}
-                            path={path}
-                            advanced={true}
-                            groupByVariableCategories={groupByVariableCategories}
-                            setGroupByVariableCategories={setGroupByVariableCategories}
-                        />
+                    <GroupBySelectionComponent
+                        groupByVariable={groupByVariable}
+                        setGroupByVariable={setGroupByVariable}
+                        path={path}
+                        advanced={true}
+                        groupByVariableCategories={groupByVariableCategories}
+                        setGroupByVariableCategories={setGroupByVariableCategories}
+                    />
+                    <hr />
+                    <SortUnitsBySelectionComponent
+                        sortUnitsByVariable={sortUnitsByVariable}
+                        setSortUnitsByVariable={setSortUnitsByVariable}
+                        unitsPath={unitsPath}
+                    />
                     <hr />
                     <PrefsComponent prefs={prefs} prefsDispatch={prefsDispatch} advanced={true} onOpenAdvanced={undefined} />
                     <div>
@@ -268,7 +310,15 @@ export const AlignToSelectionComponent: FunctionComponent<{alignToVariables: str
     )
 }
 
-const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], selectedUnitIds: (number | string)[], setSelectedUnitIds: (x: (number | string)[]) => void}> = ({unitIds, selectedUnitIds, setSelectedUnitIds}) => {
+type UnitsSelectionComponentProps = {
+    unitIds: (number | string)[]
+    selectedUnitIds: (number | string)[]
+    setSelectedUnitIds: (x: (number | string)[]) => void
+    sortUnitsByVariable: [string, 'asc' | 'desc'] | undefined
+    sortUnitsByValues: {[unitId: string | number]: any} | undefined
+}
+
+const UnitSelectionComponent: FunctionComponent<UnitsSelectionComponentProps> = ({unitIds, selectedUnitIds, setSelectedUnitIds, sortUnitsByVariable, sortUnitsByValues}) => {
     return (
         <table className="nwb-table">
             <thead>
@@ -284,6 +334,11 @@ const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], s
                         }} />
                     </th>
                     <th>Unit ID</th>
+                    {
+                        sortUnitsByVariable && (
+                            <th>{sortUnitsByVariable[0]}</th>
+                        )
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -301,6 +356,11 @@ const UnitSelectionComponent: FunctionComponent<{unitIds: (number | string)[], s
                                 }} />
                             </td>
                             <td>{unitId}</td>
+                            {
+                                sortUnitsByVariable && (
+                                    <td>{sortUnitsByValues ? sortUnitsByValues[unitId] : ''}</td>
+                                )
+                            }
                         </tr>
                     ))
                 }
@@ -429,6 +489,54 @@ const GroupByVariableCategoriesComponent: FunctionComponent<GroupByVariableCateg
     )
 }
 
+type SortUnitsBySelectionComponentProps = {
+    sortUnitsByVariable: [string, 'asc' | 'desc'] | undefined
+    setSortUnitsByVariable: (x: [string, 'asc' | 'desc'] | undefined) => void
+    unitsPath: string
+}
+
+const SortUnitsBySelectionComponent: FunctionComponent<SortUnitsBySelectionComponentProps> = ({sortUnitsByVariable, setSortUnitsByVariable, unitsPath}) => {
+    const nwbFile = useNwbFile()
+    if (!nwbFile) throw Error('Unexpected: no nwbFile')
+
+    const group = useGroup(nwbFile, unitsPath)
+    const colnames = useMemo(() => (
+        group?.attrs?.colnames || undefined
+    ), [group])
+    const variableNames: string[] | undefined = useMemo(() => (
+        colnames ? colnames.filter((name: string) => !['spike_times', 'spike_times_index', 'id'].includes(name)) : []
+    ), [colnames])
+
+    return (
+        <div>
+            Sort units by:<br />
+            <select
+                value={sortUnitsByVariable ? sortUnitsByVariable[0] : ''}
+                onChange={(evt) => {
+                    setSortUnitsByVariable([evt.target.value, sortUnitsByVariable ? sortUnitsByVariable[1] : 'asc'])
+                }}
+                style={{maxWidth: 150}}
+            >
+                <option value="">(none)</option>
+                {
+                    variableNames?.map((option) => (
+                        <option key={option} value={option}>{option}</option>
+                    ))
+                }
+            </select>&nbsp;
+            <select
+                value={sortUnitsByVariable ? sortUnitsByVariable[1] : 'asc'}
+                onChange={(evt) => {
+                    setSortUnitsByVariable([sortUnitsByVariable ? sortUnitsByVariable[0] : '', evt.target.value as 'asc' | 'desc'])
+                }}
+            >
+                <option value="asc">Ascending</option>
+                <option value="desc">Descending</option>
+            </select>
+        </div>
+    )
+}
+
 export const WindowRangeSelectionComponent: FunctionComponent<{windowRangeStr: {start: string, end: string}, setWindowRangeStr: (x: {start: string, end: string}) => void, advanced?: boolean}> = ({windowRangeStr: windowRange, setWindowRangeStr: setWindowRange}) => {
     return (
         <div>
@@ -518,6 +626,30 @@ const NumBinsComponent: FunctionComponent<NumBinsComponentProps> = ({numBins, se
             <input style={{width: 30}} type="text" value={numBinsText || ''} onChange={(evt) => {setNumBinsText(evt.target.value)}} />
         </span>
     )
+}
+
+const useSortUnitsByValues = (nwbFile: RemoteH5FileX, unitsPath: string, sortUnitsByVariable: string): {[unitId: string | number]: any} | undefined => {
+    const [sortUnitsByValues, setSortUnitsByValues] = useState<{[unitId: string | number]: any} | undefined>(undefined)
+    useEffect(() => {
+        setSortUnitsByValues(undefined)
+        if (!nwbFile) return
+        if (!unitsPath) return
+        let canceled = false
+        ;(async () => {
+            const dsId = await nwbFile.getDatasetData(unitsPath + '/id', {})
+            if (canceled) return
+            const dsVar = await nwbFile.getDatasetData(unitsPath + '/' + sortUnitsByVariable, {})
+            if (canceled) return
+            if (!dsId || !dsVar) return
+            const x: {[unitId: string | number]: any} = {}
+            for (let i = 0; i < dsId.length; i++) {
+                x[dsId[i]] = dsVar[i]
+            }
+            setSortUnitsByValues(x)
+        })()
+        return () => {canceled = true}
+    }, [nwbFile, unitsPath, sortUnitsByVariable])
+    return sortUnitsByValues
 }
 
 export default PSTHItemView
