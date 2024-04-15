@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { SmallIconButton } from "@fi-sci/misc"
-import { Canceler, DatasetDataType, RemoteH5FileX } from "@fi-sci/remote-h5-file"
+import { Canceler, DatasetDataType, RemoteH5FileLindi, RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { ArrowLeft, ArrowRight } from "@mui/icons-material"
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import { useTimeRange, useTimeseriesSelection, useTimeseriesSelectionInitialization } from "../../../../package/context-timeseries-selection"
@@ -10,6 +10,7 @@ import { useNwbTimeseriesDataClient } from "../TimeSeries/TimeseriesItemView/Nwb
 import TimeseriesSelectionBar, { timeSelectionBarHeight } from "../TimeSeries/TimeseriesItemView/TimeseriesSelectionBar"
 import MultiRangeSlider from "./MultiRangeSlider/MultiRangeSlider"
 import PlaneTransformSelector, { PlaneTransform, defaultPlaneTransform } from "./PlaneTransformSelector"
+import TwoPhotonSeriesItemViewMp4 from "./TwoPhotonSeriesItemViewMp4"
 
 // const queryParams = parseQuery(window.location.href)
 
@@ -53,6 +54,35 @@ const useComputedDataDatUrl = (nwbFile: RemoteH5FileX, path: string | undefined)
 }
 
 const TwoPhotonSeriesItemView: FunctionComponent<Props> = ({width, height, path}) => {
+    const nwbFile = useNwbFile()
+    const [useMp4, setUseMp4] = useState<boolean | undefined>(undefined)
+    useEffect(() => {
+        ; (async () => {
+            if (!nwbFile) return
+            if (nwbFile instanceof RemoteH5FileLindi) {
+                const zarray = await nwbFile.getLindiZarray(path + '/data')
+                if (zarray?.compressor?.id === 'mp4avc') {
+                    setUseMp4(true)
+                    return
+                }
+            }
+            setUseMp4(false)
+        })()
+    }, [nwbFile, path])
+    if (useMp4 === undefined) return (<div>determining type...</div>)
+    if (useMp4) {
+        return (
+            <TwoPhotonSeriesItemViewMp4 width={width} height={height} path={path} />
+        )
+    }
+    else {
+        return (
+            <TwoPhotonSeriesItemViewChild width={width} height={height} path={path} />
+        )
+    }
+}
+
+const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, path}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is null')
     const dataDataset = useDataset(nwbFile, path + '/data')
@@ -168,7 +198,7 @@ const TwoPhotonSeriesItemView: FunctionComponent<Props> = ({width, height, path}
     }, [currentImage])
 
     const bottomBarHeight = 30
-    
+
     const incrementFrame = useMemo(() => ((inc: number) => {
         (async () => {
             if (!timeseriesDataClient) return
@@ -367,7 +397,7 @@ const readDataFromDat = async (url: string, offset: number, length: number, dtyp
     else if (dtype === '<f') dt = 'float32'
     else if (dtype === '<d') dt = 'float64'
     else dt = dtype
-    
+
     let numBytesPerElement = 0
     if (dt === 'int16') numBytesPerElement = 2
     else if (dt === 'int32') numBytesPerElement = 4
@@ -442,7 +472,7 @@ const transformImageData = (imageData: ImageData, planeTransform: PlaneTransform
             data2[j] = data[i]
         }
     }
-    
+
     return {
         width: newWidth,
         height: newHeight,

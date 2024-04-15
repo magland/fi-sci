@@ -24,7 +24,7 @@ export type ZMetaDataZArray = {
 
 class RemoteH5FileLindi {
   constructor(public url: string, private lindiFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}) {
-    
+
   }
   static async create(url: string) {
     const r = await fetch(url);
@@ -158,7 +158,7 @@ class RemoteH5FileLindi {
     }
 
     // const { slice, allowBigInt, canceler } = o;
-    
+
     globalRemoteH5FileStats.getDatasetDataCount++;
 
     // old system (not used by lindi)
@@ -192,6 +192,11 @@ class RemoteH5FileLindi {
   }
   get _lindiFileSystemClient() {
     return this.lindiFileSystemClient;
+  }
+  async getLindiZarray(path: string): Promise<ZMetaDataZArray | undefined> {
+    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    return await this.lindiFileSystemClient
+      .readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray | undefined;
   }
   getUrls() {
     return [this.url];
