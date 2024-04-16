@@ -5,6 +5,7 @@ import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
 import DendroView from "../DendroView/DendroView"
 import NeurosiftAnnotationsView from "../NeurosiftAnnotationsView/NeurosiftAnnotationsView"
 import DefaultNwbFileView from "./DefaultNwbFileView"
+import SpecificationsView from "../SpecificationsView/SpecificationsView"
 
 type Props = {
     width: number
@@ -12,7 +13,7 @@ type Props = {
     nwbFile: RemoteH5FileX
 }
 
-type ViewMode = 'default' | 'raw' | 'dendro' | 'annotations'
+type ViewMode = 'default' | 'raw' | 'specifications' | 'dendro' | 'annotations'
 
 const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile }) => {
     const topBarHeight = 50
@@ -52,6 +53,14 @@ const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile
             <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'dendro' ? undefined : 'hidden' }}>
                 {hasBeenVisibleViewModes.includes('dendro') && (
                     <DendroView
+                        width={width}
+                        height={height - topBarHeight}
+                    />
+                )}
+            </div>
+            <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'specifications' ? undefined : 'hidden' }}>
+                {hasBeenVisibleViewModes.includes('specifications') && (
+                    <SpecificationsView
                         width={width}
                         height={height - topBarHeight}
                     />
@@ -97,6 +106,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
             <ToggleButton value="raw">Raw</ToggleButton>
             {/* disable for now until we develop it more */}
             {/* <ToggleButton value="dendro">Dendro</ToggleButton> */}
+            <ToggleButton value="specifications">Specifications</ToggleButton>
             <ToggleButton value="annotations">Annotations</ToggleButton>
         </ToggleButtonGroup>
     )
