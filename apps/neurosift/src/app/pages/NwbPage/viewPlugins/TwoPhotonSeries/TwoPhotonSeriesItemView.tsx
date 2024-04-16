@@ -24,6 +24,7 @@ type Props = {
 type ImageData = {
     width: number
     height: number
+    numPlanes: number
     data: DatasetDataType
 }
 
@@ -151,6 +152,7 @@ const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, 
         // const N1 = dataDataset.shape[0]
         const N2 = dataDataset.shape[1]
         const N3 = dataDataset.shape[2]
+        const numPlanes = dataDataset.shape.length === 4 ? dataDataset.shape[3] : 1
         const canceler: Canceler = {onCancel: []}
         let canceled = false
         const load = async () => {
@@ -165,9 +167,6 @@ const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, 
                 // read from nwb file
                 // const slice = [[frameIndex, frameIndex + 1], [0, N2], [0, N3]] as [number, number][]
                 const slice = [[frameIndex, frameIndex + 1]] as [number, number][]
-                if (dataDataset.shape.length === 4) {
-                    slice.push([currentPlane, currentPlane + 1])
-                }
                 x = await nwbFile.getDatasetData(dataDataset.path, {slice, canceler})
                 if (!x) throw Error(`Unable to read data from nwb file: ${dataDataset.path}`)
             }
@@ -177,6 +176,7 @@ const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, 
             const imageData = transformImageData({
                 width: N3,
                 height: N2,
+                numPlanes,
                 data: x
             }, planeTransform)
 
@@ -188,7 +188,7 @@ const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, 
             canceler.onCancel.forEach((f) => f())
             canceled = true
         }
-    }, [dataDataset, usePrecomputed, nwbFile, computedDataDatUrl, frameIndex, timeseriesDataClient, currentPlane, planeTransform])
+    }, [dataDataset, usePrecomputed, nwbFile, computedDataDatUrl, frameIndex, timeseriesDataClient, planeTransform])
 
     const [maxDataValue, setMaxDataValue] = useState<number | undefined>(undefined)
     useEffect(() => {
@@ -230,6 +230,7 @@ const TwoPhotonSeriesItemViewChild: FunctionComponent<Props> = ({width, height, 
                     width={width}
                     height={height - timeSelectionBarHeight - bottomBarHeight}
                     imageData={currentImage}
+                    currentPlane={currentPlane}
                     minValue={currentMinValue || 0}
                     maxValue={currentMaxValue || 1}
                 /> : (
@@ -264,14 +265,15 @@ type ImageDataViewProps = {
     width: number
     height: number
     imageData: ImageData
+    currentPlane: number
     minValue: number
     maxValue: number
 }
 
 const margins = {left: 10, right: 10, top: 10, bottom: 10}
 
-const ImageDataView: FunctionComponent<ImageDataViewProps> = ({width, height, imageData, minValue, maxValue}) => {
-    const {width: W, height: H, data} = imageData
+const ImageDataView: FunctionComponent<ImageDataViewProps> = ({width, height, imageData, currentPlane, minValue, maxValue}) => {
+    const {width: W, height: H, numPlanes, data} = imageData
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
     useEffect(() => {
         if (!canvasElement) return
@@ -289,7 +291,8 @@ const ImageDataView: FunctionComponent<ImageDataViewProps> = ({width, height, im
         const imgData = ctx.createImageData(W, H)
         const buf = imgData.data
         for (let i = 0; i < W * H; i++) {
-            const v = Math.min(255, Math.round(transformValue(data[i]) * 255))
+            const iii = i * numPlanes + currentPlane
+            const v = Math.min(255, Math.round(transformValue(data[iii]) * 255))
             buf[4 * i + 0] = v
             buf[4 * i + 1] = v
             buf[4 * i + 2] = v
@@ -304,7 +307,7 @@ const ImageDataView: FunctionComponent<ImageDataViewProps> = ({width, height, im
 
         ctx.clearRect(0, 0, width, height)
         ctx.drawImage(offscreenCanvas, offsetX, offsetY, W * scale, H * scale)
-    }, [W, H, data, canvasElement, width, height, minValue, maxValue])
+    }, [W, H, data, canvasElement, width, height, minValue, maxValue, numPlanes, currentPlane])
     return (
         <canvas
             ref={elmt => elmt && setCanvasElement(elmt)}
@@ -446,36 +449,42 @@ const readDataFromDat = async (url: string, offset: number, length: number, dtyp
 
 const transformImageData = (imageData: ImageData, planeTransform: PlaneTransform) => {
     const { xyswap, xflip, yflip } = planeTransform
-    const { width, height, data } = imageData
+    const { width, height, numPlanes, data } = imageData
     if ((!xyswap) && (!xflip) && (!yflip)) return imageData
-    const N = width * height
+    const N = width * height * numPlanes
+    const NN = width * height
     const newWidth = xyswap ? height : width
     const newHeight = xyswap ? width : height
     const data2 = new Float32Array(N)
     if (xyswap) {
-        for (let i = 0; i < N; i++) {
+        for (let i = 0; i < NN; i++) {
             let newY = i % width
             let newX = Math.floor(i / width)
             if (xflip) newX = newWidth - 1 - newX
             if (yflip) newY = newHeight - 1 - newY
             const j = newX + newY * newWidth
-            data2[j] = data[i]
+            for (let k = 0; k < numPlanes; k++) {
+                data2[j * numPlanes + k] = data[i * numPlanes + k]
+            }
         }
     }
     else {
-        for (let i = 0; i < N; i++) {
+        for (let i = 0; i < NN; i++) {
             let newY = Math.floor(i / width)
             let newX = i % width
             if (xflip) newX = newWidth - 1 - newX
             if (yflip) newY = newHeight - 1 - newY
             const j = newX + newY * newWidth
-            data2[j] = data[i]
+            for (let k = 0; k < numPlanes; k++) {
+                data2[j * numPlanes + k] = data[i * numPlanes + k]
+            }
         }
     }
 
     return {
         width: newWidth,
         height: newHeight,
+        numPlanes,
         data: data2
     }
 }
