@@ -286,6 +286,12 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
         }
     }, [visibleStartTimeSec, visibleEndTimeSec])
 
+    if (dataset?.dtype === '|O') {
+        return (
+            <div>Unable to display timeseries dataset with dtype '|O'</div>
+        )
+    }
+
     return (
         <div
             style={{position: 'absolute', width, height}}
@@ -318,7 +324,7 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
                 <HelpWindow />
             </ModalWindow>
         </div>
-    )    
+    )
 }
 
 const HelpWindow: FunctionComponent = () => {
