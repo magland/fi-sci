@@ -12,6 +12,7 @@ import { SelectedItemViewsContext, selectedItemViewsReducer } from "./SelectedIt
 import getAuthorizationHeaderForUrl from "./getAuthorizationHeaderForUrl"
 import { SupplementalDendroFilesContext, useSupplementalDendroFiles } from "./SupplementalDendroFilesContext"
 import { DendroFile } from "../../dendro/dendro-types"
+import { SetupNwbFileSpecificationsProvider } from "./SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     width: number
@@ -300,13 +301,15 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
         <NwbFileContext.Provider value={nwbFileContextValue}>
             <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
                 <SetupNwbOpenTabs>
-                    <SetupNwbFileAnnotationsProvider>
-                        <NwbTabWidget
-                            width={width}
-                            height={height}
-                            usingLindi={usingLindi}
-                        />
-                    </SetupNwbFileAnnotationsProvider>
+                    <SetupNwbFileSpecificationsProvider>
+                        <SetupNwbFileAnnotationsProvider>
+                            <NwbTabWidget
+                                width={width}
+                                height={height}
+                                usingLindi={usingLindi}
+                            />
+                        </SetupNwbFileAnnotationsProvider>
+                    </SetupNwbFileSpecificationsProvider>
                 </SetupNwbOpenTabs>
             </SelectedItemViewsContext.Provider>
         </NwbFileContext.Provider>
@@ -456,7 +459,7 @@ const getRedirectUrl = async (url: string, headers: any) => {
     // So instead, we do a HEAD request with no redirect option, and then look at the response.url
     const response = await headRequest(url, headers)
     if (response.url) return response.url
-  
+
     // if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
     //     return response.headers.get('Location')
     // }
