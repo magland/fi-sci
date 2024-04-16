@@ -53,6 +53,14 @@ const ImageItem: FunctionComponent<ImageItemProps> = ({ nwbFile, path, neurodata
             />
         )
     }
+    else if (neurodataType === 'Image') {
+        return (
+            <RegularImageItem
+                dataset={dataset}
+                data={data}
+            />
+        )
+    }
     else {
         return (
             <div>Unexpected neurodata_type: {neurodataType}</div>
@@ -106,6 +114,28 @@ const GrayscaleImageItem: FunctionComponent<GrayscaleImageItemProps> = ({ datase
             height={H}
         />
     )
+}
+
+type RegularImageItemProps = {
+    dataset: RemoteH5Dataset
+    data: DatasetDataType
+}
+
+const RegularImageItem: FunctionComponent<RegularImageItemProps> = ({ dataset, data }) => {
+    if (dataset.shape.length === 2) {
+        // I guess this is just a grayscale image
+        return (
+            <GrayscaleImageItem
+                dataset={dataset}
+                data={data}
+            />
+        )
+    }
+    else {
+        return (
+            <div>Image not supported with shape: {dataset.shape.join(', ')}</div>
+        )
+    }
 }
 
 export default ImagesItemView

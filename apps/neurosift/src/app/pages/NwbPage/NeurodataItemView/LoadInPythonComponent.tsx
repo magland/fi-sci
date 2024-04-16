@@ -115,11 +115,10 @@ See [remfile](https://github.com/magland/remfile) for more information on loadin
 
 ${backtics}bash
 # Prerequisites:
-pip install h5py lindi
+pip install lindi
 ${backtics}
 
 ${backtics}python
-import h5py
 import lindi
 
 url = '${url}'
