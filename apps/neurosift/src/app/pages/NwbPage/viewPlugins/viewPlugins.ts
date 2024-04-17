@@ -68,7 +68,10 @@ viewPlugins.push({
     defaultForNeurodataType: true,
     component: NeurodataSpatialSeriesItemView,
     isTimeView: true,
-    getCustomPythonCode: getCustomPythonCodeForTimeSeries
+    getCustomPythonCode: getCustomPythonCodeForTimeSeries,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000960&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/9e1a2028-c31e-4c8a-82aa-182901c151af/download/&tab=neurodata-item:/processing/pupilArea/pupilArea/SpatialSeries|SpatialSeries'
+    ]
 })
 viewPlugins.push({
     name: 'X/Y',
@@ -86,6 +89,9 @@ viewPlugins.push({
         if (ds.shape[1] < 2) return false
         return true
     },
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&url=https://fsbucket-dendro.flatironinstitute.org/dendro-outputs/2d2b13fd/2d2b13fd.ec254350/output&dandisetId=000871&dandisetVersion=draft&dandiAssetId=407d6e5f-2a16-4879-b38f-b74cad7b9e24&st=lindi&tab=view:X/Y|/acquisition/EyeTracking/pupil_tracking'
+    ]
 })
 
 // TwoPhotonSeries
@@ -113,7 +119,10 @@ viewPlugins.push({
     defaultForNeurodataType: true,
     component: NeurodataTimeSeriesItemView,
     isTimeView: true,
-    getCustomPythonCode: getCustomPythonCodeForTimeSeries
+    getCustomPythonCode: getCustomPythonCodeForTimeSeries,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000954&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/dd1bdcf3-5430-4037-ad4a-1727004d38d2/download/&tab=neurodata-items:neurodata-item:/acquisition/OpenLoopKinematics|TimeSeries@neurodata-item:/acquisition/OpenLoopKinematicsVelocity|TimeSeries'
+    ]
 })
 
 // DynamicTable
@@ -135,7 +144,10 @@ viewPlugins.push({
     defaultForNeurodataType: true,
     component: NeurodataTimeIntervalsItemView,
     isTimeView: true,
-    getCustomPythonCode: getCustomPythonCodeForTimeIntervals
+    getCustomPythonCode: getCustomPythonCodeForTimeIntervals,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000954&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/dd1bdcf3-5430-4037-ad4a-1727004d38d2/download/&tab=neurodata-item:/intervals/epochs|TimeIntervals'
+    ]
 })
 viewPlugins.push({
     name: 'PSTH',
@@ -147,7 +159,10 @@ viewPlugins.push({
         if (!rootGroup) return false
         return rootGroup.subgroups.find(sg => (sg.name === 'units')) ? true : false
     },
-    isTimeView: false
+    isTimeView: false,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000409&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/download/&tab=view:PSTH|/intervals/trials'
+    ]
 })
 viewPlugins.push({
     name: 'TimeAlignedSeries',
@@ -179,7 +194,10 @@ viewPlugins.push({
     neurodataType: 'LabeledEvents',
     defaultForNeurodataType: true,
     component: LabeledEventsItemView,
-    isTimeView: true
+    isTimeView: true,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000568&dandisetVersion=0.230705.1633&url=https://api.dandiarchive.org/api/assets/72bebc59-e73e-4d6b-b4ab-086d054583d6/download/&tab=neurodata-item:/processing/behavior/RewardEventsLinearTrack|LabeledEvents'
+    ]
 })
 // viewPlugins.push({
 //     name: 'HelloWorld',
@@ -283,7 +301,10 @@ viewPlugins.push({
     neurodataType: 'Images',
     defaultForNeurodataType: true,
     component: ImagesItemView,
-    isTimeView: false
+    isTimeView: false,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000957&dandisetVersion=0.240407.0142&url=https://api.dandiarchive.org/api/assets/d4bd92fc-4119-4393-b807-f007a86778a1/download/&tab=neurodata-item:/stimulus/templates/template_118_images|Images'
+    ]
 })
 
 // BehavioralEvents
