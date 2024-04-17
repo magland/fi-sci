@@ -16,7 +16,9 @@ declare global {
     }
 }
 window.testErrors = []
+const oldConsoleError = console.error
 console.error = (...args) => {
+    oldConsoleError(...args)
     window.testErrors.push(args)
 }
 

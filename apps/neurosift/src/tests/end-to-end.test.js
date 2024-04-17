@@ -30,6 +30,7 @@ test('End to end test', async () => {
         const nElements = document.querySelectorAll('*').length
         return {
             numElements: nElements,
+            // eslint-disable-next-line no-undef
             errors: globalThis.testErrors
         }
     }))
