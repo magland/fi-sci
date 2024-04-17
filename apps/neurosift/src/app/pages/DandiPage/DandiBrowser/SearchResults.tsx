@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useCallback } from "react"
 import { Hyperlink } from "@fi-sci/misc";
 import { Splitter } from "@fi-sci/splitter";
@@ -37,8 +38,8 @@ const SearchResults: FunctionComponent<SearchResultsProps> = ({width, height, se
     // }, [selectedDandisetItem, onImportItems])
 
     const setSelectedDandisetItem = useCallback((item: DandisetSearchResultItem) => {
-        setRoute({page: 'dandiset', dandisetId: item.identifier})
-    }, [setRoute])
+        setRoute({page: 'dandiset', dandisetId: item.identifier, staging: (route as any)['staging'] || false})
+    }, [setRoute, route])
 
     return (
         <Splitter

@@ -10,7 +10,7 @@ type DandisetPageProps = {
 const DandisetPage: FunctionComponent<DandisetPageProps> = ({width, height}) => {
     const {route, setRoute} = useRoute()
     if (route.page !== 'dandiset') throw Error('Unexpected route for DandisetPage: ' + route.page)
-    const handleOpenAssets = useCallback((assetUrls: string[]) => {
+    const handleOpenAssets = useCallback((assetUrls: string[], assetPaths: string[]) => {
         if (assetUrls.length > 5) {
             alert(`Cannot open more than 5 assets at once. You tried to open ${assetUrls.length}.`)
             return
@@ -20,7 +20,10 @@ const DandisetPage: FunctionComponent<DandisetPageProps> = ({width, height}) => 
             dandisetId: route.dandisetId,
             dandisetVersion: route.dandisetVersion,
             url: assetUrls,
-            storageType: assetUrls.map(url => 'h5')
+            storageType: assetPaths.map(p => {
+                if (p.endsWith('.json')) return 'lindi'
+                else return 'h5'
+            })
         })
     }, [route, setRoute])
     return (
@@ -31,7 +34,7 @@ const DandisetPage: FunctionComponent<DandisetPageProps> = ({width, height}) => 
             dandisetVersion={route.dandisetVersion}
             useStaging={!!route.staging}
             onOpenAssets={handleOpenAssets}
-        />  
+        />
     )
 
 }

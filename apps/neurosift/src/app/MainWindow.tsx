@@ -10,6 +10,7 @@ import useRoute from "./useRoute";
 import TestPage from "./pages/TestPage/TestPage";
 import NeurosiftAnnotationsLoginPage from "./pages/NeurosiftAnnotationsLoginPage/NeurosiftAnnotationsLoginPage";
 import DandiQueryPage from "./pages/DandiQueryPage/DandiQueryPage";
+import TestsPage from "./pages/TestsPage/TestsPage";
 
 type Props = {
     // none
@@ -58,6 +59,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                         />
                     ) : route.page === 'dandi-query' ? (
                         <DandiQueryPage
+                            width={width}
+                            height={H}
+                        />
+                    ) : route.page === 'tests' ? (
+                        <TestsPage
                             width={width}
                             height={H}
                         />

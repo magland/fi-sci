@@ -41,6 +41,7 @@ export type ViewPlugin = {
     checkEnabled?: (nwbFile: RemoteH5FileX, path: string) => Promise<boolean>
     isTimeView?: boolean
     getCustomPythonCode?: (group: RemoteH5Group) => string
+    testLinks?: string[]
 }
 
 const viewPlugins: ViewPlugin[] = []
@@ -118,7 +119,10 @@ viewPlugins.push({
     neurodataType: 'DynamicTable',
     defaultForNeurodataType: true,
     component: DynamicTableView,
-    isTimeView: false
+    isTimeView: false,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&url=https://api.dandiarchive.org/api/assets/58703c97-c0a9-4736-b684-73c85c1a444a/download/&dandisetId=000021&dandisetVersion=draft&tab=neurodata-item:/intervals/drifting_gratings_presentations%7CTimeIntervals'
+    ]
 })
 
 // TimeIntervals
@@ -206,7 +210,10 @@ viewPlugins.push({
     buttonLabel: 'raster plot',
     component: DirectRasterPlotUnitsItemView,
     isTimeView: true,
-    getCustomPythonCode: getCustomPythonCodeForUnits
+    getCustomPythonCode: getCustomPythonCodeForUnits,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000946&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/3764f5c5-0d06-4f24-9bf2-d2849b1e9d0c/download/&tab=view:DirectRasterPlot|/units'
+    ]
 })
 viewPlugins.push({
     name: 'AverageWaveforms',
@@ -221,7 +228,10 @@ viewPlugins.push({
         if (!x) return false
         const ds = x.datasets.find(ds => (ds.name === 'waveform_mean'))
         return !!ds
-    }
+    },
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000939&dandisetVersion=0.240327.2229&url=https://api.dandiarchive.org/api/assets/56d875d6-a705-48d3-944c-53394a389c85/download/&tab=view:AverageWaveforms%7C/units'
+    ]
 })
 viewPlugins.push({
     name: 'Autocorrelograms',
@@ -236,7 +246,10 @@ viewPlugins.push({
         if (!x) return false
         const ds = x.datasets.find(ds => (ds.name === 'autocorrelogram'))
         return !!ds
-    }
+    },
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=213569&dandisetVersion=draft&staging=1&url=https://api-staging.dandiarchive.org/api/assets/9b372ad4-a3f8-4d95-bda7-dc56637c8873/download/&st=lindi&tab=view:Autocorrelograms|/units'
+    ]
 })
 // viewPlugins.push({
 //     name: 'RasterPlot',
@@ -273,7 +286,10 @@ viewPlugins.push({
     neurodataType: 'BehavioralEvents',
     defaultForNeurodataType: true,
     component: BehavioralEventsItemView,
-    isTimeView: true
+    isTimeView: true,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000115&dandisetVersion=0.210914.1732&url=https://api.dandiarchive.org/api/assets/6df57370-9de8-4514-82f3-65d0f0528cde/download/&tab=neurodata-item:/processing/behavior/behavioral_events|BehavioralEvents'
+    ]
 })
 
 // test_video

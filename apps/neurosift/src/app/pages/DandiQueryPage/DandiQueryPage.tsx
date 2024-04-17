@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
 import useRoute from "../../useRoute"
 import pako from "pako";
@@ -135,7 +136,7 @@ type ResultsViewProps = {
 }
 
 const ResultsView: FunctionComponent<ResultsViewProps> = ({results, selectedDandisetIdVersions, setSelectedDandisetIdVersions}) => {
-    const {setRoute} = useRoute()
+    const {setRoute, route} = useRoute()
     const selectedDandisetIds = useMemo(() => (selectedDandisetIdVersions.map(x => x.split('@')[0])), [selectedDandisetIdVersions])
     if (!results) return null
     return (
@@ -177,7 +178,7 @@ const ResultsView: FunctionComponent<ResultsViewProps> = ({results, selectedDand
                         <td>
                             <Hyperlink
                                 onClick={() => {
-                                    setRoute({page: 'dandiset', dandisetId: matchingDandiset.dandisetId})
+                                    setRoute({page: 'dandiset', dandisetId: matchingDandiset.dandisetId, staging: (route as any)['staging'] || false})
                                 }}
                             >
                                 {matchingDandiset.dandisetId}

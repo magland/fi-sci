@@ -5,6 +5,7 @@ import { FaEye } from "react-icons/fa"
 import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { neurodataTypeInheritsFrom } from "../neurodataSpec"
+import { useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     width: number
@@ -42,11 +43,16 @@ const timeseriesAlignmentReducer = (state: TimeseriesAlignmentState, action: Tim
 const TimeseriesAlignmentView: FunctionComponent<Props> = ({width, height}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
+    const specifications = useNwbFileSpecifications()
 
     const [timeseriesAlignment, timeseriesAlignmentDispatch] = useReducer(timeseriesAlignmentReducer, {timeseries: []})
     const [loadingMessage, setLoadingMessage] = useState('')
 
     useEffect(() => {
+        if (!specifications) {
+            setLoadingMessage('Loading specifications...')
+            return
+        }
         setLoadingMessage('Loading...')
         let canceled = false
         const handleGroup = async (path: string) => {
@@ -55,7 +61,7 @@ const TimeseriesAlignmentView: FunctionComponent<Props> = ({width, height}) => {
             if (canceled) return
             if (!gr) return
             const nt = gr.attrs['neurodata_type']
-            if (neurodataTypeInheritsFrom(nt, 'TimeSeries')) {
+            if (neurodataTypeInheritsFrom(nt, 'TimeSeries', specifications)) {
                 try {
                     const timestampsSubdataset = gr.datasets.find(ds => (ds.name === 'timestamps'))
                     const startingTimeSubdataset = gr.datasets.find(ds => (ds.name === 'starting_time'))
@@ -113,7 +119,7 @@ const TimeseriesAlignmentView: FunctionComponent<Props> = ({width, height}) => {
             setLoadingMessage('')
         })
         return () => {canceled = true}
-    }, [nwbFile])
+    }, [nwbFile, specifications])
 
     const {startTime, endTime} = useMemo(() => {
         let startTime: number | undefined = undefined

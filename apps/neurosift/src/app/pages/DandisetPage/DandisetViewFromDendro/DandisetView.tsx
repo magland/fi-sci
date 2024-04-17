@@ -15,11 +15,11 @@ type DandisetViewProps = {
     width: number
     height: number
     useStaging?: boolean
-    onOpenAssets?: (assetUrls: string[]) => void
+    onOpenAssets?: (assetUrls: string[], assetPaths: string[]) => void
 }
 
 const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandisetVersion, width, height, useStaging, onOpenAssets}) => {
-    const {setRoute} = useRoute()
+    const {setRoute, route} = useRoute()
     const [dandisetResponse, setDandisetResponse] = useState<DandisetSearchResultItem | null>(null)
     const [dandisetVersionInfo, setDandisetVersionInfo] = useState<DandisetVersionInfo | null>(null)
     const [assetsResponses, setAssetsResponses] = useState<AssetsResponse[]>([])
@@ -61,10 +61,11 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
             setRoute({
                 page: 'dandiset',
                 dandisetId,
-                dandisetVersion: V.version
+                dandisetVersion: V.version,
+                staging: (route as any)['staging'] || false
             }, true)
         }
-    }, [dandisetVersion, V, dandisetId, setRoute])
+    }, [dandisetVersion, V, dandisetId, setRoute, route])
 
     useEffect(() => {
         let canceled = false
@@ -98,7 +99,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         if (!V) return
         ; (async () => {
             let rr: AssetsResponse[] = []
-            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${V.version}/assets/?page_size=1000&glob=*.nwb`
+            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${V.version}/assets/?page_size=1000&glob=*.nwb*`
             const authorizationHeader = uu ? getAuthorizationHeaderForUrl(uu) : ''
             const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
             let count = 0
@@ -166,12 +167,12 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
     }, [specialChangesAsset, assetUrlForPath])
 
     const handleClickAsset = useCallback((asset: AssetsResponseItem) => {
-        if (onOpenAssets) onOpenAssets([assetUrlForPath(asset.path)])
+        if (onOpenAssets) onOpenAssets([assetUrlForPath(asset.path)], [asset.path])
     }, [onOpenAssets, assetUrlForPath])
 
     if (!dandisetResponse) return <div>Loading dandiset...</div>
     if (!dandisetVersionInfo) return <div>Loading dandiset info...</div>
-    
+
     const X = dandisetVersionInfo
 
     const externalLink = `https://${stagingStr2}dandiarchive.org/dandiset/${dandisetId}/${X.version}`
@@ -181,7 +182,12 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         <div style={{position: 'absolute', width, height, overflowY: 'hidden'}}>
             <div style={{position: 'absolute', top: 0, width, height: topBarHeight, borderBottom: 'solid 1px #ccc'}}>
                 {onOpenAssets && (
-                    <button disabled={selectedAssets.assetPaths.length === 0} onClick={() => {onOpenAssets(selectedAssets.assetPaths.map(p => assetUrlForPath(p)))}}>Open selected assets</button>
+                    <button disabled={selectedAssets.assetPaths.length === 0} onClick={() => {
+                        onOpenAssets(
+                            selectedAssets.assetPaths.map(p => assetUrlForPath(p)),
+                            selectedAssets.assetPaths
+                        )
+                    }}>Open selected assets</button>
                 )}
             </div>
             <div style={{position: 'absolute', top: topBarHeight, width, height: height - topBarHeight, overflowY: 'auto'}}>

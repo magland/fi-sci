@@ -31,6 +31,8 @@ export type Route = {
     page: 'dandi-query'
     staging?: boolean
 } | {
+    page: 'tests'
+} | {
     page: 'github-auth'
 } | {
     page: 'neurosift-annotations-login'
@@ -120,6 +122,11 @@ const useRoute = () => {
                 staging: query.staging === '1'
             }
         }
+        else if (p === '/tests') {
+            return {
+                page: 'tests'
+            }
+        }
         // no longer supported
         // else if (p === '/avi') {
         //     return {
@@ -143,7 +150,7 @@ const useRoute = () => {
     const setRoute = useCallback((r: Route, replaceHistory?: boolean) => {
         let newQuery = {...query}
         if (r.page === 'home') {
-            newQuery = {p: '/'}    
+            newQuery = {p: '/'}
         }
         else if (r.page === 'about') {
             newQuery = {p: '/about'}
@@ -271,6 +278,27 @@ const useRoute = () => {
                 delete newQuery.storageType
             }
         }
+        else if (r.page === 'tests') {
+            newQuery.p = '/tests'
+            if (newQuery.staging) {
+                delete newQuery.staging
+            }
+            if (newQuery.url) {
+                delete newQuery.url
+            }
+            if (newQuery.dandisetId) {
+                delete newQuery.dandisetId
+            }
+            if (newQuery.dandisetVersion) {
+                delete newQuery.dandisetVersion
+            }
+            if (newQuery.dandiAssetId) {
+                delete newQuery.dandiAssetId
+            }
+            if (newQuery.storageType) {
+                delete newQuery.storageType
+            }
+        }
         else if (r.page === 'neurosift-annotations-login') {
             newQuery = {
                 p: '/neurosift-annotations-login',
@@ -295,7 +323,7 @@ const useRoute = () => {
     return {
         route,
         setRoute
-    }    
+    }
 }
 
 const parseSearchString = (search: string) => {
