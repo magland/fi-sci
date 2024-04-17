@@ -55,7 +55,10 @@ viewPlugins.push({
     neurodataType: 'ImageSegmentation',
     defaultForNeurodataType: true,
     component: ImageSegmentationItemView,
-    isTimeView: false
+    isTimeView: false,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&url=https://dandiarchive.s3.amazonaws.com/blobs/368/fa7/368fa71e-4c93-4f7e-af15-06776ca07f34&tab=neurodata-item:/processing/ophys/ImageSegmentation%7CImageSegmentation'
+    ]
 })
 
 // SpatialSeries
@@ -164,7 +167,10 @@ viewPlugins.push({
     defaultForNeurodataType: true,
     component: TimeSeriesItemView,
     isTimeView: true,
-    getCustomPythonCode: getCustomPythonCodeForTimeSeries
+    getCustomPythonCode: getCustomPythonCodeForTimeSeries,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&dandisetId=000957&dandisetVersion=0.240407.0142&url=https://api.dandiarchive.org/api/assets/d4bd92fc-4119-4393-b807-f007a86778a1/download/'
+    ]
 })
 
 // LabeledEvents
