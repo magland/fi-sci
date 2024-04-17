@@ -8,6 +8,7 @@ import { useNwbOpenTabs } from "../NwbOpenTabsContext"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { valueToElement } from "./BrowseNwbView"
 import './nwb-attributes-table.css'
+import { useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     name: string
@@ -370,8 +371,9 @@ type NeurodataTypeLinkProps = {
 const NeurodataTypeLink: FunctionComponent<NeurodataTypeLinkProps> = ({neurodataType, tableItem}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
+    const specifications = useNwbFileSpecifications()
     if (tableItem.type !== 'group') throw Error('Unexpected table item type')
-    const viewPlugins = useMemo(() => (neurodataType ? findViewPluginsForType(neurodataType, {nwbFile}) : undefined), [neurodataType, nwbFile])
+    const viewPlugins = useMemo(() => (neurodataType && specifications ? findViewPluginsForType(neurodataType, {nwbFile}, specifications) : undefined), [neurodataType, nwbFile, specifications])
     const {openTab} = useNwbOpenTabs()
     return (
         <span>

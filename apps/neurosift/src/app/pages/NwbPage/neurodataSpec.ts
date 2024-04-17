@@ -1,4 +1,6 @@
-export const neurodataTypeInheritanceRaw: { [key: string]: string } = {
+import { NwbFileSpecifications } from "./SpecificationsView/SetupNwbFileSpecificationsProvider"
+
+const neurodataTypeInheritanceRaw: { [key: string]: string } = {
     "NWBData": "Data",
     "Image": "NWBData",
     "NWBContainer": "Container",
@@ -67,25 +69,59 @@ export const neurodataTypeInheritanceRaw: { [key: string]: string } = {
     "AnnotatedEventsTable": "Units" // added manually. See https://github.com/flatironinstitute/neurosift/issues/89
 }
 
-export const neurodataTypeInheritance: { [key: string]: string[] } = {}
-for (const key in neurodataTypeInheritanceRaw) {
-    neurodataTypeInheritance[key] = []
-    let val = neurodataTypeInheritanceRaw[key]
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-        neurodataTypeInheritance[key].push(val)
-        if (val in neurodataTypeInheritanceRaw) {
-            val = neurodataTypeInheritanceRaw[val]
-        } else {
-            break
+// export const neurodataTypeInheritance: { [key: string]: string[] } = {}
+// for (const key in neurodataTypeInheritanceRaw) {
+//     neurodataTypeInheritance[key] = []
+//     let val = neurodataTypeInheritanceRaw[key]
+//     // eslint-disable-next-line no-constant-condition
+//     while (true) {
+//         neurodataTypeInheritance[key].push(val)
+//         if (val in neurodataTypeInheritanceRaw) {
+//             val = neurodataTypeInheritanceRaw[val]
+//         } else {
+//             break
+//         }
+//     }
+// }
+
+export const getNeurodataTypeInheritanceRaw = (specifications: NwbFileSpecifications) => {
+    const inheritanceRaw = JSON.parse(JSON.stringify(neurodataTypeInheritanceRaw))
+    for (const x of specifications.allGroups) {
+        const def = x.neurodata_type_def
+        const inc = x.neurodata_type_inc
+        if (inc) {
+            inheritanceRaw[def] = inc
         }
     }
+    for (const x of specifications.allDatasets) {
+        const def = x.neurodata_type_def
+        const inc = x.neurodata_type_inc
+        if (inc) {
+            inheritanceRaw[def] = inc
+        }
+    }
+    return inheritanceRaw
 }
 
-export const neurodataTypeInheritsFrom = (type: string | undefined, baseType: string) => {
+export const neurodataTypeInheritsFrom = (type: string | undefined, baseType: string, specifications: NwbFileSpecifications) => {
     if (!type) return false
     if (type === baseType) return true
-    return neurodataTypeInheritance[type]?.includes(baseType)
+    const inheritanceRaw = getNeurodataTypeInheritanceRaw(specifications)
+    const inheritance: { [key: string]: string[] } = {}
+    for (const key in inheritanceRaw) {
+        inheritance[key] = []
+        let val = inheritanceRaw[key]
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            inheritance[key].push(val)
+            if (val in inheritanceRaw) {
+                val = inheritanceRaw[val]
+            } else {
+                break
+            }
+        }
+    }
+    return inheritance[type]?.includes(baseType)
 }
 
 export const neurodataTypeParentType = (type: string) => {

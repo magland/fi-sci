@@ -5,6 +5,7 @@ import { useNwbFile } from "../NwbFileContext"
 import TimeseriesSelectionWidget from "../viewPlugins/TimeSeries/TimeseriesItemView/TimeseriesSelectionWidget"
 import viewPlugins, { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import ShareTabComponent from "./ShareTabComponent"
+import { NwbFileSpecifications, useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     width: number
@@ -85,16 +86,18 @@ type MainPanelProps = {
 const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, items}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
+    const specifications = useNwbFileSpecifications()
     const H = height / items.length
     const positions = items.map((_, i) => i * H)
     const titleBarHeight = 25
     // a nice attractive title bar color
     const titleBarColor = '#68e'
+    if (!specifications) return <div>Loading specifications...</div>
     return (
         <div style={{position: 'absolute', width, height}}>
             {
                 items.map((item, i) => {
-                    const {viewPlugin, itemPath, additionalItemPaths} = getViewPluginAndItemPath(item, nwbFile)
+                    const {viewPlugin, itemPath, additionalItemPaths} = getViewPluginAndItemPath(item, nwbFile, specifications)
                     if (!viewPlugin) return (
                         <div>View plugin not found: {item}</div>
                     )
@@ -122,11 +125,11 @@ const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, items}) =>
     )
 }
 
-const getViewPluginAndItemPath = (item: string, nwbFile: RemoteH5FileX) => {
+const getViewPluginAndItemPath = (item: string, nwbFile: RemoteH5FileX, specifications: NwbFileSpecifications) => {
     if (item.startsWith('neurodata-item:')) {
         const itemPath = item.slice(`neurodata-item:`.length).split('|')[0]
         const neurodataType = item.slice(`neurodata-item:`.length).split('|')[1]
-        const {defaultViewPlugin} = findViewPluginsForType(neurodataType, {nwbFile})
+        const {defaultViewPlugin} = findViewPluginsForType(neurodataType, {nwbFile}, specifications)
         return {viewPlugin: defaultViewPlugin, itemPath, additionalItemPaths: undefined}
     }
     else if (item.startsWith('view:')) {

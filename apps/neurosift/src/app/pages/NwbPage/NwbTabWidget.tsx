@@ -10,6 +10,7 @@ import NwbMainView from "./NwbMainView/NwbMainView";
 import { useNwbOpenTabs } from "./NwbOpenTabsContext";
 import TimeseriesAlignmentView from "./TimeseriesAlignmentView/TimeseriesAlignmentView";
 import viewPlugins, { findViewPluginsForType } from "./viewPlugins/viewPlugins";
+import { useNwbFileSpecifications } from "./SpecificationsView/SetupNwbFileSpecificationsProvider";
 
 const NwbTabWidget: FunctionComponent<{width: number, height: number, usingLindi: boolean}> = ({width, height, usingLindi}) => {
     const {openTabs, currentTabName, setCurrentTab, closeTab, initialTimeSelections} = useNwbOpenTabs()
@@ -49,8 +50,10 @@ type TabChildProps = {
 const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, usingLindi}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
+    const specifications = useNwbFileSpecifications()
     const [unitSelection, unitSelectionDispatch] = useReducer(unitSelectionReducer, defaultUnitSelection)
     const {viewPlugin, itemPath, additionalItemPaths} = useMemo(() => {
+        if (!specifications) return {viewPlugin: undefined, itemPath: undefined, additionalItemPaths: undefined}
         if (tabName.startsWith('view:')) {
             const pName = tabName.slice(`view:`.length).split('|')[0]
             let itemPath = tabName.slice(`view:`.length).split('|')[1]
@@ -66,11 +69,11 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
         else if (tabName.startsWith('neurodata-item:')) {
             const itemPath = tabName.slice(`neurodata-item:`.length).split('|')[0]
             const neurodataType = tabName.slice(`neurodata-item:`.length).split('|')[1]
-            const {defaultViewPlugin} = findViewPluginsForType(neurodataType, {nwbFile})
+            const {defaultViewPlugin} = findViewPluginsForType(neurodataType, {nwbFile}, specifications)
             return {viewPlugin: defaultViewPlugin, itemPath, additionalItemPaths: undefined}
         }
         else return {viewPlugin: undefined, itemPath: undefined, additionalItemPaths: undefined}
-    }, [tabName, nwbFile])
+    }, [tabName, nwbFile, specifications])
     return (
         <SetupTimeseriesSelection initialTimeSelection={initialTimeSelection}>
             <UnitSelectionContext.Provider value={{unitSelection, unitSelectionDispatch}}>

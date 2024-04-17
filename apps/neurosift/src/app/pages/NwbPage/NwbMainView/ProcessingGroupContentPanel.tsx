@@ -7,6 +7,8 @@ import Abbreviate from "../viewPlugins/TimeSeries/TimeseriesItemView/Abbreviate"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { useGroup } from "./NwbMainView"
+import { neurodataTypeInheritsFrom } from "../neurodataSpec"
+import { useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     nwbFile: RemoteH5FileX
@@ -49,6 +51,7 @@ const ProcessingGroupContentPanel: FunctionComponent<Props> = ({nwbFile, groupPa
     const group = useGroup(nwbFile, groupPath)
     const [loadedGroups, dispatchLoadedGroups] = useReducer(loadedGroupsReducer, {loaded: {}, requestedPaths: []})
     const {selectedItemViews, toggleSelectedItemView} = useSelectedItemViews()
+    const specifications = useNwbFileSpecifications()
     useEffect(() => {
         const load = async () => {
             for (const p of loadedGroups.requestedPaths) {
@@ -61,6 +64,7 @@ const ProcessingGroupContentPanel: FunctionComponent<Props> = ({nwbFile, groupPa
         load()
     }, [loadedGroups.requestedPaths, nwbFile])
     const tableItems = useMemo(() => {
+        if (!specifications) return []
         const ret: {name: string, path: string}[] = []
         if (group) {
             for (const subgroup of group.subgroups) {
@@ -73,7 +77,14 @@ const ProcessingGroupContentPanel: FunctionComponent<Props> = ({nwbFile, groupPa
                 // BehavioralTimeSeries holds TimeSeries
                 // EyeTracking holds SpatialSeries
                 // Position holds SpatialSeries
-                if (['LFP', 'FilteredEphys', 'Fluorescence', 'DfOverF', 'BehavioralTimeSeries', 'EyeTracking', 'Position', 'PupilTracking', 'CompassDirection'].includes(subgroup.attrs['neurodata_type'])) {
+                let isContainerType = false
+                for (const ndt of ['LFP', 'FilteredEphys', 'Fluorescence', 'DfOverF', 'BehavioralTimeSeries', 'EyeTracking', 'Position', 'PupilTracking', 'CompassDirection']) {
+                    if (neurodataTypeInheritsFrom(subgroup.attrs['neurodata_type'], ndt, specifications)) {
+                        isContainerType = true
+                        break
+                    }
+                }
+                if (isContainerType) {
                     const gg = loadedGroups.loaded[subgroup.path]
                     if (gg) {
                         for (const subsubgroup of gg.subgroups) {
@@ -96,7 +107,7 @@ const ProcessingGroupContentPanel: FunctionComponent<Props> = ({nwbFile, groupPa
             }
         }
         return ret
-    }, [group, loadedGroups.loaded])
+    }, [group, loadedGroups.loaded, specifications])
     if (!group) return <div>...</div>
     return (
         <div>
@@ -140,6 +151,7 @@ type GroupTableRowProps = {
 }
 
 const GroupTableRow: FunctionComponent<GroupTableRowProps> = ({nwbFile, name, path, selected, onToggleSelect}) => {
+    const specifications = useNwbFileSpecifications()
     const group = useGroup(nwbFile, path)
     const [data, setData] = useState<RemoteH5Dataset | undefined>(undefined)
     useEffect(() => {
@@ -156,7 +168,7 @@ const GroupTableRow: FunctionComponent<GroupTableRowProps> = ({nwbFile, name, pa
     }, [nwbFile, group, path])
     const {openTab} = useNwbOpenTabs()
     const neurodataType = group ? group.attrs['neurodata_type'] : ''
-    const {viewPlugins, defaultViewPlugin} = useMemo(() => (findViewPluginsForType(neurodataType, {nwbFile})), [neurodataType, nwbFile])
+    const {viewPlugins, defaultViewPlugin} = useMemo(() => (specifications ? findViewPluginsForType(neurodataType, {nwbFile}, specifications) : {viewPlugins: [], defaultViewPlugin: undefined}), [neurodataType, nwbFile])
     return (
         <tr>
             <td>

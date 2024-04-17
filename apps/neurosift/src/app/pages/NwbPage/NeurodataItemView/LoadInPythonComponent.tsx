@@ -6,6 +6,7 @@ import { findViewPluginsForType, ViewPlugin } from "../viewPlugins/viewPlugins"
 import { Hyperlink } from "@fi-sci/misc"
 import ModalWindow from "@fi-sci/modal-window"
 import Markdown from "../../../Markdown/Markdown"
+import { useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     path: string
@@ -35,6 +36,7 @@ const LoadInPythonComponent: FunctionComponent<Props> = ({path, group, viewName}
 
 const LoadInPythonWindow: FunctionComponent<Props> = ({path, group, viewName}) => {
     const nwbFile = useNwbFile()
+    const specifications = useNwbFileSpecifications()
 
     let nwbFileUrl: string
     let urlType: 'hdf5' | 'lindi'
@@ -65,7 +67,8 @@ const LoadInPythonWindow: FunctionComponent<Props> = ({path, group, viewName}) =
     }
 
     const source = useMemo(() => {
-        const viewPlugin = findViewPluginsForType(group.attrs.neurodata_type, {nwbFile}).defaultViewPlugin
+        if (!specifications) return ''
+        const viewPlugin = findViewPluginsForType(group.attrs.neurodata_type, {nwbFile}, specifications).defaultViewPlugin
         return createSource(nwbFileUrl, urlType, viewPlugin, path, group, viewName)
     }, [path, group, viewName, nwbFileUrl, urlType, nwbFile])
     return (

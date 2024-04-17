@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent } from "react"
+import { FunctionComponent, useEffect } from "react"
 import { useNwbFileSpecifications } from "./SetupNwbFileSpecificationsProvider"
 
 type SpecificationsViewProps = {
@@ -9,6 +9,10 @@ type SpecificationsViewProps = {
 
 const SpecificationsView: FunctionComponent<SpecificationsViewProps> = ({ width, height }) => {
     const specifications = useNwbFileSpecifications()
+    useEffect(() => {
+        console.info('SPECIFICATIONS')
+        console.info(specifications)
+    }, [specifications])
     return (
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             <h3>Namespaces</h3>

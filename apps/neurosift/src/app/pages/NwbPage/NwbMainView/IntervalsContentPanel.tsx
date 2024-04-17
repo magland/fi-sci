@@ -6,6 +6,7 @@ import { useSelectedItemViews } from "../SelectedItemViewsContext"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
 import { findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { useGroup } from "./NwbMainView"
+import { useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
 type Props = {
     nwbFile: RemoteH5FileX
@@ -54,6 +55,7 @@ type GroupTableRowProps = {
 }
 
 const GroupTableRow: FunctionComponent<GroupTableRowProps> = ({nwbFile, subgroup, selected, onToggleSelect}) => {
+    const specifications = useNwbFileSpecifications()
     const group = useGroup(nwbFile, subgroup.path)
     const {openTab} = useNwbOpenTabs()
     const neurodataType = subgroup.attrs['neurodata_type']
@@ -66,7 +68,7 @@ const GroupTableRow: FunctionComponent<GroupTableRowProps> = ({nwbFile, subgroup
         if (!d) return undefined
         return d.shape[0]
     }, [group, colnames])
-    const {viewPlugins} = useMemo(() => (findViewPluginsForType(neurodataType, {nwbFile})), [neurodataType, nwbFile])
+    const {viewPlugins} = useMemo(() => (specifications ? findViewPluginsForType(neurodataType, {nwbFile}, specifications) : {viewPlugins: []}), [neurodataType, nwbFile, specifications])
     return (
         <tr>
             <td>

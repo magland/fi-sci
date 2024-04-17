@@ -1,6 +1,6 @@
 import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent } from "react"
-import { neurodataTypeInheritanceRaw } from "../neurodataSpec"
+// import { neurodataTypeInheritanceRaw } from "../neurodataSpec"
 import BehavioralEventsItemView from "./BehavioralEvents/BehavioralEventsItemView"
 import DynamicTableView from "./DynamicTable/DynamicTableView"
 import ImageSegmentationItemView from "./ImageSegmentation/ImageSegmentationItemView"
@@ -20,6 +20,8 @@ import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, 
 import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
 import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView"
 import TestVideoItemView from "./TestVideo/TestVideoItemView"
+import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
+import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
 
 type Props = {
     width: number,
@@ -285,19 +287,21 @@ viewPlugins.push({
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
+export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}, specifications: NwbFileSpecifications): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
+    const inheritanceRaw = getNeurodataTypeInheritanceRaw(specifications)
     const viewPluginsRet: ViewPlugin[] = []
     let defaultViewPlugin: ViewPlugin | undefined
     let nt: string | undefined = neurodataType
     while (nt) {
-        const plugins = viewPlugins.filter(p => (p.neurodataType === nt)).filter(p => (!p.remoteDataOnly || o.nwbFile.dataIsRemote))
+        const currentNt = nt; // Store the value of 'nt' in a temporary variable
+        const plugins = viewPlugins.filter(p => (p.neurodataType === currentNt)).filter(p => (!p.remoteDataOnly || o.nwbFile.dataIsRemote))
         viewPluginsRet.push(...plugins)
-        plugins.forEach(p => {
+        for (const p of plugins) {
             if (p.defaultForNeurodataType) {
                 if (!defaultViewPlugin) defaultViewPlugin = p
             }
-        })
-        nt = neurodataTypeInheritanceRaw[nt]
+        }
+        nt = inheritanceRaw[nt]
     }
     return {viewPlugins: viewPluginsRet, defaultViewPlugin}
 }

@@ -3,10 +3,10 @@ import { FunctionComponent, PropsWithChildren, createContext, useContext, useEff
 import { useNwbFile } from "../NwbFileContext"
 import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 
-export const SpecificationsContext = createContext<Specifications | undefined>(undefined)
+export const SpecificationsContext = createContext<NwbFileSpecifications | undefined>(undefined)
 
 export const SetupNwbFileSpecificationsProvider: FunctionComponent<PropsWithChildren> = ({ children }) => {
-    const [specifications, setSpecifications] = useState<Specifications | undefined>(undefined)
+    const [specifications, setSpecifications] = useState<NwbFileSpecifications | undefined>(undefined)
     const nwbFile = useNwbFile()
     useEffect(() => {
         let canceled = false
@@ -34,7 +34,7 @@ export const useNwbFileSpecifications = () => {
     return useContext(SpecificationsContext)
 }
 
-type Specifications = {
+export type NwbFileSpecifications = {
     subgroups: SpecificationsSubgroup[]
     allNamespaces: SpecificationsNamespace[]
     allDatasets: SpecificationsDataset[]
@@ -130,7 +130,7 @@ const compareVersions = (a: string, b: string) => {
     return 0
 }
 
-const loadSpecifications = async (nwbFile: RemoteH5FileX): Promise<Specifications> => {
+const loadSpecifications = async (nwbFile: RemoteH5FileX): Promise<NwbFileSpecifications> => {
     const subgroups: SpecificationsSubgroup[] = []
     const s = await nwbFile.getGroup('/specifications')
     if (!s) throw Error('No specifications group')
