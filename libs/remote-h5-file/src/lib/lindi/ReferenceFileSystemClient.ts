@@ -54,7 +54,7 @@ export class ReferenceFileSystemClient {
       throw Error('Failed to parse JSON for ' + path + ': ' + e);
     }
   }
-  async readBinary(path: string, o: {decodeArray?: boolean, startByte?: number, endByte?: number}): Promise<any | undefined> {
+  async readBinary(path: string, o: {decodeArray?: boolean, startByte?: number, endByte?: number, disableCache?: boolean}): Promise<any | undefined> {
     if (o.startByte !== undefined) {
       if (o.decodeArray) throw Error('Cannot decode array and read a slice at the same time');
       if (o.endByte === undefined) throw Error('If you specify startByte, you must also specify endByte');
@@ -105,7 +105,11 @@ export class ReferenceFileSystemClient {
           start += o.startByte;
           numBytes = o.endByte! - o.startByte;
         }
-        const r = await fetch(refUrl, {
+        let url0 = refUrl;
+        if (o.disableCache) {
+          url0 += `?cacheBust=${Date.now()}`;
+        }
+        const r = await fetch(url0, {
           headers: {
             Range: `bytes=${start}-${start + numBytes - 1}`
           }

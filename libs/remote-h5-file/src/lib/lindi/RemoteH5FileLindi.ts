@@ -23,6 +23,7 @@ export type ZMetaDataZArray = {
 }
 
 class RemoteH5FileLindi {
+  #cacheDisabled = false // just for benchmarking
   constructor(public url: string, private lindiFileSystemClient: ReferenceFileSystemClient, private pathsByParentPath: {[key: string]: string[]}) {
 
   }
@@ -171,7 +172,11 @@ class RemoteH5FileLindi {
     const zattrs = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
     if (zattrs && zattrs['_EXTERNAL_ARRAY_LINK']) {
       const externalArrayLink = zattrs['_EXTERNAL_ARRAY_LINK'];
-      const a = await getRemoteH5File(externalArrayLink.url, undefined);
+      let url0 = externalArrayLink.url;
+      if (this.#cacheDisabled) {
+        url0 += `?cacheBust=${Date.now()}`;
+      }
+      const a = await getRemoteH5File(url0, undefined);
       return a.getDatasetData(externalArrayLink.name, o);
     }
 
@@ -179,7 +184,8 @@ class RemoteH5FileLindi {
       client: this.lindiFileSystemClient,
       path: pathWithoutBeginningSlash,
       zarray,
-      slice: o.slice || []
+      slice: o.slice || [],
+      disableCache: this.#cacheDisabled
     })
     if (ret.length === 1) {
       // candidate for scalar, need to check for _SCALAR attribute
@@ -200,6 +206,9 @@ class RemoteH5FileLindi {
   }
   getUrls() {
     return [this.url];
+  }
+  _disableCache() {
+    this.#cacheDisabled = true;
   }
 }
 

@@ -8,6 +8,7 @@ const lindiDatasetDataLoader = async (o: {
     zarray: ZMetaDataZArray;
     slice: [number, number][];
     assertSingleChunkInFirstTwoDimensions?: boolean;
+    disableCache?: boolean;
 }) => {
     const { client, zarray, path, slice, assertSingleChunkInFirstTwoDimensions } = o;
 
@@ -32,7 +33,8 @@ const lindiDatasetDataLoader = async (o: {
             path,
             zarray,
             slice: slice1,
-            assertSingleChunkInFirstTwoDimensions
+            assertSingleChunkInFirstTwoDimensions,
+            disableCache: o.disableCache
         });
         const xxRet = allocateArrayWithDtype(sN1 * sN2 * sN3 * sNother, dtype);
         let iRet = 0;
@@ -53,7 +55,7 @@ const lindiDatasetDataLoader = async (o: {
     }
 
     const macroChunkShape = chunkShape.map((cs, i) => Math.ceil(shape[i] / cs));
-    
+
     // check if we have a single chunk with no filters or compression (single contiguous block of data)
     // It's important to handle this case specially because in this situation we don't need to download
     // the entire chunk, we can just download the slice we need.
@@ -127,7 +129,7 @@ const lindiDatasetDataLoader = async (o: {
         throw Error(`Problem slicing ${path}: i2End > shape[1]: ${i2End} > ${chunkShape2}`);
     }
 
-    
+
     const i1StartChunk = Math.floor(i1Start / chunkShape[0]);
     const i1EndChunk = Math.floor((i1End - 1) / chunkShape[0]);
     const i2StartChunk = ndims > 1 ? Math.floor(i2Start / chunkShape[1]) : 0;
@@ -144,7 +146,7 @@ const lindiDatasetDataLoader = async (o: {
             for (let d = 2; d < ndims; d++) {
                 chunkPath += '.0';
             }
-            const x = await client.readBinary(chunkPath, {decodeArray: true});
+            const x = await client.readBinary(chunkPath, {decodeArray: true, disableCache: o.disableCache});
             if (!x) {
                 console.log({
                     i1StartChunk,
@@ -194,18 +196,19 @@ const lindiDatasetDataLoader = async (o: {
 
     const ret = allocateArrayWithDtype((i1End - i1Start) * (i2End - i2Start) * prodShapeSizeOfAllButFirstTwoDimensions, dtype);
 
-    const handleChunk = async (o: {
+    const handleChunk = async (o2: {
         slice1: [number, number],
         slice2: [number, number]
     }) => {
-        const { slice1, slice2 } = o;
+        const { slice1, slice2 } = o2;
         const sliceA = [slice1, slice2];
         const xx = await lindiDatasetDataLoader({
             client,
             path,
             zarray,
             slice: sliceA,
-            assertSingleChunkInFirstTwoDimensions: true // avoid infinite recursion by accident
+            assertSingleChunkInFirstTwoDimensions: true, // avoid infinite recursion by accident
+            disableCache: o.disableCache
         });
         let iXX = 0;
         for (let ii1 = slice1[0]; ii1 < slice1[1]; ii1++) {
@@ -249,7 +252,7 @@ const lindiDatasetDataLoader = async (o: {
             else {
                 slice2 = [i2Chunk * chunkShape2, (i2Chunk + 1) * chunkShape2];
             }
-            
+
             promises.push(handleChunk({slice1, slice2}));
         }
     }

@@ -71,6 +71,7 @@ class RemoteLindiFileSliceBenchmark {
     async setup(lindi_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Setting up remote file...', lindi_url, object_name, slice)
         this.#remoteFile = await getRemoteH5FileLindi(lindi_url)
+        this.#remoteFile._disableCache()
     }
     async time_slice(lindi_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Running time_slice...', lindi_url, object_name, slice)
