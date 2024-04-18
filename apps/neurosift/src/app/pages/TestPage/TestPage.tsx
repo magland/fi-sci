@@ -49,6 +49,8 @@ class RemoteH5FileSliceBenchmark {
     async setup(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Setting up remote file...', h5_url, object_name, slice)
         this.#remoteFile = await getRemoteH5File(h5_url, undefined)
+        // read metadata during setup
+        this.#remoteFile.getDataset(object_name)
     }
     async time_slice(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Running time_slice...', h5_url, object_name, slice)
