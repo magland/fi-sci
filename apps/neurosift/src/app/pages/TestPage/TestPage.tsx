@@ -1,20 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { FunctionComponent, useEffect } from "react";
-
-import { HTTPStore, openArray, openGroup } from 'zarr';
-
-
-enum HTTPMethod {
-    HEAD = 'HEAD',
-    GET = 'GET',
-    PUT = 'PUT',
-}
-
-const fetchOptions: RequestInit = {
-    redirect: 'follow',
-    headers: {}
-};
-const supportedMethods: HTTPMethod[] = [HTTPMethod.GET, HTTPMethod.HEAD];
+import { FunctionComponent, useCallback } from "react";
+import {RemoteH5File, getRemoteH5File, RemoteH5FileLindi, getRemoteH5FileLindi} from '@fi-sci/remote-h5-file'
 
 type TestPageProps = {
     width: number
@@ -22,67 +8,78 @@ type TestPageProps = {
 }
 
 const TestPage: FunctionComponent<TestPageProps> = ({width, height}) => {
-    useEffect(() => {
-        test()
+    const handleRunTest = useCallback(() => {
+        test_h5()
     }, [])
     return (
-        <div>Test page</div>
+        <div style={{padding: 20}}>
+            <p>
+                Click one of the buttons below to run a test, and view the console for the results.
+            </p>
+            <p>
+                <button onClick={handleRunTest}>run h5 test</button>
+            </p>
+            <p>
+                <button onClick={test_lindi}>run lindi test</button>
+            </p>
+        </div>
     )
 }
 
-type ZMetaDataZAttrs = {[key: string]: any}
-
-type ZMetaDataZGroup = {
-    zarr_format: number
+const test_h5 = async () => {
+    const x = new RemoteH5FileSliceBenchmark()
+    const h5_url = 'https://api.dandiarchive.org/api/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/download/'
+    const object_name = '/acquisition/ElectricalSeriesAp/data'
+    const slice = [[0, 20]] as [number, number][]
+    await x.setup(h5_url, object_name, slice)
+    await x.time_slice(h5_url, object_name, slice)
 }
 
-type ZMetaDataZArray = {
-    chunks?: number[]
-    compressor?: any
-    dtype?: string
-    fill_value?: any
-    filters?: any[]
-    order?: 'C' | 'F'
-    shape?: number[]
-    zarr_format?: 2
+const test_lindi = async () => {
+    const x = new RemoteLindiFileSliceBenchmark()
+    const lindi_url = 'https://lindi.neurosift.org/dandi/dandisets/000409/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/zarr.json'
+    const object_name = '/acquisition/ElectricalSeriesAp/data'
+    const slice = [[0, 20]] as [number, number][]
+    await x.setup(lindi_url, object_name, slice)
+    await x.time_slice(lindi_url, object_name, slice)
 }
 
-type ZMetaDataItem = {
-    '.zattrs'?: ZMetaDataZAttrs
-    '.zgroup'?: ZMetaDataZGroup
-    '.zarray'?: ZMetaDataZArray
+class RemoteH5FileSliceBenchmark {
+    #remoteFile: RemoteH5File | undefined
+    async setup(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
+        console.info('Setting up remote file...', h5_url, object_name, slice)
+        this.#remoteFile = await getRemoteH5File(h5_url, undefined)
+    }
+    async time_slice(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
+        console.info('Running time_slice...', h5_url, object_name, slice)
+        if (this.#remoteFile === undefined) {
+            throw new Error("remote file not initialized")
+        }
+        const timer = Date.now()
+        const data = await this.#remoteFile.getDatasetData(object_name, {slice})
+        const elapsed = (Date.now() - timer) / 1000
+        console.info('data:', data)
+        console.info('elapsed:', elapsed)
+    }
 }
 
-type ZMetaData = {
-    metadata: {
-        '.zattrs'?: ZMetaDataZAttrs
-        '.zgroup'?: ZMetaDataZGroup
-    } & {[key: string]: ZMetaDataItem}
-    zarr_consolidated_format: '1'
-}
-
-async function test() {
-    console.log('test')
-    const store = new HTTPStore('http://localhost:8081/test.zarr', { fetchOptions, supportedMethods });
-    const z = await openGroup(store, 'units');
-    const aa = await z.attrs.asObject()
-    console.log(z);
-    console.log(aa);
-    const xx = await openArray({store, path: 'units/id'});
-    console.log(xx);
-    const data = await xx.get(':')
-    console.log('data', data)
-
-    const spike_times = await openArray({store, path: 'units/spike_times'});
-    console.log(spike_times);
-    const spike_times_data = await spike_times.get(':')
-    console.log('spike_times_data', spike_times_data)
-
-    const url = 'http://localhost:8081/test.zarr/.zmetadata'
-    const r = await fetch(url);
-    if (!r.ok) throw Error('Failed to fetch .zmetadata');
-    const zmetadata: ZMetaData = await r.json();
-    console.log(zmetadata);
+class RemoteLindiFileSliceBenchmark {
+    #remoteFile: RemoteH5FileLindi | undefined
+    async setup(lindi_url: string, object_name: string, slice: [number, number][] | undefined) {
+        console.info('Setting up remote file...', lindi_url, object_name, slice)
+        this.#remoteFile = await getRemoteH5FileLindi(lindi_url)
+    }
+    async time_slice(lindi_url: string, object_name: string, slice: [number, number][] | undefined) {
+        console.info('Running time_slice...', lindi_url, object_name, slice)
+        if (this.#remoteFile === undefined) {
+            throw new Error("remote file not initialized")
+        }
+        const timer = Date.now()
+        const data = await this.#remoteFile.getDatasetData(object_name, {slice})
+        const elapsed = (Date.now() - timer) / 1000
+        console.info('data:', data)
+        console.info('elapsed:', elapsed)
+    }
 }
 
 export default TestPage
