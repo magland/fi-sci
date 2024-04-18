@@ -352,7 +352,7 @@ const mergeSubgroups = (subgroups: RemoteH5Subgroup[]): RemoteH5Subgroup => {
 };
 
 const globalRemoteH5Files: { [url: string]: RemoteH5File } = {};
-export const getRemoteH5File = async (url: string, metaUrl: string | undefined) => {
+export const getRemoteH5File = async (url: string, metaUrl?: string) => {
   const kk = url + '|' + metaUrl;
   if (!globalRemoteH5Files[kk]) {
     globalRemoteH5Files[kk] = new RemoteH5File(url, metaUrl);
