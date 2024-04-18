@@ -46,9 +46,10 @@ const test_lindi = async () => {
 
 class RemoteH5FileSliceBenchmark {
     #remoteFile: RemoteH5File | undefined
+    #cacheBust = cacheBust()
     async setup(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Setting up remote file...', h5_url, object_name, slice)
-        this.#remoteFile = await getRemoteH5File(h5_url, undefined)
+        this.#remoteFile = await getRemoteH5File(h5_url + `?cb=${this.#cacheBust}`, undefined)
         // read metadata during setup
         this.#remoteFile.getDataset(object_name)
     }
@@ -82,6 +83,11 @@ class RemoteLindiFileSliceBenchmark {
         console.info('data:', data)
         console.info('elapsed:', elapsed)
     }
+}
+
+let cb = 0
+const cacheBust = () => {
+    return cb++
 }
 
 export default TestPage
