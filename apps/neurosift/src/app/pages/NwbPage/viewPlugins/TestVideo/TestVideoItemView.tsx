@@ -57,7 +57,7 @@ const TestVideoItemView: FunctionComponent<Props> = ({width, height, path}) => {
         }
     }, [videoRef])
 
-    
+
     if (!dataset) return <div>Loading...</div>
 
     return (
@@ -89,7 +89,7 @@ const getVideoUrlForDataset = async (nwbFile: RemoteH5FileX, path: string): Prom
     const pathWithoutSlashPrefix = path.startsWith('/') ? path.slice(1) : path
     const refs = nwbFile._lindiFileSystemClient._refs
     const ref = refs[pathWithoutSlashPrefix + '/0.0.0.0']
-    return ref[0]
+    return nwbFile._lindiFileSystemClient._applyTemplates(ref[0])
 }
 
 export default TestVideoItemView

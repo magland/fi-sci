@@ -7,6 +7,7 @@ export type ReferenceFileSystemObject = {
   refs: {[key: string]: (
     string | [string, number, number]
   )}
+  templates?: {[key: string]: string}
 }
 
 export class ReferenceFileSystemClient {
@@ -98,7 +99,7 @@ export class ReferenceFileSystemClient {
       }
       else if ((typeof ref === 'object') && (Array.isArray(ref))) {
         if (ref.length !== 3) throw Error(`Invalid ref for ${path}`);
-        const refUrl = ref[0];
+        const refUrl = this._applyTemplates(ref[0]);
         let start = ref[1];
         let numBytes = ref[2];
         if (o.startByte !== undefined) {
@@ -152,6 +153,17 @@ export class ReferenceFileSystemClient {
   }
   get _refs() {
     return this.obj.refs;
+  }
+  _applyTemplates(s: string): string {
+    if ((s.includes('{{') && s.includes('}}')) && (this.obj.templates)) {
+      for (const [k, v] of Object.entries(this.obj.templates)) {
+        s = s.replace('{{' + k + '}}', v);
+      }
+      return s;
+    }
+    else {
+      return s;
+    }
   }
 }
 
