@@ -1,0 +1,15 @@
+.projects-page {
+    /* padding: 20px; */
+    font-family: Arial, sans-serif;
+    max-width: 1400px;
+    margin: auto;
+}
+
+.projects-page h3 {
+    color: #333;
+}
+
+.projects-page p {
+    margin-bottom: 20px;
+    text-align: justify;
+}

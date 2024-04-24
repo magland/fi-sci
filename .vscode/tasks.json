@@ -24,6 +24,11 @@
       "label": "deploy neurosift",
       "type": "shell",
       "command": "nx build neurosift && cp apps/neurosift/devel/vercel_files/vercel.json dist/apps/neurosift/ && cp -r apps/neurosift/devel/vercel_files/.vercel dist/apps/neurosift/ && vercel --prod dist/apps/neurosift"
+    },
+    {
+      "label": "deploy dendro-arc",
+      "type": "shell",
+      "command": "nx build dendro-arc && cp apps/dendro-arc/devel/vercel_files/vercel.json dist/apps/dendro-arc/ && cp -r apps/dendro-arc/devel/vercel_files/.vercel dist/apps/dendro-arc/ && vercel --prod dist/apps/dendro-arc"
     }
   ],
   "inputs": [
