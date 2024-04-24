@@ -142,7 +142,9 @@ const DatasetDataView: FunctionComponent<DatasetDataViewProps> = ({nwbFile, path
     if ((typeof(datasetData) === 'string') && (datasetData.length > 500)) {
         return (
             <div style={{height: 100, overflowY: 'auto'}}>
-                {datasetData}
+                {
+                    renderer ? renderer(datasetData) : valueToString2(datasetData)
+                }
             </div>
         )
     }

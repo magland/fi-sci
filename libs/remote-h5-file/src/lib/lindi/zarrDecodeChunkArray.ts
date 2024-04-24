@@ -97,11 +97,11 @@ const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compress
             const ret2 = []
             for (let i = 0; i < nn; i++) {
                 const ret1 = new Uint32Array(ret, i * fixedLength * 4, fixedLength);
-                const ret0 = new Uint8Array(fixedLength);
+                const ret3 = new Array(fixedLength);
                 for (let j = 0; j < fixedLength; j++) {
-                    ret0[j] = ret1[j];
+                    ret3[j] = String.fromCodePoint(ret1[j]);
                 }
-                ret2.push(new TextDecoder().decode(ret0));
+                ret2.push(ret3.join(''));
             }
             ret = ret2;
         }
