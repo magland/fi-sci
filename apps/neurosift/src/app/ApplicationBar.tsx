@@ -1,6 +1,6 @@
 import { Key, QuestionMark } from "@mui/icons-material";
 import { AppBar, Toolbar } from "@mui/material";
-import { FunctionComponent, useCallback, useMemo, useState } from "react";
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 import useRoute from "./useRoute";
 import ApiKeysWindow from "./ApiKeysWindow/ApiKeysWindow";
 import { SmallIconButton } from "@fi-sci/misc";
@@ -47,6 +47,7 @@ const ApplicationBar: FunctionComponent<Props> = () => {
                     <img src={logoUrl} alt="logo" height={30} style={{paddingBottom: 5, cursor: 'pointer'}} onClick={onHome} />
                     <div onClick={onHome} style={{cursor: 'pointer', color: titleColor}}>&nbsp;&nbsp;&nbsp;Neurosift</div>
                     {/* <div style={{color: bannerColor, position: 'relative', top: -2}}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{star} This viewer is in alpha and is under <Hyperlink color={bannerColor} href="https://github.com/flatironinstitute/neurosift" target="_blank">active development</Hyperlink> {star}</div> */}
+                    <ReportDandiApiDown />
                     <span style={{marginLeft: 'auto'}} />
                     <span>
                         <SmallIconButton
@@ -111,6 +112,28 @@ export const useModalDialog = () => {
         handleOpen,
         handleClose
     }), [visible, handleOpen, handleClose])
+}
+
+const ReportDandiApiDown: FunctionComponent = () => {
+    const testUrl = 'https://api.dandiarchive.org/api/dandisets/?page_size=1'
+    const [down, setDown] = useState<boolean>(false)
+    useEffect(() => {
+        fetch(testUrl)
+            .then(response => {
+                if (!response.ok) {
+                    setDown(true)
+                }
+            })
+            .catch(() => {
+                setDown(true)
+            })
+    }, [])
+    if (!down) return <span />
+    return (
+        <span style={{color: '#fee', marginLeft: 10}}>
+            * DANDI API appears to be down. Some features may not work. *
+        </span>
+    )
 }
 
 export default ApplicationBar
