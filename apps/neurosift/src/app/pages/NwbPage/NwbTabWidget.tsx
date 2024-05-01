@@ -74,6 +74,7 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
         }
         else return {viewPlugin: undefined, itemPath: undefined, additionalItemPaths: undefined}
     }, [tabName, nwbFile, specifications])
+    if (!specifications) return <div>Loading NWB file specifications...</div>
     return (
         <SetupTimeseriesSelection initialTimeSelection={initialTimeSelection}>
             <UnitSelectionContext.Provider value={{unitSelection, unitSelectionDispatch}}>

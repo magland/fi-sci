@@ -61,7 +61,7 @@ class TimeseriesDatasetChunkingClient {
             channelSlice = this.o.visibleChannelsRange
         }
         const N1 = channelSlice[1] - channelSlice[0]
-        if (shape.length > 2) throw Error('TimeseriesDatasetChunkingClient not implemented implemented for shape.length > 2')
+        if (shape.length > 2) throw Error('TimeseriesDatasetChunkingClient not implemented for shape.length > 2')
         const slice: [number, number][] = shape.length === 1 ? [[i1, i2]] : [[i1, i2], channelSlice]
         const data = await this.nwbFile.getDatasetData(this.dataset.path, {slice, canceler})
         if (!data) throw Error(`Unable to get dataset data: ${this.dataset.path}`)
