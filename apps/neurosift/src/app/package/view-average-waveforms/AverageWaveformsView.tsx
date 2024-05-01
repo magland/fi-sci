@@ -476,8 +476,8 @@ type AverageWaveformsViewPrefs = {
                 onChange={(e) => setPrefs({ ...prefs, waveformsMode: e.target.checked ? 'geom' : 'vertical' })}
             />
             Show electrode geometry
-        </div>
-      </div> */}
+        </div> */}
+      </div>
     );
   };
 

@@ -158,7 +158,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                     continue
                 }
                 // See https://github.com/dandi/helpdesk/discussions/131 - that's why we squeeze
-                const squeezedShape = ds0?.shape.filter((s: number) => s > 1)
+                const squeezedShape = ds0 ? (ds0.shape.length > 1 ? ds0.shape.filter((s: number) => s > 1) : ds0.shape) : []
                 if (squeezedShape.length !== 1) {
                     console.warn(`In DynamicTableView, unexpected shape for ${path}/${colname}`, ds0.shape)
                     continue
