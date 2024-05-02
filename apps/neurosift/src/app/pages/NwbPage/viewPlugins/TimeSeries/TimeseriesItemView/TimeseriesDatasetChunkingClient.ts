@@ -78,7 +78,7 @@ class TimeseriesDatasetChunkingClient {
         for (let i = 0; i < N1; i ++) {
             const x: number[] = []
             for (let j = 0; j < i2 - i1; j ++) {
-                x.push(data[i + j * N1] * conversion + offset)
+                x.push((data as any)[i + j * N1] * conversion + offset)
             }
             chunk.push(x)
         }
