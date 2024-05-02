@@ -334,8 +334,8 @@ viewPlugins.push({
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}, specifications: NwbFileSpecifications): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
-    const inheritanceRaw = getNeurodataTypeInheritanceRaw(specifications)
+export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}, specifications?: NwbFileSpecifications): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
+    const inheritanceRaw = specifications ? getNeurodataTypeInheritanceRaw(specifications) : undefined
     const viewPluginsRet: ViewPlugin[] = []
     let defaultViewPlugin: ViewPlugin | undefined
     let nt: string | undefined = neurodataType
@@ -348,7 +348,7 @@ export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: Remot
                 if (!defaultViewPlugin) defaultViewPlugin = p
             }
         }
-        nt = inheritanceRaw[nt]
+        nt = inheritanceRaw ? inheritanceRaw[nt] : undefined
     }
     return {viewPlugins: viewPluginsRet, defaultViewPlugin}
 }
