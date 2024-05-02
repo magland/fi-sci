@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Canceler, RemoteH5Dataset, RemoteH5FileX } from "@fi-sci/remote-h5-file";
 
 class TimeseriesDatasetChunkingClient {
@@ -63,8 +64,16 @@ class TimeseriesDatasetChunkingClient {
         const N1 = channelSlice[1] - channelSlice[0]
         if (shape.length > 2) throw Error('TimeseriesDatasetChunkingClient not implemented for shape.length > 2')
         const slice: [number, number][] = shape.length === 1 ? [[i1, i2]] : [[i1, i2], channelSlice]
-        const data = await this.nwbFile.getDatasetData(this.dataset.path, {slice, canceler})
+        let data = await this.nwbFile.getDatasetData(this.dataset.path, {slice, canceler})
         if (!data) throw Error(`Unable to get dataset data: ${this.dataset.path}`)
+        // data might be BigIntArray - in that case we need to convert it to a regular array
+        if (data instanceof BigInt64Array || data instanceof BigUint64Array) {
+            const data2: number[] = []
+            for (let i = 0; i < (data as any).length; i ++) {
+                data2.push(Number(data[i]))
+            }
+            data = data2 as any
+        }
         const chunk: number[][] = []
         for (let i = 0; i < N1; i ++) {
             const x: number[] = []
