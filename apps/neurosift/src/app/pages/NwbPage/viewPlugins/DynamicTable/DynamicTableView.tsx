@@ -163,13 +163,27 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                     console.warn(`In DynamicTableView, unexpected shape for ${path}/${colname}`, ds0.shape)
                     continue
                 }
-                const d = await nwbFile.getDatasetData(path + '/' + colname, {})
+                let d = await nwbFile.getDatasetData(path + '/' + colname, {})
                 if (canceled) return
                 if (!d) {
                     console.warn(`In DynamicTableView, dataset data not found: ${path}/${colname}`)
                     continue
                 }
-                dataDispatch({type: 'set', key: colname, data: Array.from(d)})
+                /* handle special case where dtype is unknown and we have the wrong number of elements */
+                if (ds0.shape.length === 1) {
+                    if (ds0.shape[0] !== d.length) {
+                        const factor = d.length / ds0.shape[0]
+                        // check if factor is a perfect integer
+                        if (factor === Math.floor(factor)) {
+                            const d2 = []
+                            for (let i = 0; i < ds0.shape[0]; i++) {
+                                d2.push(d.slice(i * factor, (i + 1) * factor))
+                            }
+                            d = d2 as any
+                        }
+                    }
+                }
+                dataDispatch({type: 'set', key: colname, data: Array.from(d as any)})
             }
             setLoading(false)
         }
@@ -248,6 +262,8 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         })
         return ret
     }, [validColumnNames, rowItems, columnSortState])
+
+    console.log('---- data', data)
 
     const [columnDescriptions, columnDescriptionDispatch] = useReducer(columnDescriptionReducer, {})
     useEffect(() => {
