@@ -263,8 +263,6 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         return ret
     }, [validColumnNames, rowItems, columnSortState])
 
-    console.log('---- data', data)
-
     const [columnDescriptions, columnDescriptionDispatch] = useReducer(columnDescriptionReducer, {})
     useEffect(() => {
         if (!group) return
