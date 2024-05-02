@@ -12,6 +12,9 @@ type NwbOpenTabsState = {
             t2?: number
         }
     }
+    initialStateStrings?: {
+        [tabName: string]: string
+    }
 }
 
 type NwbOpenTabsAction = {
@@ -20,6 +23,7 @@ type NwbOpenTabsAction = {
     t1?: number
     t2?: number
     t0?: number
+    stateString?: string
 } | {
     type: 'closeTab'
     tabName: string
@@ -30,7 +34,7 @@ type NwbOpenTabsAction = {
     tabName: string
 }
 
-const nwbOpenTabsReducer = (state: NwbOpenTabsState, action: NwbOpenTabsAction) => {
+const nwbOpenTabsReducer = (state: NwbOpenTabsState, action: NwbOpenTabsAction): NwbOpenTabsState => {
     switch (action.type) {
         case 'openTab':
             if (state.openTabs.find(x => x.tabName === action.tabName)) {
@@ -50,7 +54,11 @@ const nwbOpenTabsReducer = (state: NwbOpenTabsState, action: NwbOpenTabsAction) 
                         t2: action.t2,
                         t0: action.t0
                     }
-                }
+                },
+                initialStateStrings: action.stateString ? {
+                    ...state.initialStateStrings,
+                    [action.tabName]: action.stateString
+                } : state.initialStateStrings
             }
         case 'closeTab':
             if (!state.openTabs.find(x => x.tabName === action.tabName)) {
@@ -90,6 +98,9 @@ type NwbOpenTabsContextType = {
             t2?: number
         }
     }
+    initialStateStrings?: {
+        [tabName: string]: string
+    }
     openTab: (tabName: string) => void
     closeTab: (tabName: string) => void
     closeAllTabs: () => void
@@ -100,6 +111,7 @@ const NwbOpenTabsContext = React.createContext<NwbOpenTabsContextType>({
     openTabs: [],
     currentTabName: undefined,
     initialTimeSelections: {},
+    initialStateStrings: {},
     openTab: () => {},
     closeTab: () => {},
     closeAllTabs: () => {},
@@ -118,7 +130,8 @@ const test1Mode = queryParams.get('test1') === '1'
 const defaultNwbOpenTabsState: NwbOpenTabsState = {
     openTabs: test1Mode ? [{tabName: 'main'}, {tabName: `timeseries-alignment`}] : [{tabName: 'main'}],
     currentTabName: test1Mode ? 'timeseries-alignment' : 'main',
-    initialTimeSelections: {}
+    initialTimeSelections: {},
+    initialStateStrings: {}
 }
 
 const urlQueryParams = new URLSearchParams(window.location.search)
@@ -130,6 +143,7 @@ export const SetupNwbOpenTabs: FunctionComponent<PropsWithChildren<Props>> = ({c
         openTabs: openTabs.openTabs,
         currentTabName: openTabs.currentTabName,
         initialTimeSelections: openTabs.initialTimeSelections,
+        initialStateStrings: openTabs.initialStateStrings,
         openTab: (tabName: string) => openTabsDispatch({type: 'openTab', tabName}),
         closeTab: (tabName: string) => openTabsDispatch({type: 'closeTab', tabName}),
         closeAllTabs: () => openTabsDispatch({type: 'closeAllTabs'}),
@@ -151,7 +165,8 @@ export const SetupNwbOpenTabs: FunctionComponent<PropsWithChildren<Props>> = ({c
                     t0 = a[2] === 'undefined' ? undefined : Number(a[2])
                 }
             }
-            openTabsDispatch({type: 'openTab', tabName: tab, t1, t2, t0})
+            const tabStateString = urlQueryParams.get('tab-state') || undefined
+            openTabsDispatch({type: 'openTab', tabName: tab, t1, t2, t0, stateString: tabStateString})
         }
     }, [])
 

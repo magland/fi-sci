@@ -13,7 +13,7 @@ import viewPlugins, { findViewPluginsForType } from "./viewPlugins/viewPlugins";
 import { useNwbFileSpecifications } from "./SpecificationsView/SetupNwbFileSpecificationsProvider";
 
 const NwbTabWidget: FunctionComponent<{width: number, height: number, usingLindi: boolean}> = ({width, height, usingLindi}) => {
-    const {openTabs, currentTabName, setCurrentTab, closeTab, initialTimeSelections} = useNwbOpenTabs()
+    const {openTabs, currentTabName, setCurrentTab, closeTab, initialTimeSelections, initialStateStrings} = useNwbOpenTabs()
     return (
         <TabWidget
             width={width}
@@ -32,7 +32,7 @@ const NwbTabWidget: FunctionComponent<{width: number, height: number, usingLindi
             onCloseTab={fileName => closeTab(fileName)}
         >
             {openTabs.map(({tabName}) => (
-                <TabChild key={tabName} tabName={tabName} usingLindi={usingLindi} initialTimeSelection={initialTimeSelections[tabName]} width={0} height={0} />
+                <TabChild key={tabName} tabName={tabName} usingLindi={usingLindi} initialTimeSelection={initialTimeSelections[tabName]} initialStateString={(initialStateStrings || {})[tabName]} width={0} height={0} />
             ))}
         </TabWidget>
     )
@@ -43,11 +43,12 @@ type TabChildProps = {
     width: number
     height: number
     initialTimeSelection?: {t1?: number, t2?: number, t0?: number}
+    initialStateString?: string
     condensed?: boolean
     usingLindi: boolean
 }
 
-const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, usingLindi}) => {
+const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, initialStateString, usingLindi}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
     const specifications = useNwbFileSpecifications()
@@ -92,6 +93,7 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
                                 additionalItemPaths={additionalItemPaths}
                                 condensed={condensed}
                                 tabName={tabName}
+                                initialStateString={initialStateString}
                             />
                         ) : <div>View plugin not found: {tabName}</div>
                     ) : tabName.startsWith('neurodata-items:') ? (

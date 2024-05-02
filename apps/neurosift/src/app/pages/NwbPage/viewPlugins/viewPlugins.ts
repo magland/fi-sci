@@ -29,6 +29,8 @@ type Props = {
     path: string
     additionalPaths?: string[]
     condensed?: boolean
+    initialStateString?: string
+    setStateString?: (stateString: string) => void
 }
 
 export type ViewPlugin = {
@@ -40,6 +42,7 @@ export type ViewPlugin = {
     remoteDataOnly?: boolean
     checkEnabled?: (nwbFile: RemoteH5FileX, path: string) => Promise<boolean>
     isTimeView?: boolean
+    usesState?: boolean
     getCustomPythonCode?: (group: RemoteH5Group) => string
     testLinks?: string[]
 }
@@ -160,6 +163,7 @@ viewPlugins.push({
         return rootGroup.subgroups.find(sg => (sg.name === 'units')) ? true : false
     },
     isTimeView: false,
+    usesState: true,
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=000409&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/download/&tab=view:PSTH|/intervals/trials'
     ]

@@ -1,5 +1,5 @@
 import { Splitter } from "@fi-sci/splitter"
-import { FunctionComponent } from "react"
+import { FunctionComponent, useEffect, useState } from "react"
 import { useNwbFile } from "../NwbFileContext"
 import { useGroup } from "../NwbMainView/NwbMainView"
 import { ViewPlugin } from "../viewPlugins/viewPlugins"
@@ -13,12 +13,15 @@ type Props = {
     additionalItemPaths?: string[]
     condensed?: boolean
     tabName?: string
+    initialStateString?: string
 }
 
-const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, itemPath, additionalItemPaths, condensed, tabName}) => {
+const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, itemPath, additionalItemPaths, initialStateString, condensed, tabName}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const group = useGroup(nwbFile, itemPath)
+
+    const [stateString, setStateString] = useState<string | undefined>(undefined)
 
     const content = (
         <viewPlugin.component
@@ -27,6 +30,8 @@ const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, it
             path={itemPath}
             additionalPaths={additionalItemPaths}
             condensed={condensed}
+            initialStateString={viewPlugin.usesState ? initialStateString : undefined}
+            setStateString={viewPlugin.usesState ? setStateString : undefined}
         />
     )
 
@@ -48,6 +53,7 @@ const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, it
                 viewName={viewPlugin.name}
                 tabName={tabName}
                 viewPlugin={viewPlugin}
+                stateString={stateString}
             />
             {content}
         </Splitter>

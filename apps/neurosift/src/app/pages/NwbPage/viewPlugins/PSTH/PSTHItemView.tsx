@@ -1,4 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
+import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
+import { Button } from "@mui/material"
+import pako from 'pako'
 import { FunctionComponent, useCallback, useEffect, useMemo, useReducer, useState } from "react"
 import { UnitSelectionContext, defaultUnitSelection, sortIds, unitSelectionReducer } from "../../../../package/context-unit-selection"
 import { useSelectedUnitIds } from "../../../../package/context-unit-selection/UnitSelectionContext"
@@ -7,9 +11,6 @@ import { useGroup } from "../../NwbMainView/NwbMainView"
 import { DirectSpikeTrainsClient } from "../Units/DirectRasterPlotUnitsItemView"
 import IfHasBeenVisible from "./IfHasBeenVisible"
 import PSTHUnitWidget from "./PSTHUnitWidget"
-import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
-import { Button } from "@mui/material"
-import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 
 type Props = {
     width: number
@@ -17,13 +18,15 @@ type Props = {
     path: string
     additionalPaths?: string[]
     condensed?: boolean
+    initialStateString?: string
+    setStateString?: (x: string) => void
 }
 
-const PSTHItemView: FunctionComponent<Props> = ({width, height, path, additionalPaths}) => {
+const PSTHItemView: FunctionComponent<Props> = ({width, height, path, additionalPaths, initialStateString, setStateString}) => {
     const [unitSelection, unitSelectionDispatch] = useReducer(unitSelectionReducer, defaultUnitSelection)
     return (
         <UnitSelectionContext.Provider value={{unitSelection, unitSelectionDispatch}}>
-            <PSTHItemViewChild width={width} height={height} path={path} additionalPaths={additionalPaths} />
+            <PSTHItemViewChild width={width} height={height} path={path} additionalPaths={additionalPaths} initialStateString={initialStateString} setStateString={setStateString} />
         </UnitSelectionContext.Provider>
     )
 }
@@ -64,7 +67,7 @@ export const defaultPSTHPrefs: PSTHPrefs = {
     numBins: 30
 }
 
-const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, additionalPaths}) => {
+const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, additionalPaths, initialStateString, setStateString}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: no nwbFile')
 
@@ -143,6 +146,52 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
     const {handleOpen: openAdvancedOpts, handleClose: closeAdvancedOpts, visible: advancedOptsVisible} = useModalWindow()
 
     const [prefs, prefsDispatch] = useReducer(psthPrefsReducer, defaultPSTHPrefs)
+
+    useEffect(() => {
+        if (!initialStateString) return
+        const a = decodeStateFromStateString(initialStateString)
+        if (!a) return
+        if (a.selectedUnitIds) {
+            const sortedSelectedUnitIds = [...a.selectedUnitIds].sort()
+            setSelectedUnitIds(sortedSelectedUnitIds)
+        }
+        if (a.alignToVariables) {
+            setAlignToVariables(a.alignToVariables)
+        }
+        if (a.groupByVariable) {
+            setGroupByVariable(a.groupByVariable)
+        }
+        if (a.groupByVariableCategories) {
+            setGroupByVariableCategories(a.groupByVariableCategories)
+        }
+        if (a.sortUnitsByVariable) {
+            setSortUnitsByVariable(a.sortUnitsByVariable)
+        }
+        if (a.windowRangeStr) {
+            setWindowRangeStr(a.windowRangeStr)
+        }
+        if (a.prefs) {
+            prefsDispatch({type: 'SET_PREF', key: 'showRaster', value: a.prefs.showRaster})
+            prefsDispatch({type: 'SET_PREF', key: 'showHist', value: a.prefs.showHist})
+            prefsDispatch({type: 'SET_PREF', key: 'smoothedHist', value: a.prefs.smoothedHist})
+            prefsDispatch({type: 'SET_PREF', key: 'height', value: a.prefs.height})
+            prefsDispatch({type: 'SET_PREF', key: 'numBins', value: a.prefs.numBins})
+        }
+    }, [initialStateString, setSelectedUnitIds, setAlignToVariables, setGroupByVariable, setGroupByVariableCategories, setSortUnitsByVariable, setWindowRangeStr, prefsDispatch])
+
+    useEffect(() => {
+        if (!setStateString) return
+        const state0 = {
+            selectedUnitIds,
+            alignToVariables,
+            groupByVariable,
+            groupByVariableCategories,
+            sortUnitsByVariable,
+            windowRangeStr,
+            prefs
+        }
+        setStateString(encodeStateToString(state0))
+    }, [selectedUnitIds, setStateString, alignToVariables, groupByVariable, groupByVariableCategories, sortUnitsByVariable, windowRangeStr, prefs])
 
     const unitsTable = (
         <UnitSelectionComponent
@@ -651,5 +700,48 @@ const useSortUnitsByValues = (nwbFile: RemoteH5FileX, unitsPath: string, sortUni
     }, [nwbFile, unitsPath, sortUnitsByVariable])
     return sortUnitsByValues
 }
+
+const encodeStateToString = (state: {[key: string]: any}): string => {
+    // json stringify, gzip, base64, url encode
+    const json = JSON.stringify(state)
+    const jsonGzip = pako.gzip(json)
+    const base64 = encodeUint8ArrayToBase64(jsonGzip)
+    const base64UrlEncoded = encodeURIComponent(base64)
+    return base64UrlEncoded
+}
+
+const decodeStateFromStateString = (stateString: string): {[key: string]: any} | undefined => {
+    // base64, gunzip, json parse
+    try {
+        let base64UrlEncoded = decodeURIComponent(stateString)
+        // replace space by + because the browser may have replaced + by space
+        base64UrlEncoded = base64UrlEncoded.replace(/ /g, '+')
+        const jsonGzip = decodeBase64ToArrayBuffer(base64UrlEncoded)
+        const json = pako.ungzip(jsonGzip, {to: 'string'})
+        return JSON.parse(json) as {[key: string]: any}
+    }
+    catch (err: any) {
+        console.error(`Error decoding state string: ${err.message}`)
+        return undefined
+    }
+}
+
+const encodeUint8ArrayToBase64 = (array: Uint8Array): string => {
+    let binary = '';
+    const length = array.byteLength;
+    for (let i = 0; i < length; i++) {
+        binary += String.fromCharCode(array[i]);
+    }
+    return btoa(binary);
+};
+
+const decodeBase64ToArrayBuffer = (base64: string): Uint8Array => {
+    const binary_string = window.atob(base64);
+    const bytes = new Uint8Array(binary_string.length);
+    for (let i = 0; i < binary_string.length; i++) {
+        bytes[i] = binary_string.charCodeAt(i);
+    }
+    return bytes;
+};
 
 export default PSTHItemView

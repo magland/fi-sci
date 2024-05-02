@@ -15,9 +15,10 @@ type Props = {
     viewName: string
     tabName?: string
     viewPlugin: ViewPlugin
+    stateString?: string
 }
 
-const NeurodataItemViewLeftPanel: FunctionComponent<Props> = ({width, height, path, additionalPaths, group, viewName, tabName, viewPlugin}) => {
+const NeurodataItemViewLeftPanel: FunctionComponent<Props> = ({width, height, path, additionalPaths, group, viewName, tabName, viewPlugin, stateString}) => {
     return (
         <div>
             <table className="nwb-table">
@@ -48,7 +49,7 @@ const NeurodataItemViewLeftPanel: FunctionComponent<Props> = ({width, height, pa
                 viewPlugin.isTimeView && <TimeseriesSelectionWidget />
             }
             <hr />
-            <ShareTabComponent tabName={tabName} />
+            <ShareTabComponent tabName={tabName} stateString={stateString} />
             <hr />
             {group && <LoadInPythonComponent path={path} group={group} viewName={viewName} />}
             <hr />

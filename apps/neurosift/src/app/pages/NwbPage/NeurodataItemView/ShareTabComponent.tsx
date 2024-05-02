@@ -4,34 +4,45 @@ import { Hyperlink } from "@fi-sci/misc"
 
 type Props = {
     tabName?: string
+    stateString?: string
 }
 
-const ShareTabComponent: FunctionComponent<Props> = ({tabName}) => {
+const ShareTabComponent: FunctionComponent<Props> = ({tabName, stateString}) => {
     const [clicked, setClicked] = useState(false)
     const [includeTimeSelection, setIncludeTimeSelection] = useState(false)
+    const [includeState, setIncludeState] = useState(false)
     const {visibleStartTimeSec, visibleEndTimeSec} = useTimeRange()
     const {currentTime} = useTimeseriesSelection()
-    
+
     const url = useMemo(() => {
         if (!tabName) return null
         let url = window.location.href
-        // remove tab and tab-time query parameters from url
+        // remove tab and tab-time and tab-state query parameters from url
         url = url.replace(/&tab=[^&]*/g, '')
         url = url.replace(/&tab-time=[^&]*/g, '')
+        url = url.replace(/&tab-state=[^&]*/g, '')
         url += `&tab=${tabName}`
         if (includeTimeSelection) {
             url += `&tab-time=${visibleStartTimeSec},${visibleEndTimeSec},${currentTime}`
         }
+        if (includeState) {
+            url += `&tab-state=${stateString}`
+        }
         return url
-    }, [tabName, includeTimeSelection, visibleStartTimeSec, visibleEndTimeSec, currentTime])
-    
+    }, [tabName, includeTimeSelection, visibleStartTimeSec, visibleEndTimeSec, currentTime, stateString, includeState])
+
     if (!tabName) return <div />
-    
+
     if ((clicked) && (url)) {
         return (
             <div>
                 <CopyableText text={url} />
                 <Checkbox value={includeTimeSelection} setValue={setIncludeTimeSelection} label="Include time selection" />
+                {
+                    stateString && (
+                        <Checkbox value={includeState} setValue={setIncludeState} label="Include state" />
+                    )
+                }
             </div>
         )
     }
