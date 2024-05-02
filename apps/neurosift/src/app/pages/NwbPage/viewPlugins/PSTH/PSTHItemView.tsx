@@ -151,7 +151,10 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
         if (!initialStateString) return
         const a = decodeStateFromStateString(initialStateString)
         if (!a) return
-        if (a.selectedUnitIds) {
+        if (a.complementOfSelectedUnitIds) {
+            setSelectedUnitIds(sortedUnitIds.filter(unitId => (!a.complementOfSelectedUnitIds.includes(unitId))))
+        }
+        else if (a.selectedUnitIds) {
             const sortedSelectedUnitIds = [...a.selectedUnitIds].sort()
             setSelectedUnitIds(sortedSelectedUnitIds)
         }
@@ -177,11 +180,11 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
             prefsDispatch({type: 'SET_PREF', key: 'height', value: a.prefs.height})
             prefsDispatch({type: 'SET_PREF', key: 'numBins', value: a.prefs.numBins})
         }
-    }, [initialStateString, setSelectedUnitIds, setAlignToVariables, setGroupByVariable, setGroupByVariableCategories, setSortUnitsByVariable, setWindowRangeStr, prefsDispatch])
+    }, [initialStateString, sortedUnitIds, setSelectedUnitIds, setAlignToVariables, setGroupByVariable, setGroupByVariableCategories, setSortUnitsByVariable, setWindowRangeStr, prefsDispatch])
 
     useEffect(() => {
         if (!setStateString) return
-        const state0 = {
+        const state0: {[key: string]: any} = {
             selectedUnitIds,
             alignToVariables,
             groupByVariable,
@@ -190,8 +193,12 @@ const PSTHItemViewChild: FunctionComponent<Props> = ({width, height, path, addit
             windowRangeStr,
             prefs
         }
+        if (selectedUnitIds.length > sortedUnitIds.length / 2) {
+            state0.complementOfSelectedUnitIds = sortedUnitIds.filter(unitId => (!selectedUnitIds.includes(unitId)))
+            delete state0.selectedUnitIds
+        }
         setStateString(encodeStateToString(state0))
-    }, [selectedUnitIds, setStateString, alignToVariables, groupByVariable, groupByVariableCategories, sortUnitsByVariable, windowRangeStr, prefs])
+    }, [selectedUnitIds, sortedUnitIds, setStateString, alignToVariables, groupByVariable, groupByVariableCategories, sortUnitsByVariable, windowRangeStr, prefs])
 
     const unitsTable = (
         <UnitSelectionComponent

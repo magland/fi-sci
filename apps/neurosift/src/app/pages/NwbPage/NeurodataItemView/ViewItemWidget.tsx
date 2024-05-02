@@ -1,5 +1,5 @@
 import { Splitter } from "@fi-sci/splitter"
-import { FunctionComponent, useEffect, useState } from "react"
+import { FunctionComponent, useState } from "react"
 import { useNwbFile } from "../NwbFileContext"
 import { useGroup } from "../NwbMainView/NwbMainView"
 import { ViewPlugin } from "../viewPlugins/viewPlugins"
