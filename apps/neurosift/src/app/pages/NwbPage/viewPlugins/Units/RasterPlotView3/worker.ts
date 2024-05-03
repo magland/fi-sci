@@ -3,7 +3,7 @@ import { Opts, PlotData } from "./WorkerTypes";
 let canvas: HTMLCanvasElement | undefined = undefined
 let opts: Opts | undefined = undefined
 let plotData: PlotData | undefined = undefined
-// let plotDataFiltered: PlotData | undefined = undefined 
+// let plotDataFiltered: PlotData | undefined = undefined
 
 onmessage = function (evt) {
     if (evt.data.canvas !== undefined) {
@@ -89,7 +89,7 @@ async function draw() {
     const tToX = (t: number) => (
         margins.left + (t - visibleStartTimeSec) / (visibleEndTimeSec - visibleStartTimeSec) * (canvasWidth - margins.left - margins.right)
     )
-    
+
     const pixelPlots: PixelPlot[] = plotData.plots.map((plot, i) => {
         return {
             y: unitIndexToY(i),
@@ -101,7 +101,7 @@ async function draw() {
         }
     })
     paintPanel(canvasContext, pixelPlots)
-    
+
     // // the wait time is equal to the render time
     // const elapsed = Date.now() - timer
     // await sleepMsec(elapsed)
@@ -180,7 +180,7 @@ const paintPanel = (context: CanvasRenderingContext2D, pixelPlots: PixelPlot[]) 
     }
 
     pixelPlots.forEach(pPlot => {
-        context.strokeStyle = pPlot.color
+        context.strokeStyle = pPlot.color || 'black'
         context.lineWidth = Math.max(3, Math.min(20, pixelsPerUnit / 2))
         context.beginPath()
         pPlot.x.forEach(x => {
