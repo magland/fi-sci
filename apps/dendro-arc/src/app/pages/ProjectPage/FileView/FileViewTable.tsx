@@ -1,8 +1,9 @@
-import { Hyperlink, SmallIconButton } from "@fi-sci/misc";
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
-import { useProject } from "../ProjectPageContext";
-import { DendroJob } from "../../../types/dendro-types";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { SmallIconButton } from "@fi-sci/misc";
 import { Download } from "@mui/icons-material";
+import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
+import { DendroJob } from "../../../types/dendro-types";
+import { useProject } from "../ProjectPageContext";
 
 
 type FileViewTableProps = {
@@ -14,7 +15,7 @@ type FileViewTableProps = {
 }
 
 const FileViewTable: FunctionComponent<FileViewTableProps> = ({fileName, additionalRows}) => {
-    const {files, jobs, openTab} = useProject()
+    const {files} = useProject()
     const theFile = useMemo(() => {
         if (!files) return undefined
         return files.find(f => (f.fileName === fileName))
@@ -22,15 +23,6 @@ const FileViewTable: FunctionComponent<FileViewTableProps> = ({fileName, additio
 
     const cc = theFile?.content || ''
     const theUrl = cc.startsWith('url:') ? cc.slice('url:'.length) : cc
-
-    const jobProducingThisFile = useMemo(() => {
-        if (!jobs) return undefined
-        if (!theFile) return undefined
-        if (!theFile.jobId) return undefined
-        const job = jobs.find(j => (j.jobId === theFile.jobId))
-        if (!job) return
-        return job
-    }, [jobs, theFile])
 
     return (
         <table className="table1">
@@ -53,24 +45,6 @@ const FileViewTable: FunctionComponent<FileViewTableProps> = ({fileName, additio
                     <td>{theFile?.size || ''}</td>
                 </tr>
                 {
-                    jobProducingThisFile && (
-                        <>
-                            <tr>
-                                <td>Job status:</td>
-                                <td>
-                                    <Hyperlink onClick={() => {openTab(`job:${jobProducingThisFile.jobId}`)}}>
-                                        {jobProducingThisFile.status}
-                                    </Hyperlink>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Elapsed time (sec):</td>
-                                <td><ElapsedTimeComponent job={jobProducingThisFile} /></td>
-                            </tr>
-                        </>
-                    )
-                }
-                {
                     additionalRows.map(row => (
                         <tr key={row.label}>
                             <td>{row.label}</td>
@@ -91,7 +65,7 @@ type ElapsedTimeComponentProps = {
 
 export const ElapsedTimeComponent: FunctionComponent<ElapsedTimeComponentProps> = ({job}) => {
     // if job.status is 'running', then we want to refresh ever 30 seconds
-    const [refreshCode, setRefreshCode] = useState(0)
+    const [, setRefreshCode] = useState(0)
     const refreshInterval = 30000
     useEffect(() => {
         let canceled = false

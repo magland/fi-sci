@@ -10,7 +10,7 @@ export type Route = {
 } | {
     page: 'project'
     projectId: string
-    tab: 'project-home' | 'project-files'
+    tab: 'project-home' | 'project-files' | 'import-files'
 } | {
     page: 'dendro-arc-login'
     accessToken: string
@@ -44,7 +44,7 @@ const useRoute = () => {
                 return {
                     page: 'project',
                     projectId: query.projectId,
-                    tab: (query.tab || 'project-home') as 'project-home' | 'project-files'
+                    tab: (query.tab || 'project-home') as 'project-home' | 'project-files' | 'import-files'
                 }
             }
             else {

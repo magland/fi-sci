@@ -7,6 +7,7 @@ import ProjectFiles from "./ProjectFiles";
 import ProjectHome from "./ProjectHome";
 import { SetupProjectPage, useProject } from "./ProjectPageContext";
 import openFilesInNeurosift from "./openFilesInNeurosift";
+import ProjectImportFiles from "./ProjectImportFiles";
 
 type Props = {
     width: number
@@ -30,7 +31,7 @@ const ProjectPage: FunctionComponent<Props> = ({width, height}) => {
     )
 }
 
-export type ProjectPageViewType = 'project-home' | 'project-files'
+export type ProjectPageViewType = 'project-home' | 'project-files' | 'import-files'
 
 type ProjectPageView = {
     type: ProjectPageViewType
@@ -44,7 +45,11 @@ const projectPageViews: ProjectPageView[] = [
     },
     {
         type: 'project-files',
-        label: 'Files'
+        label: 'View files'
+    },
+    {
+        type: 'import-files',
+        label: 'Import files'
     }
 ]
 
@@ -163,6 +168,16 @@ const MainPanel: FunctionComponent<MainPanelProps> = ({width, height}) => {
                             width={width}
                             height={height}
                             onOpenInNeurosift={handleOpenInNeurosift}
+                        />
+                    )
+                }
+            </div>
+            <div style={{position: 'absolute', width, height, visibility: currentView === 'import-files' ? undefined : 'hidden'}}>
+                {
+                    viewsThatHaveBeenVisible.includes('import-files') && (
+                        <ProjectImportFiles
+                            width={width}
+                            height={height}
                         />
                     )
                 }
