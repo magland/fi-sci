@@ -37,8 +37,8 @@ const SearchResults: FunctionComponent<SearchResultsProps> = ({width, height, se
     //     await onImportItems(items)
     // }, [selectedDandisetItem, onImportItems])
 
-    const setSelectedDandisetItem = useCallback((item: DandisetSearchResultItem) => {
-        setRoute({page: 'dandiset', dandisetId: item.identifier, staging: (route as any)['staging'] || false})
+    const setSelectedDandisetItem = useCallback((dandisetId: string, dandisetVersion: string) => {
+        setRoute({page: 'dandiset', dandisetId, dandisetVersion, staging: (route as any)['staging'] || false})
     }, [setRoute, route])
 
     return (
@@ -68,7 +68,7 @@ const SearchResults: FunctionComponent<SearchResultsProps> = ({width, height, se
     )
 }
 
-const SearchResultsLeft: FunctionComponent<SearchResultsProps & {setSelectedItem: (item: DandisetSearchResultItem) => void}> = ({width, height, searchResults, setSelectedItem}) => {
+const SearchResultsLeft: FunctionComponent<SearchResultsProps & {setSelectedItem: (dandisetId: string, dandisetVersion: string) => void}> = ({width, height, searchResults, setSelectedItem}) => {
     return (
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             {
@@ -77,7 +77,7 @@ const SearchResultsLeft: FunctionComponent<SearchResultsProps & {setSelectedItem
                         key={i}
                         result={result}
                         width={width}
-                        onClick={() => setSelectedItem(result)}
+                        onOpenItem={setSelectedItem}
                     />
                 ))
             }
@@ -88,23 +88,39 @@ const SearchResultsLeft: FunctionComponent<SearchResultsProps & {setSelectedItem
 type SearchResultItemProps = {
     result: DandisetSearchResultItem
     width: number
-    onClick: () => void
+    onOpenItem: (dandisetId: string, dandisetVersion: string) => void
 }
 
-const SearchResultItem: FunctionComponent<SearchResultItemProps> = ({result, width, onClick}) => {
-    const {identifier, created, modified, contact_person, most_recent_published_version, draft_version} = result
-    const X = most_recent_published_version || draft_version
+const SearchResultItem: FunctionComponent<SearchResultItemProps> = ({result, width, onOpenItem}) => {
+    const {identifier, contact_person, most_recent_published_version, draft_version} = result
+    // const X = most_recent_published_version || draft_version
+    const X = draft_version || most_recent_published_version
     if (!X) return <div>Unexpected error: no version</div>
 
     return (
         <div style={{padding: 10, borderBottom: 'solid 1px #ccc'}}>
             <div style={{fontSize: 18, fontWeight: 'bold'}}>
-                <Hyperlink color={applicationBarColorDarkened} onClick={onClick}>
-                    {identifier} ({X.version}): {X.name}
+                <Hyperlink color={applicationBarColorDarkened} onClick={() => {
+                    onOpenItem(identifier, X.version)
+                }}>
+                    {/* {identifier} ({X.version}): {X.name} */}
+                    {identifier}: {X.name}
                 </Hyperlink>
+                {
+                    X === draft_version && most_recent_published_version && (
+                        <span>
+                            &nbsp;(published as&nbsp;
+                            <Hyperlink color={applicationBarColorDarkened} onClick={() => {
+                                onOpenItem(identifier, most_recent_published_version.version)
+                            }}>
+                                {most_recent_published_version.version}
+                            </Hyperlink>)
+                        </span>
+                    )
+                }
             </div>
             <div style={{fontSize: 14, color: '#666'}}>Contact: {contact_person}</div>
-            <div style={{fontSize: 14, color: '#666'}}>Created {formatTime(created)} | Modified {formatTime(modified)}</div>
+            <div style={{fontSize: 14, color: '#666'}}>Created {formatTime(X.created)} | Modified {formatTime(X.modified)}</div>
             {
                 X && (
                     <div style={{fontSize: 14, color: '#666'}}>

@@ -551,7 +551,7 @@ const parseLindiAssetInfo = (json: any): LindiAssetInfo => {
     const neurodataTypes: string[] = []
     for (const fname in json.refs) {
         if (fname.endsWith('.zattrs')) {
-            const zattrs = JSON.parse(json.refs[fname])
+            const zattrs = typeof json.refs[fname] === 'string' ? JSON.parse(json.refs[fname]) : json.refs[fname]
             if (zattrs.neurodata_type) {
                 if (!neurodataTypes.includes(zattrs.neurodata_type)) {
                     neurodataTypes.push(zattrs.neurodata_type)
