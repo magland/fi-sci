@@ -217,7 +217,7 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                     const imageData = ctx.createImageData(N1, N2)
                     for (let i = 0; i < w0; i++) {
                         for (let j = 0; j < h0; j++) {
-                            const v = data[i][j] / (maxval || 1)
+                            const v = data[i][h0 - 1 - j] / (maxval || 1)
                             const index = (j * w0 + i) * 4
                             imageData.data[index + 0] = color[0] * v
                             imageData.data[index + 1] = color[1] * v
@@ -245,7 +245,7 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                     const imageData = ctx.createImageData(N1, N2)
                     for (let i = 0; i < values.length; i++) {
                         const {x, y, v} = values[i]
-                        const index = (y * N1 + x) * 4
+                        const index = ((N2 - 1 - y) * N1 + x) * 4
                         imageData.data[index + 0] = color[0] * v / maxval
                         imageData.data[index + 1] = color[1] * v / maxval
                         imageData.data[index + 2] = color[2] * v / maxval
