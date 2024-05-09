@@ -215,20 +215,22 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                 }
                 const color = distinctColors[j % distinctColors.length]
                 if (client.hasImageMask) {
+                    // NOTE: xy flip is not handled properly in this branch. My brain hurts. Any assistance appreciated.
                     const aa = await client.getImageMask(j)
                     if (canceled) return
+                    console.log(aa)
                     const {x0: x0a, y0: y0a, w0: w0a, h0: h0a, data} = aa
-                    const x0 = planeTransform.xyswap ? y0a : x0a
-                    const y0 = planeTransform.xyswap ? x0a : y0a
-                    const w0 = planeTransform.xyswap ? h0a : w0a
-                    const h0 = planeTransform.xyswap ? w0a : h0a
+                    const w0 = w0a
+                    const h0 = h0a
+                    const x0 = planeTransform.xflip ? N1 - x0a - w0 : x0a
+                    const y0 = planeTransform.yflip ? N2 - y0a - h0 : y0a
                     const maxval = computeMaxVal(data)
-                    const imageData = ctx.createImageData(N1, N2)
+                    const imageData = ctx.createImageData(w0, h0)
                     for (let i = 0; i < w0; i++) {
                         const i2 = planeTransform.xflip ? w0 - 1 - i : i
                         for (let j = 0; j < h0; j++) {
                             const j2 = planeTransform.yflip ? h0 - 1 - j : j
-                            const v = planeTransform.xyswap ? data[h0 - 1 - j2][i2] / (maxval || 1) : data[i2][h0 - 1 - j2] / (maxval || 1)
+                            const v = data[i2][h0 - 1 - j2] / (maxval || 1)
                             const index = (j * w0 + i) * 4
                             imageData.data[index + 0] = color[0] * v
                             imageData.data[index + 1] = color[1] * v
