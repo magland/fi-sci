@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
+import PlaneTransformSelector, { PlaneTransform } from "../TwoPhotonSeries/PlaneTransformSelector"
 
 type Props = {
     width: number
@@ -181,11 +182,15 @@ const distinctColors = [
 const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, height: number}> = ({client, width, height}) => {
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | undefined>(undefined)
 
-    const statusBarHeight = 15
+    const statusBarHeight = 20
+
+    const [planeTransform, setPlaneTransform] = useState<PlaneTransform>({xyswap: false, xflip: false, yflip: false})
 
     const N0 = client.shape[0]
-    const N1 = client.shape[1]
-    const N2 = client.shape[2]
+    const N1a = client.shape[1]
+    const N2a = client.shape[2]
+    const N1 = planeTransform.xyswap ? N2a : N1a
+    const N2 = planeTransform.xyswap ? N1a : N2a
     const scale = Math.min(width / N1, (height - statusBarHeight) / N2)
     const offsetX = (width - N1 * scale) / 2
     const offsetY = ((height - statusBarHeight) - N2 * scale) / 2
@@ -212,12 +217,18 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                 if (client.hasImageMask) {
                     const aa = await client.getImageMask(j)
                     if (canceled) return
-                    const {x0, y0, w0, h0, data} = aa
+                    const {x0: x0a, y0: y0a, w0: w0a, h0: h0a, data} = aa
+                    const x0 = planeTransform.xyswap ? y0a : x0a
+                    const y0 = planeTransform.xyswap ? x0a : y0a
+                    const w0 = planeTransform.xyswap ? h0a : w0a
+                    const h0 = planeTransform.xyswap ? w0a : h0a
                     const maxval = computeMaxVal(data)
                     const imageData = ctx.createImageData(N1, N2)
                     for (let i = 0; i < w0; i++) {
+                        const i2 = planeTransform.xflip ? w0 - 1 - i : i
                         for (let j = 0; j < h0; j++) {
-                            const v = data[i][h0 - 1 - j] / (maxval || 1)
+                            const j2 = planeTransform.yflip ? h0 - 1 - j : j
+                            const v = planeTransform.xyswap ? data[h0 - 1 - j2][i2] / (maxval || 1) : data[i2][h0 - 1 - j2] / (maxval || 1)
                             const index = (j * w0 + i) * 4
                             imageData.data[index + 0] = color[0] * v
                             imageData.data[index + 1] = color[1] * v
@@ -244,8 +255,12 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                     const maxval = values.reduce((maxval, v) => Math.max(maxval, v.v), 0)
                     const imageData = ctx.createImageData(N1, N2)
                     for (let i = 0; i < values.length; i++) {
-                        const {x, y, v} = values[i]
-                        const index = ((N2 - 1 - y) * N1 + x) * 4
+                        const {x: xa, y: ya, v} = values[i]
+                        const x = planeTransform.xyswap ? ya : xa
+                        const y = planeTransform.xyswap ? xa : ya
+                        const x2 = planeTransform.xflip ? N1 - 1 - x : x
+                        const y2 = planeTransform.yflip ? N2 - 1 - y : y
+                        const index = ((N2 - 1 - y2) * N1 + x2) * 4
                         imageData.data[index + 0] = color[0] * v / maxval
                         imageData.data[index + 1] = color[1] * v / maxval
                         imageData.data[index + 2] = color[2] * v / maxval
@@ -264,7 +279,7 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
         }
         load()
         return () => {canceled = true}
-    }, [canvasElement, client, N0, N1, N2, scale])
+    }, [canvasElement, client, N0, N1, N2, scale, planeTransform])
 
     return (
         <div style={{position: 'absolute', width, height, fontSize: 12}}>
@@ -276,6 +291,12 @@ const Test1: FunctionComponent<{client: PlaneSegmentationClient, width: number, 
                 />
             </div>
             <div style={{position: 'absolute', width, height: statusBarHeight, top: height - statusBarHeight}}>
+                <PlaneTransformSelector
+                    planeTransform={planeTransform}
+                    setPlaneTransform={setPlaneTransform}
+                />
+            </div>
+            <div style={{position: 'absolute', width, height: statusBarHeight, top: height - statusBarHeight + 5, left: 200}}>
                 {loadingMessage}
             </div>
         </div>
