@@ -28,7 +28,7 @@ const SmallIconButton: FunctionComponent<PropsWithChildren<Props>> = ({
       title={title}
       onClick={!disabled ? onClick : undefined}
       style={{
-        cursor: 'pointer',
+        cursor: !disabled ? 'pointer' : 'default',
         fontSize: (fontSize || 18) * 0.8,
         whiteSpace: 'nowrap',
       }}
