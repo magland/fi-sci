@@ -29,6 +29,11 @@
       "label": "deploy dendro-arc",
       "type": "shell",
       "command": "nx build dendro-arc && cp apps/dendro-arc/devel/vercel_files/vercel.json dist/apps/dendro-arc/ && cp -r apps/dendro-arc/devel/vercel_files/.vercel dist/apps/dendro-arc/ && vercel --prod dist/apps/dendro-arc"
+    },
+    {
+      "label": "deploy spikeforestxyz",
+      "type": "shell",
+      "command": "nx build spikeforestxyz && cp apps/spikeforestxyz/devel/vercel_files/vercel.json dist/apps/spikeforestxyz/ && cp -r apps/spikeforestxyz/devel/vercel_files/.vercel dist/apps/spikeforestxyz/ && vercel --prod dist/apps/spikeforestxyz"
     }
   ],
   "inputs": [
