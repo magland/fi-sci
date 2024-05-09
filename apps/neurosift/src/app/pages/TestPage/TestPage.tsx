@@ -37,7 +37,7 @@ const test_h5 = async () => {
 
 const test_lindi = async () => {
     const x = new RemoteLindiFileSliceBenchmark()
-    const lindi_url = 'https://lindi.neurosift.org/dandi/dandisets/000409/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/zarr.json'
+    const lindi_url = 'https://lindi.neurosift.org/dandi/dandisets/000409/assets/c04f6b30-82bf-40e1-9210-34f0bcd8be24/nwb.lindi.json'
     const object_name = '/acquisition/ElectricalSeriesAp/data'
     const slice = [[0, 20]] as [number, number][]
     await x.setup(lindi_url, object_name, slice)
