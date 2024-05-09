@@ -34,11 +34,6 @@
       "label": "deploy spikeforestxyz",
       "type": "shell",
       "command": "nx build spikeforestxyz && cp apps/spikeforestxyz/devel/vercel_files/vercel.json dist/apps/spikeforestxyz/ && cp -r apps/spikeforestxyz/devel/vercel_files/.vercel dist/apps/spikeforestxyz/ && vercel --prod dist/apps/spikeforestxyz"
-    },
-    {
-      "label": "deploy stan-playground",
-      "type": "shell",
-      "command": "nx build stan-playground && cp apps/stan-playground/devel/vercel_files/vercel.json dist/apps/stan-playground/ && cp -r apps/stan-playground/devel/vercel_files/.vercel dist/apps/stan-playground/ && vercel --prod dist/apps/stan-playground"
     }
   ],
   "inputs": [
