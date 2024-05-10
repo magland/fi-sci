@@ -66,7 +66,7 @@ async function draw() {
                 y: !isNaN(p.y) ? canvasHeight - margins.bottom - (p.y - minValue) / (maxValue - minValue) * (canvasHeight - margins.top - margins.bottom) : NaN
             }
         }
-        
+
         const pixelZero = coordToPixel({x: 0, y: 0}).y
         const pixelData = (plotSeries || []).map((s, i) => {
             return {
@@ -83,7 +83,7 @@ async function draw() {
             dimensions: pixelData
         }
         paintPanel(canvasContext, panelProps)
-        
+
         // the wait time is equal to the render time
         const elapsed = Date.now() - timer
         await sleepMsec(elapsed)
@@ -263,15 +263,23 @@ const computePlotSeries = (dataSeries: DataSeries[]): PlotSeries[] => {
     dataSeries.forEach(rs => {
         const tt = rs.t
         const yy = rs.y
-        let filteredTimeIndices: number[] = tt.flatMap((t: number, ii: number) => (visibleStartTimeSec <= t) && (t <= visibleEndTimeSec) ? ii : [])
+        const filteredTimeIndices: number[] = tt.flatMap(
+            (t: number, ii: number) => {
+                // give a buffer of 10 timepoints before and after the visible range
+                // so that we don't have to worry about lines not getting rendered properly
+                const ii1 = Math.min(tt.length - 1, ii + 10)
+                const ii2 = Math.max(0, ii - 10)
+                const tt1 = tt[ii1]
+                const tt2 = tt[ii2]
+                if ((tt1 >= visibleStartTimeSec) && (tt2 <= visibleEndTimeSec)) {
+                    return ii
+                }
+                else {
+                    return []
+                }
+            }
+        )
 
-        // need to prepend an index before and append an index after so that lines get rendered properly
-        if ((filteredTimeIndices[0] || 0) > 0) {
-            filteredTimeIndices = [filteredTimeIndices[0] - 1, ...filteredTimeIndices]
-        }
-        if ((filteredTimeIndices[filteredTimeIndices.length - 1] || tt.length) < tt.length - 1) {
-            filteredTimeIndices.push(filteredTimeIndices[filteredTimeIndices.length - 1] + 1)
-        }
         ////////////////////////////////////////////////////////////////////////////////
 
         const filteredTimes = filteredTimeIndices.map(i => tt[i])
@@ -349,7 +357,7 @@ const drawAnnotation = async (o: {
     for (const pass of ['rect', 'line']) {
         for (const e of eventsFiltered) {
             if (thisDrawAnnotationDrawCode !== drawAnnotationDrawCode) return
-            
+
             const color = colorsForEventTypes[e.t]
             if (e.e > e.s) {
                 if (pass !== 'rect') continue

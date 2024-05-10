@@ -102,10 +102,15 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
                 setZoomInRequired(true)
                 return
             }
-            const iStart = await dataClient.getDataIndexForTime(visibleStartTimeSec)
+            let iStart = await dataClient.getDataIndexForTime(visibleStartTimeSec)
             if (canceled) return
-            const iEnd = await dataClient.getDataIndexForTime(visibleEndTimeSec)
+            let iEnd = await dataClient.getDataIndexForTime(visibleEndTimeSec)
             if (canceled) return
+
+            // give a buffer of one point on each side
+            if (iStart > 0) iStart --
+            iEnd ++
+
             const startChunkIndex = Math.floor(iStart / chunkSize)
             const endChunkIndex = Math.floor(iEnd / chunkSize) + 1
             setStartChunkIndex(startChunkIndex)
