@@ -112,6 +112,8 @@ const lindiDatasetDataLoader = async (o: {
             throw Error(`For now, you can't slice more than two dimensions at a time. You tried to slice ${slice.length} dimensions for ${path}.`);
         }
     }
+    if (i1End > shape[0]) i1End = shape[0];
+    if (i2End > shape[1]) i2End = shape[1];
 
     const shape2 = ndims > 1 ? shape[1] : 1;
     const chunkShape2 = ndims > 1 ? chunkShape[1] : 1;
