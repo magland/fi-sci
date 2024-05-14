@@ -209,9 +209,9 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
     }, [colnames, data, path, referenceColumnName])
 
     const rowItems: {columnValues: any[]}[] = useMemo(() => {
-        if (!validColumnNames) return []
+        if (!colnames) return []
         let numRows = 0
-        for (const colname of validColumnNames) {
+        for (const colname of colnames) {
             const d = data[colname]
             if (d) {
                 numRows = Math.max(numRows, d.length)
@@ -220,7 +220,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
         const ret: {columnValues: any[]}[] = []
         for (let i = 0; i < numRows; i++) {
             const row: {columnValues: any[]} = {columnValues: []}
-            for (const colname of validColumnNames) {
+            for (const colname of colnames) {
                 const d = data[colname]
                 if (d) {
                     row.columnValues.push(d[i])
@@ -232,7 +232,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
             ret.push(row)
         }
         return ret
-    }, [validColumnNames, data])
+    }, [colnames, data])
 
     const sortedRowItems = useMemo(() => {
         if (!validColumnNames) return rowItems
@@ -266,16 +266,16 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
     const [columnDescriptions, columnDescriptionDispatch] = useReducer(columnDescriptionReducer, {})
     useEffect(() => {
         if (!group) return
-        for (const colname of validColumnNames || []) {
+        for (const colname of colnames || []) {
             const ds = group.datasets.find(ds => (ds.name === colname))
             if (ds) {
                 columnDescriptionDispatch({type: 'set', column: colname, description: ds.attrs.description || ''})
             }
         }
-    }, [validColumnNames, group])
+    }, [colnames, group])
 
     const sortedRowItemsAbbreviated = useMemo(() => {
-        const maxLength = 20_000 / (validColumnNames?.length || 1)
+        const maxLength = 20_000 / (colnames?.length || 1)
         if (sortedRowItems.length < maxLength) {
             return sortedRowItems
         }
@@ -284,7 +284,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
             ret.push(sortedRowItems[i])
         }
         return ret
-    }, [sortedRowItems, validColumnNames])
+    }, [sortedRowItems, colnames])
 
     const handleExportAsCsv = useCallback(() => {
         if (!validColumnNames) return
@@ -314,6 +314,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
     const {visible: columnInfoVisible, handleClose: closeColumnInfo, handleOpen: openColumnInfo} = useModalWindow()
 
     if (!validColumnNames) return <div>Loading...</div>
+    if (!colnames) return <div>No columns found</div>
 
     return (
         <div className="dynamic-table-view" style={{position: 'absolute', width, height, overflowY: 'auto'}}>
@@ -321,7 +322,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                 <SmallIconButton onClick={openColumnInfo} icon={<Help />} title="View info about columns" />
                 <SmallIconButton
                     onClick={handleExportAsCsv}
-                    disabled={loading || !sortedRowItems.length || !validColumnNames || !validColumnNames.length}
+                    disabled={loading || !sortedRowItems.length || !colnames || !colnames.length}
                     icon={<Download />}
                     title="Export as CSV"
                 />
@@ -335,7 +336,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                 <thead>
                     <tr>
                         {
-                            validColumnNames.map((colname) => (
+                            colnames.map((colname) => (
                                 <th key={colname}>
                                     <span
                                         onClick={() => {columnSortDispatch({type: 'click', column: colname})}}
@@ -373,7 +374,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                 onClose={closeColumnInfo}
             >
                 <DynamicTableColumnInfoView
-                    columnNames={validColumnNames}
+                    columnNames={colnames}
                     columnDescriptions={columnDescriptions}
                 />
             </ModalWindow>

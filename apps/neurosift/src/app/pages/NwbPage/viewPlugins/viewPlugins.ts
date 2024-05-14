@@ -272,8 +272,18 @@ viewPlugins.push({
     checkEnabled: async (nwbFile: RemoteH5FileX, path: string) => {
         const x = await nwbFile.getGroup(path)
         if (!x) return false
-        const ds = x.datasets.find(ds => (ds.name === 'autocorrelogram'))
-        return !!ds
+        {
+            // old
+            const ds = x.datasets.find(ds => (ds.name === 'autocorrelogram'))
+            if (ds) return true
+        }
+        {
+            // new
+            const ds = x.datasets.find(ds => (ds.name === 'acg'))
+            const dsBinEdges = x.datasets.find(ds => (ds.name === 'acg_bin_edges'))
+            if (ds && dsBinEdges) return true
+        }
+        return false
     },
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=213569&dandisetVersion=draft&staging=1&url=https://api-staging.dandiarchive.org/api/assets/9b372ad4-a3f8-4d95-bda7-dc56637c8873/download/&st=lindi&tab=view:Autocorrelograms|/units'

@@ -14,7 +14,7 @@ type Props = {
 
 const AutocorrelogramsUnitsItemView: FunctionComponent<Props> = ({width, height, path, condensed}) => {
     const nwbFile = useNwbFile()
-    if (!nwbFile) throw Error('Unexpected: nwbFile is null')    
+    if (!nwbFile) throw Error('Unexpected: nwbFile is null')
 
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
     const [data, setData] = useState<AutocorrelogramsViewData | undefined | null>(undefined)
@@ -39,9 +39,17 @@ const AutocorrelogramsUnitsItemView: FunctionComponent<Props> = ({width, height,
                 setData(null)
                 return
             }
-            const autocorrelogramsDs = await nwbFile.getDataset(`${path}/autocorrelogram`)
+            const autocorrelogramsDsOld = await nwbFile.getDataset(`${path}/autocorrelograms`)
+            const autocorrelogramsDs = await nwbFile.getDataset(`${path}/acg`) || autocorrelogramsDsOld
             if (!autocorrelogramsDs) {
-                setErrorMessage('autocorrelogram dataset not found')
+                setErrorMessage('acg dataset not found')
+                setData(null)
+                return
+            }
+            const binEdgesSecOld = autocorrelogramsDs.attrs['bin_edges_sec']
+            const binEdgesDs = await nwbFile.getDataset(`${path}/acg_bin_edges`)
+            if ((!binEdgesSecOld) && (!binEdgesDs)) {
+                setErrorMessage('acg_bin_edges dataset not found')
                 setData(null)
                 return
             }
@@ -51,15 +59,22 @@ const AutocorrelogramsUnitsItemView: FunctionComponent<Props> = ({width, height,
                 setData(null)
                 return
             }
-            const binEdgesSec: number[] = autocorrelogramsDs.attrs['bin_edges_sec']
+            let binEdgesSec: number[]
+            if (binEdgesDs) {
+                binEdgesSec = await nwbFile.getDatasetData(`${path}/acg_bin_edges`, {}) as any
+            }
+            else {
+                binEdgesSec = binEdgesSecOld as any
+            }
             if (!binEdgesSec) {
-                setErrorMessage('Missing bin_edges_sec attribute')
+                setErrorMessage('Unexpected: no binEdgesSec')
                 setData(null)
                 return
             }
-            const autocorrelogramsData = await nwbFile.getDatasetData(`${path}/autocorrelogram`, {})
+            const autocorrelogramsDataOld = await nwbFile.getDatasetData(`${path}/autocorrelograms`, {})
+            const autocorrelogramsData = await nwbFile.getDatasetData(`${path}/acg`, {}) || autocorrelogramsDataOld
             if (!autocorrelogramsData) {
-                setErrorMessage('Unable to load autocorrelogram data')
+                setErrorMessage('Unable to load acg data')
                 setData(null)
                 return
             }
@@ -87,7 +102,7 @@ const AutocorrelogramsUnitsItemView: FunctionComponent<Props> = ({width, height,
                 type: 'Autocorrelograms',
                 autocorrelograms
             }
-            
+
             setData(data)
         }
         loadData()
