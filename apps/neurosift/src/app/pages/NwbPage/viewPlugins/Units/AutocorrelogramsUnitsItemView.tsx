@@ -61,7 +61,7 @@ const AutocorrelogramsUnitsItemView: FunctionComponent<Props> = ({width, height,
             }
             let binEdgesSec: number[]
             if (binEdgesDs) {
-                binEdgesSec = await nwbFile.getDatasetData(`${path}/acg_bin_edges`, {}) as any
+                binEdgesSec = await nwbFile.getDatasetData(`${path}/acg_bin_edges`, {slice: [[0, 1]]}) as any
             }
             else {
                 binEdgesSec = binEdgesSecOld as any
