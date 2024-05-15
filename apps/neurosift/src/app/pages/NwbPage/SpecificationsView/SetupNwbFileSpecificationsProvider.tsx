@@ -41,28 +41,28 @@ export type NwbFileSpecifications = {
     allGroups: SpecificationsGroup[]
 }
 
-type SpecificationsSubgroup = {
+export type SpecificationsSubgroup = {
     name: string
     versions: SpecificationsSubgroupVersion[]
 }
 
-type SpecificationsSubgroupVersion = {
+export type SpecificationsSubgroupVersion = {
     version: string
     items: SpecificationsItem[]
 }
 
-type SpecificationsItem = {
+export type SpecificationsItem = {
     name: string
     value: SpecificationsItemValue
 }
 
-type SpecificationsItemValue = {
+export type SpecificationsItemValue = {
     namespaces?: SpecificationsNamespace[]
     datasets?: SpecificationsDataset[]
     groups?: SpecificationsGroup[]
 }
 
-type SpecificationsNamespace = {
+export type SpecificationsNamespace = {
     author: string | string[]
     contact: string | string[]
     doc: string
@@ -72,7 +72,7 @@ type SpecificationsNamespace = {
     version: string
 }
 
-type SpecificationsDataset = {
+export type SpecificationsDataset = {
     doc: string
     neurodata_type_def: string
     neurodata_type_inc?: string
@@ -81,7 +81,7 @@ type SpecificationsDataset = {
     attributes?: any
 }
 
-type SpecificationsGroup = {
+export type SpecificationsGroup = {
     doc: string
     default_name: string
     neurodata_type_def: string
@@ -90,7 +90,7 @@ type SpecificationsGroup = {
     groups?: any[]
 }
 
-type SpecificationsNamespaceSchema = {
+export type SpecificationsNamespaceSchema = {
     namespace: string
 } | {
     source: string
