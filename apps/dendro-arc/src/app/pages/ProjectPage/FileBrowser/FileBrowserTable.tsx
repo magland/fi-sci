@@ -315,7 +315,7 @@ export const Checkbox: FunctionComponent<{checked: boolean | null, onClick: () =
 export const FileIcon: FunctionComponent<{fileName: string}> = ({fileName}) => {
     const ext = fileName.split('.').pop()
     if (ext === 'py') {
-        return <FontAwesomeIcon icon={faPython} style={{color: 'darkblue'}} />
+        return <FontAwesomeIcon icon={faPython as any} style={{color: 'darkblue'}} />
     }
     else if (ext === 'json') {
         return <FontAwesomeIcon icon={faFile as any} style={{color: 'black'}} />
