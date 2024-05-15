@@ -234,7 +234,7 @@ type ReferenceValue = {
     source_object_id: string
 }
 
-const ReferenceComponent: FunctionComponent<{value: ReferenceValue}> = ({value}) => {
+export const ReferenceComponent: FunctionComponent<{value: ReferenceValue}> = ({value}) => {
     return (
         <span
             style={{color: 'darkgreen'}}

@@ -22,6 +22,7 @@ import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView
 import TestVideoItemView from "./TestVideo/TestVideoItemView"
 import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
+import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
 
 type Props = {
     width: number,
@@ -330,6 +331,18 @@ viewPlugins.push({
     isTimeView: true,
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=000115&dandisetVersion=0.210914.1732&url=https://api.dandiarchive.org/api/assets/6df57370-9de8-4514-82f3-65d0f0528cde/download/&tab=neurodata-item:/processing/behavior/behavioral_events|BehavioralEvents'
+    ]
+})
+
+// IntracellularRecordingsTable
+viewPlugins.push({
+    name: 'IntracellularRecordingsTable',
+    neurodataType: 'IntracellularRecordingsTable',
+    defaultForNeurodataType: true,
+    component: IntracellularRecordingsTableItemView,
+    isTimeView: false,
+    testLinks: [
+        'https://neurosift.app/?p=/nwb&url=https://api.dandiarchive.org/api/assets/f7388d54-0525-42f2-b026-04e06a684717/download/&dandisetId=000245&dandisetVersion=draft'
     ]
 })
 
