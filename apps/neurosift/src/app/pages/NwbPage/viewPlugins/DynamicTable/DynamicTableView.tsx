@@ -7,6 +7,7 @@ import { SmallIconButton } from "@fi-sci/misc"
 import { Download, Help } from "@mui/icons-material"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import DynamicTableColumnInfoView from "./DynamicTableColumnInfoView"
+import { DatasetDataType } from "@fi-sci/remote-h5-file"
 
 type Props = {
     width: number
@@ -157,18 +158,35 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
                     console.warn(`In DynamicTableView, dataset not found: ${path}/${colname}`)
                     continue
                 }
-                // See https://github.com/dandi/helpdesk/discussions/131 - that's why we squeeze
-                const squeezedShape = ds0 ? (ds0.shape.length > 1 ? ds0.shape.filter((s: number) => s > 1) : ds0.shape) : []
-                if (squeezedShape.length !== 1) {
-                    console.warn(`In DynamicTableView, unexpected shape for ${path}/${colname}`, ds0.shape)
-                    continue
-                }
-                let d = await nwbFile.getDatasetData(path + '/' + colname, {})
+                let d: DatasetDataType | any[] | undefined = await nwbFile.getDatasetData(path + '/' + colname, {})
                 if (canceled) return
                 if (!d) {
                     console.warn(`In DynamicTableView, dataset data not found: ${path}/${colname}`)
                     continue
                 }
+
+                // See https://github.com/dandi/helpdesk/discussions/131 - that's why we squeeze
+                const squeezedShape = ds0 ? (ds0.shape.length > 1 ? ds0.shape.filter((s: number) => s > 1) : ds0.shape) : []
+                if (squeezedShape.length !== 1) {
+                    if (squeezedShape.length === 2) {
+                        // in this case we are going to reshape the data
+                        // See: https://github.com/flatironinstitute/neurosift/issues/173
+                        const newD: any[][] = []
+                        for (let i = 0; i < squeezedShape[0]; i++) {
+                            const entry = []
+                            for (let j = 0; j < squeezedShape[1]; j++) {
+                                entry.push(d[i * squeezedShape[1] + j])
+                            }
+                            newD.push(entry)
+                        }
+                        d = newD
+                    }
+                    else {
+                        console.warn(`In DynamicTableView, unexpected shape for ${path}/${colname}`, ds0.shape)
+                        continue
+                    }
+                }
+
                 /* handle special case where dtype is unknown and we have the wrong number of elements */
                 if (ds0.shape.length === 1) {
                     if (ds0.shape[0] !== d.length) {
