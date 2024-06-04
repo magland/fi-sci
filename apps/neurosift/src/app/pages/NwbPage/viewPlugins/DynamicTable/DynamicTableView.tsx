@@ -335,7 +335,7 @@ const DynamicTableView: FunctionComponent<Props> = ({ width, height, path, refer
     if (!colnames) return <div>No columns found</div>
 
     return (
-        <div className="dynamic-table-view" style={{position: 'absolute', width, height, overflowY: 'auto'}}>
+        <div className="dynamic-table-view" style={{position: 'absolute', width, height, background: 'white', overflowY: 'auto'}}>
             <div style={{color: 'gray', paddingBottom: 2}}>
                 <SmallIconButton onClick={openColumnInfo} icon={<Help />} title="View info about columns" />
                 <SmallIconButton
