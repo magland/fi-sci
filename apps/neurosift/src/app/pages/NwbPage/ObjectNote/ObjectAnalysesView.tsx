@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Hyperlink, SmallIconButton } from '@fi-sci/misc';
-import { Add } from '@mui/icons-material';
+import { Add, Delete } from '@mui/icons-material';
 import { FunctionComponent, useCallback, useMemo } from 'react';
 import useNeurosiftAnnotations from '../../../NeurosiftAnnotations/useNeurosiftAnnotations';
 import { NeurosiftAnnotation } from '../NeurosiftAnnotations/types';
@@ -59,6 +59,8 @@ const ObjectAnalysesView: FunctionComponent<ObjectAnalysesViewProps> = ({ object
                   <FiddleAnnotationView
                     annotation={fiddleAnnotation.annotation}
                     onRemove={async () => {
+                      const ok = confirm('Are you sure you want to remove this analysis?');
+                      if (!ok) return;
                       await removeContextAnnotation(fiddleAnnotation.annotationId);
                     }}
                   />
@@ -115,7 +117,7 @@ type FiddleAnnotationViewProps = {
   onRemove?: () => void;
 };
 
-const FiddleAnnotationView: FunctionComponent<FiddleAnnotationViewProps> = ({ annotation, onRemove }) => {
+export const FiddleAnnotationView: FunctionComponent<FiddleAnnotationViewProps> = ({ annotation, onRemove }) => {
   const jpfiddleUrl = `https://jpfiddle.vercel.app/?f=${annotation.fiddleUri}&t=${annotation.fiddleTitle}`;
   return (
     <div>
@@ -126,6 +128,12 @@ const FiddleAnnotationView: FunctionComponent<FiddleAnnotationViewProps> = ({ an
       >
         {annotation.fiddleTitle || 'Untitled analysis'}
       </Hyperlink>
+      &nbsp;
+      <SmallIconButton
+        icon={<Delete />}
+        title="Remove analysis"
+        onClick={onRemove}
+      />
     </div>
   )
 }

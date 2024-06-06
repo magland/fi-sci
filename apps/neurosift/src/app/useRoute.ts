@@ -28,6 +28,8 @@ export type Route = {
     page: 'dandi'
     staging?: boolean
 } | {
+    page: 'annotations'
+} | {
     page: 'dandi-query'
     staging?: boolean
 } | {
@@ -114,6 +116,11 @@ const useRoute = () => {
             return {
                 page: 'dandi',
                 staging: query.staging === '1'
+            }
+        }
+        else if (p === '/annotations') {
+            return {
+                page: 'annotations'
             }
         }
         else if (p === '/dandi-query') {
@@ -235,6 +242,27 @@ const useRoute = () => {
                 if (newQuery.staging) {
                     delete newQuery.staging
                 }
+            }
+            if (newQuery.url) {
+                delete newQuery.url
+            }
+            if (newQuery.dandisetId) {
+                delete newQuery.dandisetId
+            }
+            if (newQuery.dandisetVersion) {
+                delete newQuery.dandisetVersion
+            }
+            if (newQuery.dandiAssetId) {
+                delete newQuery.dandiAssetId
+            }
+            if (newQuery.storageType) {
+                delete newQuery.storageType
+            }
+        }
+        else if (r.page === 'annotations') {
+            newQuery.p = '/annotations'
+            if (newQuery.staging) {
+                delete newQuery.staging
             }
             if (newQuery.url) {
                 delete newQuery.url

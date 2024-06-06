@@ -9,6 +9,7 @@ export type NeurosiftAnnotation = {
   timestampCreated: number
   dandiInstanceName?: string
   dandisetId?: string
+  dandisetVersion?: string
   assetPath?: string
   assetId?: string
   assetUrl?: string
@@ -23,6 +24,7 @@ export const isNeurosiftAnnotation = (x: any): x is NeurosiftAnnotation => {
     timestampCreated: isNumber,
     dandiInstanceName: optional(isString),
     dandisetId: optional(isString),
+    dandisetVersion: optional(isString),
     assetPath: optional(isString),
     assetId: optional(isString),
     assetUrl: optional(isString)
@@ -35,6 +37,7 @@ export type GetAnnotationsRequest = {
   annotationType?: string
   dandiInstanceName?: string
   dandisetId?: string
+  dandisetVersion?: string
   assetPath?: string
   assetId?: string
   assetUrl?: string
@@ -47,6 +50,7 @@ export const isGetAnnotationsRequest = (x: any): x is GetAnnotationsRequest => {
     annotationType: optional(isString),
     dandiInstanceName: optional(isString),
     dandisetId: optional(isString),
+    dandisetVersion: optional(isString),
     assetPath: optional(isString),
     assetId: optional(isString),
     assetUrl: optional(isString),
@@ -69,6 +73,7 @@ export type AddAnnotationRequest = {
   annotation: any
   dandiInstanceName?: string
   dandisetId?: string
+  dandisetVersion?: string
   assetPath?: string
   assetId?: string
   assetUrl?: string
@@ -81,6 +86,7 @@ export const isAddAnnotationRequest = (x: any): x is AddAnnotationRequest => {
     annotation: () => (true),
     dandiInstanceName: optional(isString),
     dandisetId: optional(isString),
+    dandisetVersion: optional(isString),
     assetPath: optional(isString),
     assetId: optional(isString),
     assetUrl: optional(isString),

@@ -36,7 +36,7 @@ export const useContextAnnotations = () => {
     }
 }
 
-const neurosiftAnnotationsApiUrl = 'https://neurosift-annotations.vercel.app'
+export const neurosiftAnnotationsApiUrl = 'https://neurosift-annotations.vercel.app'
 // const neurosiftAnnotationsApiUrl = 'http://localhost:3000'
 
 type SetupContextAnnotationsProviderProps = {
@@ -46,7 +46,7 @@ type SetupContextAnnotationsProviderProps = {
 export const SetupContextAnnotationsProvider: FunctionComponent<PropsWithChildren<SetupContextAnnotationsProviderProps>> = ({ children }) => {
     const [contextAnnotations, setContextAnnotations] = useState<NeurosiftAnnotation[] | undefined>(undefined)
     const {neurosiftAnnotationsAccessToken, neurosiftAnnotationsUserId} = useNeurosiftAnnotations()
-    const {dandisetId, assetId, assetPath} = useDandiAssetContext()
+    const {dandisetId, dandisetVersion, assetId, assetPath} = useDandiAssetContext()
 
     const fetchContextAnnotations = useMemo(() => (async (): Promise<NeurosiftAnnotation[]> => {
         const url = `${neurosiftAnnotationsApiUrl}/api/getAnnotations`
@@ -102,6 +102,7 @@ export const SetupContextAnnotationsProvider: FunctionComponent<PropsWithChildre
             annotationType,
             dandiInstanceName: 'dandi',
             dandisetId,
+            dandisetVersion,
             assetPath,
             assetId,
             annotation
@@ -121,7 +122,7 @@ export const SetupContextAnnotationsProvider: FunctionComponent<PropsWithChildre
         const data = await rr.json()
         console.log(data)
         refreshContextAnnotations()
-    }, [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath, neurosiftAnnotationsUserId, refreshContextAnnotations])
+    }, [neurosiftAnnotationsAccessToken, dandisetId, assetId, assetPath, neurosiftAnnotationsUserId, refreshContextAnnotations, dandisetVersion]);
 
     const removeContextAnnotation = useCallback(async (id: string) => {
         if (!neurosiftAnnotationsAccessToken) {

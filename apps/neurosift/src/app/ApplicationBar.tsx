@@ -1,4 +1,4 @@
-import { Key, QuestionMark } from "@mui/icons-material";
+import { Key, Note, QuestionMark } from "@mui/icons-material";
 import { AppBar, Toolbar } from "@mui/material";
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react";
 import useRoute from "./useRoute";
@@ -54,6 +54,16 @@ const ApplicationBar: FunctionComponent<Props> = () => {
                             icon={<QuestionMark />}
                             onClick={() => setRoute({page: 'about'})}
                             title={`About Neurosift`}
+                        />
+                    </span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;
+                    <span style={{color: 'white'}}>
+                        <SmallIconButton
+                            icon={<Note />}
+                            onClick={() => {
+                                setRoute({page: 'annotations'})
+                            }}
+                            title={`View annotations`}
                         />
                     </span>
                     &nbsp;&nbsp;&nbsp;&nbsp;
