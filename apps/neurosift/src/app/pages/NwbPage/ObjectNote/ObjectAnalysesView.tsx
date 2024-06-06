@@ -46,6 +46,7 @@ const ObjectAnalysesView: FunctionComponent<ObjectAnalysesViewProps> = ({ object
     <div>
       {neurosiftAnnotationsUserId ? (
         <>
+          <h3>WARNING: This is an experimental feature.</h3>
           <h3>WARNING: All annotations are public.</h3>
           <h3>
             {!objectPath ? <span>Analyses for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span> : objectPath !== '/' ? <span>Analyses for {objectPath} for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span> : <span>Analyses for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span>}

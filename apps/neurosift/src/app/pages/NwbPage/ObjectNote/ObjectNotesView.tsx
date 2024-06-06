@@ -38,6 +38,7 @@ const ObjectNotesView: FunctionComponent<ObjectNotesViewProps> = ({ objectPath }
     <div>
       {neurosiftAnnotationsUserId ? (
         <>
+          <h3>WARNING: This is an experimental feature.</h3>
           <h3>WARNING: All annotations are public.</h3>
           <h3>
             {!objectPath ? <span>Notes for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span> : objectPath !== '/' ? <span>Notes for {objectPath} for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span> : <span>Top-level notes for <UserIdComponent userId={neurosiftAnnotationsUserId} /></span>}
