@@ -6,6 +6,8 @@ import getAuthorizationHeaderForUrl from "../../NwbPage/getAuthorizationHeaderFo
 import formatByteCount from "./formatByteCount";
 import { Hyperlink } from "@fi-sci/misc";
 import useRoute from "../../../useRoute";
+import ViewObjectNotesIconThing from "../../NwbPage/ObjectNote/ViewObjectNotesIconThing";
+import ViewObjectAnalysesIconThing from "../../NwbPage/ObjectNote/ViewObjectAnalysesIconThing";
 
 const applicationBarColorDarkened = '#546' // from dendro
 
@@ -204,6 +206,11 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                     </div>
                     <div style={{fontSize: 14, padding: 5}}>
                         {X.metadata.description}
+                    </div>
+                    <div style={{display: 'flex', flexDirection: 'row'}}>
+                        <ViewObjectNotesIconThing />
+                        &nbsp;
+                        <ViewObjectAnalysesIconThing />
                     </div>
                     {
                         <div style={{fontSize: 14, padding: 5}}>

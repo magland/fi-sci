@@ -1,6 +1,8 @@
-import { FunctionComponent, useCallback } from "react"
+import { FunctionComponent, useCallback, useMemo } from "react"
 import useRoute from "../../useRoute"
 import DandisetView from "./DandisetViewFromDendro/DandisetView"
+import { DandiAssetContext } from "../NwbPage/DandiAssetContext"
+import { SetupContextAnnotationsProvider } from "../NwbPage/NeurosiftAnnotations/useContextAnnotations"
 
 type DandisetPageProps = {
     width: number
@@ -26,15 +28,24 @@ const DandisetPage: FunctionComponent<DandisetPageProps> = ({width, height}) => 
             })
         })
     }, [route, setRoute])
+    const dandiAssetContextValue = useMemo(() => ({
+        dandisetId: route.dandisetId,
+        dandisetVersion: route.dandisetVersion || '',
+        assetUrl: ''
+    }), [route.dandisetId, route.dandisetVersion])
     return (
-        <DandisetView
-            width={width}
-            height={height}
-            dandisetId={route.dandisetId}
-            dandisetVersion={route.dandisetVersion}
-            useStaging={!!route.staging}
-            onOpenAssets={handleOpenAssets}
-        />
+        <DandiAssetContext.Provider value={dandiAssetContextValue}>
+            <SetupContextAnnotationsProvider>
+                <DandisetView
+                    width={width}
+                    height={height}
+                    dandisetId={route.dandisetId}
+                    dandisetVersion={route.dandisetVersion}
+                    useStaging={!!route.staging}
+                    onOpenAssets={handleOpenAssets}
+                />
+            </SetupContextAnnotationsProvider>
+        </DandiAssetContext.Provider>
     )
 
 }

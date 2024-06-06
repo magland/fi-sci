@@ -7,13 +7,14 @@ import { serializeBigInt, valueToElement } from "../BrowseNwbView/BrowseNwbView"
 import { useDandiAssetContext } from "../DandiAssetContext"
 import { useNwbFile } from "../NwbFileContext"
 import { useNwbOpenTabs } from "../NwbOpenTabsContext"
-import ViewObjectNoteIconThing from "../ObjectNote/ViewObjectNoteIconThing"
+import ViewObjectNotesIconThing from "../ObjectNote/ViewObjectNotesIconThing"
 import getAuthorizationHeaderForUrl from "../getAuthorizationHeaderForUrl"
 import { useDatasetData, useGroup } from "./NwbMainView"
 import SelectedNeurodataItemsWidget from "./SelectedNeurodataItemsWidget"
 import ModalWindow, { useModalWindow } from "@fi-sci/modal-window"
 import SupplementalDendroFilesView from "./SupplementalDendroFilesView"
 import { useSupplementalDendroFiles } from "../SupplementalDendroFilesContext"
+import ViewObjectAnalysesIconThing from "../ObjectNote/ViewObjectAnalysesIconThing"
 
 type Props = {
     width: number
@@ -300,9 +301,15 @@ const DandiTable = () => {
                     </div>
                 )
             }
-            <ViewObjectNoteIconThing
-                objectPath="/"
-            />
+            <div style={{display: 'flex', flexDirection: 'row'}}>
+                <ViewObjectNotesIconThing
+                    objectPath="/"
+                />
+                &nbsp;
+                <ViewObjectAnalysesIconThing
+                    objectPath="/"
+                />
+            </div>
             <hr />
             <ModalWindow
                 visible={supplementalFilesVisible}

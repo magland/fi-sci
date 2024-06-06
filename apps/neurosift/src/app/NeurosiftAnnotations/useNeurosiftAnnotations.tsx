@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 type NeurosiftAnnotationsContextType = {
     neurosiftAnnotationsAccessToken?: string
     setNeurosiftAnnotationsAccessToken: (accessToken: string) => void
+    neurosiftAnnotationsUserId?: string
 }
 
 const defaultNeurosiftAnnotationsContext: NeurosiftAnnotationsContextType = {
@@ -18,7 +19,8 @@ const useNeurosiftAnnotations = () => {
     const cc = useContext(NeurosiftAnnotationsContext)
     return {
         neurosiftAnnotationsAccessToken: cc.neurosiftAnnotationsAccessToken,
-        setNeurosiftAnnotationsAccessToken: cc.setNeurosiftAnnotationsAccessToken
+        setNeurosiftAnnotationsAccessToken: cc.setNeurosiftAnnotationsAccessToken,
+        neurosiftAnnotationsUserId: cc.neurosiftAnnotationsUserId
     }
 }
 
@@ -31,8 +33,36 @@ export const SetupNeurosiftAnnotationsProvider = ({children}: {children: React.R
         }
     }, [])
 
+    const [neurosiftAnnotationsUserId, setNeurosiftAnnotationsUserId] = useState<string | undefined>(undefined)
+    useEffect(() => {
+        let canceled = false;
+        setNeurosiftAnnotationsUserId(undefined)
+        if (!neurosiftAnnotationsAccessToken) {
+            return
+        }
+        ;(async () => {
+            const url = 'https://api.github.com/user'
+            const response = await fetch(url, {
+                headers: {
+                    Authorization: `token ${neurosiftAnnotationsAccessToken}`
+                }
+            })
+            if (canceled) return
+            if (!response.ok) {
+                console.error('Failed to fetch user info', response)
+                return
+            }
+            const resp = await response.json()
+            const userId = 'github|' + resp.login;
+            setNeurosiftAnnotationsUserId(userId)
+        })()
+        return () => {
+            canceled = true
+        }
+    }, [neurosiftAnnotationsAccessToken])
+
     return (
-        <NeurosiftAnnotationsContext.Provider value={{neurosiftAnnotationsAccessToken, setNeurosiftAnnotationsAccessToken}}>
+        <NeurosiftAnnotationsContext.Provider value={{neurosiftAnnotationsAccessToken, setNeurosiftAnnotationsAccessToken, neurosiftAnnotationsUserId}}>
             {children}
         </NeurosiftAnnotationsContext.Provider>
     )

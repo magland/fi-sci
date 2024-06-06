@@ -66,7 +66,7 @@ const ApiKeysWindow: FunctionComponent<ApiKeysWindowProps> = ({onClose}) => {
             </table>
             <hr />
             {auth.userId && !newDendroApiKey && (
-                <Hyperlink onClick={handleGenerateDendroApiKey}>Re-generate Dendro API key for user <UserIdComponent userId={auth.userId} /></Hyperlink>
+                <Hyperlink onClick={handleGenerateDendroApiKey}>Re-generate Dendro API key for <UserIdComponent userId={auth.userId} /></Hyperlink>
             )}
             {!auth.userId && (
                 <p>You must be logged in to generate a Dendro API key.</p>

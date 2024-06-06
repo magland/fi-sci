@@ -4,7 +4,7 @@ import { FunctionComponent, useEffect, useMemo, useReducer, useState } from "rea
 import { useCustomStatusBarElements } from "../../StatusBar"
 import useRoute, { StorageType } from "../../useRoute"
 import { AssociatedDendroProject, DandiAssetContext, DandiAssetContextType, defaultDandiAssetContext, useDandiAssetContext } from "./DandiAssetContext"
-import { SetupNwbFileAnnotationsProvider } from "./NwbFileAnnotations/useNwbFileAnnotations"
+import { SetupContextAnnotationsProvider } from "./NeurosiftAnnotations/useContextAnnotations"
 import { NwbFileContext } from "./NwbFileContext"
 import { SetupNwbOpenTabs } from "./NwbOpenTabsContext"
 import NwbTabWidget from "./NwbTabWidget"
@@ -302,13 +302,13 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
             <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
                 <SetupNwbOpenTabs>
                     <SetupNwbFileSpecificationsProvider>
-                        <SetupNwbFileAnnotationsProvider>
+                        <SetupContextAnnotationsProvider>
                             <NwbTabWidget
                                 width={width}
                                 height={height}
                                 usingLindi={usingLindi}
                             />
-                        </SetupNwbFileAnnotationsProvider>
+                        </SetupContextAnnotationsProvider>
                     </SetupNwbFileSpecificationsProvider>
                 </SetupNwbOpenTabs>
             </SelectedItemViewsContext.Provider>
