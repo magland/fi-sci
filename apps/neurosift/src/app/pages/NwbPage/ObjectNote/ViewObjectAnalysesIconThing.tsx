@@ -14,7 +14,7 @@ const ViewObjectAnalysesIconThing: FunctionComponent<ViewObjectAnalysesIconThing
     const {contextAnnotations} = useContextAnnotations()
     const theseAnalyses = useMemo(() => {
         if (!contextAnnotations) return undefined
-        return  contextAnnotations.filter(a => a.annotationType === 'analysis' && (!objectPath || a.annotation.objectPath === objectPath))
+        return  contextAnnotations.filter(a => a.annotationType === 'jpfiddle' && (!objectPath || a.annotation.objectPath === objectPath))
     }, [contextAnnotations, objectPath])
 
     const {handleOpen: openAnalyses, handleClose: closeAnalyses, visible: analysesVisible} = useModalWindow()
