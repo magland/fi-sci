@@ -32,7 +32,8 @@ const ApplicationBar: FunctionComponent<Props> = () => {
     // light greenish background color for app bar
     // const barColor = '#e0ffe0'
 
-    const barColor = '#65a6fc'
+    // const barColor = '#65a6fc'
+    const barColor = '#333'
 
     // const bannerColor = '#00a000'
     const titleColor = 'white'
