@@ -1,4 +1,4 @@
-type SupportedArrayType = Float32Array | Int32Array | Int16Array | Int8Array | Uint32Array | Uint16Array | Uint8Array;
+type SupportedArrayType = Float32Array | Int32Array | Int16Array | Int8Array | Uint32Array | Uint16Array | Uint8Array | Float64Array;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deserializeReturnValue = (x: any): any => {
@@ -26,6 +26,11 @@ const deserializeReturnValue = (x: any): any => {
           return applyShape(new Uint16Array(dataBuffer), shape);
         case 'uint8':
           return applyShape(new Uint8Array(dataBuffer), shape);
+        case 'float64':
+          if (shapeProduct(shape) > 100) {
+            console.info('WARNING: Using float64 array. It may be a good idea to cast the array to float32 if you do not need the full precision', shape);
+          }
+          return applyShape(new Float64Array(dataBuffer), shape)
         default:
           throw Error(`Datatype not yet implemented for ndarray: ${dtype}`);
       }
@@ -128,6 +133,12 @@ const applyShape = (
     throw Error('Not yet implemented');
   }
 };
+
+function shapeProduct(shape: number[]) {
+  let ret = 1
+  for (const a of shape) ret *= a
+  return ret
+}
 
 const _base64ToArrayBuffer = (base64: string): ArrayBuffer => {
   const binary_string = window.atob(base64);
