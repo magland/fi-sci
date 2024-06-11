@@ -6,6 +6,7 @@ import { timeAgoString } from "../../timeStrings";
 import { FiddleAnnotationView } from "../NwbPage/ObjectNote/ObjectAnalysesView";
 import { Hyperlink } from "@fi-sci/misc";
 import useRoute from "../../useRoute";
+import { NeurosiftAnnotationsLoginView } from "../../ApiKeysWindow/ApiKeysWindow";
 
 type AnnotationsPageProps = {
     width: number;
@@ -19,10 +20,8 @@ const AnnotationsPage: FunctionComponent<AnnotationsPageProps> = ({ width, heigh
 
     if (!neurosiftAnnotationsUserId) {
         return (
-            <div>
-                <p>
-                    You are not signed in with neurosift-annotations. To sign in, use the ANNOTATIONS tab on an NWB file view.
-                </p>
+            <div style={{padding: 20}}>
+                <NeurosiftAnnotationsLoginView />
             </div>
         )
     }
@@ -36,6 +35,9 @@ const AnnotationsPage: FunctionComponent<AnnotationsPageProps> = ({ width, heigh
     return (
         <div style={{ position: 'absolute', width, height, backgroundColor: '#fff', overflowY: 'auto' }}>
             <div style={{padding: 20}}>
+                <div>
+                    <NeurosiftAnnotationsLoginView />
+                </div>
                 <table className="nwb-table">
                     <thead>
                         <tr>

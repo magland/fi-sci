@@ -10,7 +10,7 @@ type NeurosiftAnnotationsViewProps = {
 }
 
 const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps> = ({ width, height }) => {
-    const {neurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
+    const {neurosiftAnnotationsUserId} = useNeurosiftAnnotations()
     const {contextAnnotations, refreshContextAnnotations} = useContextAnnotations()
     useEffect(() => {
         refreshContextAnnotations()
@@ -34,13 +34,15 @@ const NeurosiftAnnotationsView: FunctionComponent<NeurosiftAnnotationsViewProps>
                 onLoggedIn={undefined}
             />
             <hr />
-            {neurosiftAnnotationsAccessToken && (<span>
-                {contextAnnotations && <div>
-                    <p>This file has {contextAnnotations.length} {contextAnnotations.length === 1 ? 'annotation' : 'annotations'}.</p>
-                </div>}
+            {neurosiftAnnotationsUserId && (
                 <div>
                     <p>You can add a top-level note for this file (see icon on left panel), or add notes to individual neurodata objects.</p>
                 </div>
+            )}
+            {(<span>
+                {contextAnnotations && <div>
+                    <p>This file has {contextAnnotations.length} {contextAnnotations.length === 1 ? 'annotation' : 'annotations'}.</p>
+                </div>}
                 {
                     itemPathsWithAnnotations.length > 0 && (
                         <div>

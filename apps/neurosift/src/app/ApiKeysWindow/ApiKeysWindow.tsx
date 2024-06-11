@@ -87,7 +87,7 @@ export const NeurosiftAnnotationsLoginView: FunctionComponent<NeurosiftAnnotatio
         setRefreshCount(c => c + 1)
     }, [])
     const [logInHasBeenAttempted, setLogInHasBeenAttempted] = useState(false)
-    const {neurosiftAnnotationsAccessToken, setNeurosiftAnnotationsAccessToken} = useNeurosiftAnnotations()
+    const {setNeurosiftAnnotationsAccessToken, neurosiftAnnotationsUserId} = useNeurosiftAnnotations()
     useEffect(() => {
         // check every 1 second for login
         let lastAccessToken: string | null = null
@@ -103,10 +103,10 @@ export const NeurosiftAnnotationsLoginView: FunctionComponent<NeurosiftAnnotatio
         }, 1000)
         return () => clearInterval(interval)
     }, [logInHasBeenAttempted, onLoggedIn, setNeurosiftAnnotationsAccessToken])
-    if (neurosiftAnnotationsAccessToken) {
+    if (neurosiftAnnotationsUserId) {
         return (
             <div>
-                <span style={{color: 'darkgreen'}}>You are logged in to Neurosift Annotations.</span>&nbsp;
+                <span style={{color: 'darkgreen'}}>You are signed in to Neurosift Annotations.</span>&nbsp;
                 <Hyperlink onClick={() => {
                     localStorage.removeItem('neurosift-annotations-access-token')
                     refresh()
@@ -120,12 +120,12 @@ export const NeurosiftAnnotationsLoginView: FunctionComponent<NeurosiftAnnotatio
     else {
         return (
             <div>
-                You are not logged in to neurosift-annotations.&nbsp;
+                You are not signed in to neurosift-annotations.&nbsp;
                 <Hyperlink onClick={() => {
                     setLogInHasBeenAttempted(true)
                     window.open('https://neurosift-annotations.vercel.app/logIn', '_blank', 'height=600,width=600')
                 }}>
-                    Log in
+                    Sign in
                 </Hyperlink>
                 {onClose && <div>
                     <Button onClick={onClose}>Close</Button>
