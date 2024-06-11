@@ -2,10 +2,10 @@ import { RemoteH5FileX } from "@fi-sci/remote-h5-file"
 import { ToggleButton, ToggleButtonGroup } from "@mui/material"
 import { FunctionComponent, useEffect, useState } from "react"
 import BrowseNwbView from "../BrowseNwbView/BrowseNwbView"
-import DendroView from "../DendroView/DendroView"
 import NeurosiftAnnotationsView from "../NeurosiftAnnotationsView/NeurosiftAnnotationsView"
 import DefaultNwbFileView from "./DefaultNwbFileView"
 import SpecificationsView from "../SpecificationsView/SpecificationsView"
+import WidgetsView from "../WidgetsView/WidgetsView"
 
 type Props = {
     width: number
@@ -13,7 +13,7 @@ type Props = {
     nwbFile: RemoteH5FileX
 }
 
-type ViewMode = 'default' | 'raw' | 'specifications' | 'dendro' | 'annotations'
+type ViewMode = 'default' | 'raw' | 'specifications' | 'widgets' | 'dendro' | 'annotations'
 
 const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile }) => {
     const topBarHeight = 50
@@ -50,17 +50,25 @@ const NwbMainViewMainPanel: FunctionComponent<Props> = ({ width, height, nwbFile
                     />
                 )}
             </div>
-            <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'dendro' ? undefined : 'hidden' }}>
+            {/* <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'dendro' ? undefined : 'hidden' }}>
                 {hasBeenVisibleViewModes.includes('dendro') && (
                     <DendroView
                         width={width}
                         height={height - topBarHeight}
                     />
                 )}
-            </div>
+            </div> */}
             <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'specifications' ? undefined : 'hidden' }}>
                 {hasBeenVisibleViewModes.includes('specifications') && (
                     <SpecificationsView
+                        width={width}
+                        height={height - topBarHeight}
+                    />
+                )}
+            </div>
+            <div style={{ position: 'absolute', width, height: height - topBarHeight, top: topBarHeight, visibility: viewMode === 'widgets' ? undefined : 'hidden' }}>
+                {hasBeenVisibleViewModes.includes('widgets') && (
+                    <WidgetsView
                         width={width}
                         height={height - topBarHeight}
                     />
@@ -106,6 +114,7 @@ const ViewModeToggleButton: FunctionComponent<ViewModeToggleButtonProps> = ({ vi
             <ToggleButton value="raw">Raw</ToggleButton>
             {/* disable for now until we develop it more */}
             {/* <ToggleButton value="dendro">Dendro</ToggleButton> */}
+            <ToggleButton value="widgets">Widgets</ToggleButton>
             <ToggleButton value="specifications">Specifications</ToggleButton>
             <ToggleButton value="annotations">Annotations</ToggleButton>
         </ToggleButtonGroup>

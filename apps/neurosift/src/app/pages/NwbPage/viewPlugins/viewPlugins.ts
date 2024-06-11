@@ -4,7 +4,7 @@ import { FunctionComponent } from "react"
 import BehavioralEventsItemView from "./BehavioralEvents/BehavioralEventsItemView"
 import DynamicTableView from "./DynamicTable/DynamicTableView"
 import ImageSegmentationItemView from "./ImageSegmentation/ImageSegmentationItemView"
-import ImageSeriesItemView from "./ImageSeries/ImageSeriesItemView"
+// import ImageSeriesItemView from "./ImageSeries/ImageSeriesItemView"
 import ImagesItemView from "./Images/ImagesItemView"
 import LabeledEventsItemView from "./LabeledEvents/LabeledEventsItemView"
 import PSTHItemView from "./PSTH/PSTHItemView"
@@ -214,14 +214,14 @@ viewPlugins.push({
 // See https://flatironinstitute.github.io/neurosift/#/nwb?url=https://dandiarchive.s3.amazonaws.com/blobs/8cf/38e/8cf38e36-6cd8-4c10-9d74-c2e6be70f019
 // for an example that has a LabeledEvents object inside processing/behavior
 
-// ImageSeries
-viewPlugins.push({
-    name: 'ImageSeries',
-    neurodataType: 'ImageSeries',
-    defaultForNeurodataType: true,
-    component: ImageSeriesItemView,
-    isTimeView: false
-})
+// // ImageSeries
+// viewPlugins.push({
+//     name: 'ImageSeries',
+//     neurodataType: 'ImageSeries',
+//     defaultForNeurodataType: true,
+//     component: ImageSeriesItemView,
+//     isTimeView: false
+// })
 
 // Units
 viewPlugins.push({
@@ -233,7 +233,7 @@ viewPlugins.push({
     getCustomPythonCode: getCustomPythonCodeForUnits
 })
 viewPlugins.push({
-    name: 'DirectRasterPlot',
+    name: 'RasterPlot',
     neurodataType: 'Units',
     defaultForNeurodataType: false,
     buttonLabel: 'raster plot',
@@ -241,7 +241,7 @@ viewPlugins.push({
     isTimeView: true,
     getCustomPythonCode: getCustomPythonCodeForUnits,
     testLinks: [
-        'https://neurosift.app/?p=/nwb&dandisetId=000946&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/3764f5c5-0d06-4f24-9bf2-d2849b1e9d0c/download/&tab=view:DirectRasterPlot|/units'
+        'https://neurosift.app/?p=/nwb&dandisetId=000946&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/3764f5c5-0d06-4f24-9bf2-d2849b1e9d0c/download/&tab=view:RasterPlot|/units'
     ]
 })
 viewPlugins.push({
