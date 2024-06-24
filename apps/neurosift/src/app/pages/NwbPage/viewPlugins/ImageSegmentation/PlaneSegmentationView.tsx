@@ -126,7 +126,7 @@ const determineImageSizeFromNwbFileContext = async (nwbFile: RemoteH5FileX, obje
                 continue
             }
             for (const ds of imagesGroup.datasets) {
-                if (ds.attrs['neurodata_type'] === 'Image') {
+                if ((ds.attrs['neurodata_type'] === 'Image') || (ds.attrs['neurodata_type'] === 'GrayscaleImage')) {
                     if (ds.shape.length === 2) {
                         return ds.shape
                     }
