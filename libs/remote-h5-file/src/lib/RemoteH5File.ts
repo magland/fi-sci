@@ -67,7 +67,7 @@ type GetDatasetResponse = {
 export class RemoteH5File {
   #groupCache: { [path: string]: GetGroupResponse | null } = {}; // null means in progress
   #datasetCache: { [path: string]: GetDatasetResponse | null } = {}; // null means in progress
-  constructor(public url: string) {}
+  constructor(public url: string, private o: {chunkSize?: number}) {}
   get dataIsRemote() {
     return !this.url.startsWith('http://localhost');
   }
@@ -92,7 +92,7 @@ export class RemoteH5File {
           type: 'getGroup',
           url: this.url,
           path,
-          chunkSize: defaultChunkSize,
+          chunkSize: this.o.chunkSize || defaultChunkSize,
         },
         dummyCanceler
       );
@@ -125,7 +125,7 @@ export class RemoteH5File {
           type: 'getDataset',
           url: this.url,
           path,
-          chunkSize: defaultChunkSize,
+          chunkSize: this.o.chunkSize || defaultChunkSize,
         },
         dummyCanceler
       );
@@ -170,7 +170,7 @@ export class RemoteH5File {
           url: urlToUse,
           path,
           slice,
-          chunkSize: defaultChunkSize,
+          chunkSize: this.o.chunkSize || defaultChunkSize,
         },
         canceler || dummyCanceler
       );
@@ -354,7 +354,7 @@ const globalRemoteH5Files: { [url: string]: RemoteH5File } = {};
 export const getRemoteH5File = async (url: string) => {
   const kk = url;
   if (!globalRemoteH5Files[kk]) {
-    globalRemoteH5Files[kk] = new RemoteH5File(url);
+    globalRemoteH5Files[kk] = new RemoteH5File(url, {})
   }
   return globalRemoteH5Files[kk];
 };

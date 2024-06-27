@@ -125,7 +125,7 @@ const useRemoteH5File = (url: string) => {
         let canceled = false
         ;(async () => {
             setFile(null)
-            const f = new RemoteH5File(url)
+            const f = new RemoteH5File(url, {chunkSize: 1024 * 1024 * 2}) // use larger chunk size than default
             if (canceled) return
             setFile(f)
         })()
