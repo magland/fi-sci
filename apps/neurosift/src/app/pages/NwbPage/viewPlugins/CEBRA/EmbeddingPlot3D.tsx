@@ -1,13 +1,13 @@
 import { FunctionComponent, useMemo, useState } from "react"
 import LazyPlotlyPlot from "./LazyPlotlyPlot"
 
-type EmbeddingPlotPlotProps = {
+type EmbeddingPlot3DPlotProps = {
     embedding: number[][]
     width: number
     height: number
 }
 
-const EmbeddingPlot: FunctionComponent<EmbeddingPlotPlotProps> = ({ embedding, width, height }) => {
+const EmbeddingPlot3D: FunctionComponent<EmbeddingPlot3DPlotProps> = ({ embedding, width, height }) => {
     // const numDatapoints = embedding.length
     const numDimensions = embedding[0].length
     const dimensionChoices = [...new Array(numDimensions).keys()]
@@ -67,7 +67,7 @@ type DimensionsSelectorProps = {
     dimensionChoices: number[]
 }
 
-const DimensionsSelector: FunctionComponent<DimensionsSelectorProps> = ({ dims, setDims, dimensionChoices }) => {
+export const DimensionsSelector: FunctionComponent<DimensionsSelectorProps> = ({ dims, setDims, dimensionChoices }) => {
     return (
         <div>
             <select value={dims.d1} onChange={e => {
@@ -122,4 +122,4 @@ const DimensionsSelector: FunctionComponent<DimensionsSelectorProps> = ({ dims, 
     )
 }
 
-export default EmbeddingPlot
+export default EmbeddingPlot3D

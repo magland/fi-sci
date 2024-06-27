@@ -1,11 +1,12 @@
 import { Hyperlink } from "@fi-sci/misc"
 import { RemoteH5File } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
-import EmbeddingPlot from "./EmbeddingPlot"
+import EmbeddingPlot3D from "./EmbeddingPlot3D"
 import LossPlot from "./LossPlot"
 import getIntrinsicDimensionMarkdown from "./getIntrinsicDimensionMarkdown"
 import Markdown from "../../../../Markdown/Markdown"
 import getPowerSpectrumMarkdown from "./getPowerSpectrumMarkdown"
+import EmbeddingTimePlot from "./EmbeddingTimePlot"
 
 type CEBRAOutputViewProps = {
     cebraOutputUrl: string
@@ -25,12 +26,22 @@ const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputU
             <ShowOutputUrl url={cebraOutputUrl} />
             <div>&nbsp;</div>
             {embedding ? (
-                <EmbeddingPlot
+                <EmbeddingPlot3D
                     embedding={embedding}
                     width={800}
                     height={400}
                 />
             ) : (
+                <div style={{position: 'relative', width: 800, height: 400}}>Loading embedding data...</div>
+            )}
+            {embedding ? (
+                <EmbeddingTimePlot
+                    embedding={embedding}
+                    binSizeMsec={binSizeMsec}
+                    width={1400}
+                    height={300}
+                />
+            ): (
                 <div style={{position: 'relative', width: 800, height: 400}}>Loading embedding data...</div>
             )}
             {loss ? (
