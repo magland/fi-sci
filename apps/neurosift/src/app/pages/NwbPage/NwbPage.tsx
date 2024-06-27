@@ -264,23 +264,22 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
             const urlListSupplemented = [...urlList, ...selectedSupplementalUrls]
             const storageTypeListSupplemented = [...route.storageType, ...selectedSupplementalUrls.map(() => 'lindi' as StorageType)] // for now we assume all supplemental are lindi
             const {urls: urlListResolved, storageTypes: storageTypeResolved} = await getResolvedUrls(urlListSupplemented, storageTypeListSupplemented, {dandisetId})
-            const metaUrls = await getMetaUrls(urlListResolved, storageTypeResolved)
             if (canceled) return
             let f: MergedRemoteH5File | RemoteH5File | RemoteH5FileZarr | RemoteH5FileLindi
             setUsingLindi(storageTypeResolved.includes('lindi'))
             if (urlListResolved.length === 1) {
                 if (storageTypeResolved[0] === 'zarr') {
-                    f = await getRemoteH5FileZarr(urlListResolved[0], metaUrls[0])
+                    f = await getRemoteH5FileZarr(urlListResolved[0])
                 }
                 else if (storageTypeResolved[0] === 'lindi') {
                     f = await getRemoteH5FileLindi(urlListResolved[0])
                 }
                 else {
-                    f = await getRemoteH5File(urlListResolved[0], metaUrls[0])
+                    f = await getRemoteH5File(urlListResolved[0])
                 }
             }
             else {
-                f = await getMergedRemoteH5File(urlListResolved, metaUrls, storageTypeResolved)
+                f = await getMergedRemoteH5File(urlListResolved, storageTypeResolved)
             }
             if (canceled) return
             setNwbFile(f)
@@ -356,52 +355,6 @@ export const getEtag = async (url: string) => {
     const ret = etag.slice(1, etag.length - 1)
     etagCache[url] = ret
     return ret
-}
-
-const urlQueryString = window.location.search
-const urlQueryParams = new URLSearchParams(urlQueryString)
-
-const getMetaUrl = async (url: string, storageType: StorageType): Promise<string | undefined> => {
-    if (storageType === 'zarr') return undefined
-    if (storageType === 'lindi') return undefined
-    if (urlQueryParams.get('no-meta') === '1') return undefined
-
-    const etag = await getEtag(url)
-    if (!etag) return undefined
-    // const computedAssetBaseUrl = `https://neurosift.org/computed/nwb/ETag/${etag.slice(0, 2)}/${etag.slice(2, 4)}/${etag.slice(4, 6)}/${etag}`
-    // const metaNwbUrl = `${computedAssetBaseUrl}/meta.1.nwb`
-    // let headResponse2
-    // try {
-    //     headResponse2 = await fetch(metaNwbUrl, {method: 'HEAD'})
-    //     if (headResponse2.status === 200) {
-    //         return metaNwbUrl
-    //     }
-    // }
-    // catch(err: any) {
-    //     console.warn(`Unable to HEAD ${metaNwbUrl}: ${err.message}`)
-    // }
-    return undefined
-
-    // const aa = 'https://dandiarchive.s3.amazonaws.com/'
-    // if (!url.startsWith(aa)) {
-    //     return undefined
-    // }
-    // const pp = url.slice(aa.length)
-    // const candidateMetaUrl = `https://neurosift.org/nwb-meta/dandiarchive/${pp}`
-    // try {
-    //     const resp = await fetch(candidateMetaUrl, {method: 'HEAD'})
-    //     if (resp.status === 200) return candidateMetaUrl
-    //     // status of 404 means it wasn't found
-    // }
-    // catch(err: any) {
-    //     console.warn(`Unable to HEAD ${candidateMetaUrl}: ${err.message}`)
-    // }
-    // return undefined
-}
-
-const getMetaUrls = async (urlList: string[], storageType: StorageType[]) => {
-    const metaUrls = await Promise.all(urlList.map((url, i) => getMetaUrl(url, storageType[i])))
-    return metaUrls
 }
 
 const getResolvedUrl = async (url: string, storageType: StorageType, o: {dandisetId?: string}): Promise<{url: string, storageType: StorageType}> => {

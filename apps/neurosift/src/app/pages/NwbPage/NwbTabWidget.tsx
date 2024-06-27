@@ -32,7 +32,14 @@ const NwbTabWidget: FunctionComponent<{width: number, height: number, usingLindi
             onCloseTab={fileName => closeTab(fileName)}
         >
             {openTabs.map(({tabName}) => (
-                <TabChild key={tabName} tabName={tabName} usingLindi={usingLindi} initialTimeSelection={initialTimeSelections[tabName]} initialStateString={(initialStateStrings || {})[tabName]} width={0} height={0} />
+                <TabChild
+                    key={tabName}
+                    tabName={tabName}
+                    usingLindi={usingLindi}
+                    initialTimeSelection={initialTimeSelections[tabName]}
+                    initialStateString={(initialStateStrings || {})[tabName]} width={0} height={0}
+                    hidden={tabName !== currentTabName}
+                />
             ))}
         </TabWidget>
     )
@@ -46,9 +53,10 @@ type TabChildProps = {
     initialStateString?: string
     condensed?: boolean
     usingLindi: boolean
+    hidden?: boolean
 }
 
-const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, initialStateString, usingLindi}) => {
+const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, initialStateString, usingLindi, hidden}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
     const specifications = useNwbFileSpecifications()
@@ -96,6 +104,7 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
                                 condensed={condensed}
                                 tabName={tabName}
                                 initialStateString={initialStateString}
+                                hidden={hidden}
                             />
                         ) : <div>View plugin not found: {tabName}</div>
                     ) : tabName.startsWith('neurodata-items:') ? (

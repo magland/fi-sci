@@ -31,6 +31,7 @@ type Props = {
     path: string
     additionalPaths?: string[]
     condensed?: boolean
+    hidden?: boolean
     initialStateString?: string
     setStateString?: (stateString: string) => void
 }

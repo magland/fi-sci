@@ -14,9 +14,10 @@ type Props = {
     condensed?: boolean
     tabName?: string
     initialStateString?: string
+    hidden?: boolean
 }
 
-const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, itemPath, additionalItemPaths, initialStateString, condensed, tabName}) => {
+const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, itemPath, additionalItemPaths, initialStateString, condensed, tabName, hidden}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
     const group = useGroup(nwbFile, itemPath)
@@ -30,6 +31,7 @@ const ViewItemWidget: FunctionComponent<Props> = ({width, height, viewPlugin, it
             path={itemPath}
             additionalPaths={additionalItemPaths}
             condensed={condensed}
+            hidden={hidden}
             initialStateString={viewPlugin.usesState ? initialStateString : undefined}
             setStateString={viewPlugin.usesState ? setStateString : undefined}
         />

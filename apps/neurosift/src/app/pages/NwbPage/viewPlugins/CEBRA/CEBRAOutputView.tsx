@@ -125,7 +125,7 @@ const useRemoteH5File = (url: string) => {
         let canceled = false
         ;(async () => {
             setFile(null)
-            const f = new RemoteH5File(url, undefined)
+            const f = new RemoteH5File(url)
             if (canceled) return
             setFile(f)
         })()

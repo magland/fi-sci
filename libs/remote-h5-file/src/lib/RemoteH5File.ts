@@ -44,7 +44,6 @@ export type DatasetDataType =
   | Uint16Array
   | Uint32Array;
 
-const chunkSizeForMetaFile = 1024 * 1024 * 4;
 const defaultChunkSize = 1024 * 100;
 // const defaultChunkSize = 1024 * 1024 * 2
 
@@ -68,7 +67,7 @@ type GetDatasetResponse = {
 export class RemoteH5File {
   #groupCache: { [path: string]: GetGroupResponse | null } = {}; // null means in progress
   #datasetCache: { [path: string]: GetDatasetResponse | null } = {}; // null means in progress
-  constructor(public url: string, private metaUrl: string | undefined) {}
+  constructor(public url: string) {}
   get dataIsRemote() {
     return !this.url.startsWith('http://localhost');
   }
@@ -91,9 +90,9 @@ export class RemoteH5File {
       resp = await postRemoteH5WorkerRequest(
         {
           type: 'getGroup',
-          url: this.metaUrl || this.url,
+          url: this.url,
           path,
-          chunkSize: this.metaUrl ? chunkSizeForMetaFile : defaultChunkSize,
+          chunkSize: defaultChunkSize,
         },
         dummyCanceler
       );
@@ -124,9 +123,9 @@ export class RemoteH5File {
       resp = await postRemoteH5WorkerRequest(
         {
           type: 'getDataset',
-          url: this.metaUrl || this.url,
+          url: this.url,
           path,
-          chunkSize: this.metaUrl ? chunkSizeForMetaFile : defaultChunkSize,
+          chunkSize: defaultChunkSize,
         },
         dummyCanceler
       );
@@ -156,7 +155,7 @@ export class RemoteH5File {
     }
     const ds = await this.getDataset(path);
     if (!ds) return undefined;
-    let urlToUse: string = this.metaUrl || this.url;
+    let urlToUse: string = this.url;
     if (product(ds.shape) > 100) {
       urlToUse = this.url;
     }
@@ -171,7 +170,7 @@ export class RemoteH5File {
           url: urlToUse,
           path,
           slice,
-          chunkSize: urlToUse === this.metaUrl ? chunkSizeForMetaFile : defaultChunkSize,
+          chunkSize: defaultChunkSize,
         },
         canceler || dummyCanceler
       );
@@ -352,39 +351,38 @@ const mergeSubgroups = (subgroups: RemoteH5Subgroup[]): RemoteH5Subgroup => {
 };
 
 const globalRemoteH5Files: { [url: string]: RemoteH5File } = {};
-export const getRemoteH5File = async (url: string, metaUrl?: string) => {
-  const kk = url + '|' + metaUrl;
+export const getRemoteH5File = async (url: string) => {
+  const kk = url;
   if (!globalRemoteH5Files[kk]) {
-    globalRemoteH5Files[kk] = new RemoteH5File(url, metaUrl);
+    globalRemoteH5Files[kk] = new RemoteH5File(url);
   }
   return globalRemoteH5Files[kk];
 };
 
 const globalMergedRemoteH5Files: { [kk: string]: MergedRemoteH5File } = {};
-export const getMergedRemoteH5File = async (urls: string[], metaUrls: (string | undefined)[], storageType: ('h5' | 'zarr' | 'lindi')[]) => {
+export const getMergedRemoteH5File = async (urls: string[], storageType: ('h5' | 'zarr' | 'lindi')[]) => {
   if (urls.length === 0) throw Error(`Length of urls must be > 0`);
-  if (metaUrls.length !== urls.length) throw Error(`Length of metaUrls must be equal to length of urls`);
   if (storageType.length !== urls.length) throw Error(`Length of storageType must be equal to length of urls`);
   if (urls.length === 1) {
     if (storageType[0] === 'zarr') {
-      return await getRemoteH5FileZarr(urls[0], metaUrls[0]);
+      return await getRemoteH5FileZarr(urls[0]);
     } else if (storageType[0] === 'lindi') {
       return await getRemoteH5FileLindi(urls[0]);
     } else {
-      return await getRemoteH5File(urls[0], metaUrls[0]);
+      return await getRemoteH5File(urls[0]);
     }
   }
-  const kk = urls.join('|') + '|||' + metaUrls.join('|');
+  const kk = urls.join('|');
   if (!globalMergedRemoteH5Files[kk]) {
     const files = await Promise.all(urls.map((url, i) => {
       if (storageType[i] === 'zarr') {
-        return getRemoteH5FileZarr(url, metaUrls[i]);
+        return getRemoteH5FileZarr(url);
       }
       else if (storageType[i] === 'lindi') {
         return getRemoteH5FileLindi(url);
       }
       else {
-        return getRemoteH5File(url, metaUrls[i])
+        return getRemoteH5File(url)
       }
     }));
     globalMergedRemoteH5Files[kk] = new MergedRemoteH5File(files);

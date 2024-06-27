@@ -287,11 +287,11 @@ const getNameFromPath = (path: string) => {
 
 const lock1: {locked: boolean} = {locked: false};
 const globalZarrRemoteH5Files: { [url: string]: RemoteH5FileZarr } = {};
-export const getRemoteH5FileZarr = async (url: string, metaUrl: string | undefined) => {
+export const getRemoteH5FileZarr = async (url: string) => {
   while (lock1.locked) await new Promise(resolve => setTimeout(resolve, 100));
   try {
     lock1.locked = true;
-    const kk = url + '|' + metaUrl;
+    const kk = url;
     if (!globalZarrRemoteH5Files[kk]) {
       globalZarrRemoteH5Files[kk] = await RemoteH5FileZarr.create(url);
     }
