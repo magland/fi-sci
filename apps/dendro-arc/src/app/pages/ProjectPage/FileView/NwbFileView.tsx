@@ -20,7 +20,7 @@ export const useNwbFile = (nwbUrl?: string) => {
         if (!nwbUrl) return
         ; (async () => {
             const resolvedNwbUrl = await getResolvedUrl(nwbUrl)
-            const f = await getRemoteH5File(resolvedNwbUrl, undefined)
+            const f = await getRemoteH5File(resolvedNwbUrl)
             if (canceled) return
             setNwbFile(f)
         })()

@@ -15,7 +15,7 @@ class SpikeTrainsClientFromRemoteNwb {
     ) {
     }
     static async create(url: string) {
-        const nwbFile = await getRemoteH5File(url, undefined)
+        const nwbFile = await getRemoteH5File(url)
         const unitIds = await nwbFile.getDatasetData('/units/id', {}) as any as (string | number)[]
         if (!unitIds) throw Error(`Not able to get /units/id from ${url}`)
         const spikeTimesIndices = await nwbFile.getDatasetData('/units/spike_times_index', {})

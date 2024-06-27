@@ -25,7 +25,7 @@ type SpikeSortingAnalysisViewProps = {
 //   useEffect(() => {
 //     setH5File(undefined);
 //     if (!url) return;
-//     getRemoteH5File(url, '')
+//     getRemoteH5File(url)
 //       .then((h5File: RemoteH5File) => {
 //         setH5File(h5File);
 //       })

@@ -49,7 +49,7 @@ class RemoteH5FileSliceBenchmark {
     #cacheBust = cacheBust()
     async setup(h5_url: string, object_name: string, slice: [number, number][] | undefined) {
         console.info('Setting up remote file...', h5_url, object_name, slice)
-        this.#remoteFile = await getRemoteH5File(h5_url + `?cb=${this.#cacheBust}`, undefined)
+        this.#remoteFile = await getRemoteH5File(h5_url + `?cb=${this.#cacheBust}`)
         // read metadata during setup
         this.#remoteFile.getDataset(object_name)
     }

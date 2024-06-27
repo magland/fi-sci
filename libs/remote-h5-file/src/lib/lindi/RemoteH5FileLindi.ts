@@ -165,7 +165,7 @@ class RemoteH5FileLindi {
     // old system (not used by lindi)
     const externalHdf5 = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.external_hdf5')
     if (externalHdf5) {
-      const a = await getRemoteH5File(externalHdf5.url, undefined);
+      const a = await getRemoteH5File(externalHdf5.url);
       return a.getDatasetData(externalHdf5.name, o);
     }
 
@@ -176,7 +176,7 @@ class RemoteH5FileLindi {
       if (this.#cacheDisabled) {
         url0 += `?cacheBust=${Date.now()}`;
       }
-      const a = await getRemoteH5File(url0, undefined);
+      const a = await getRemoteH5File(url0);
       return a.getDatasetData(externalArrayLink.name, o);
     }
 
