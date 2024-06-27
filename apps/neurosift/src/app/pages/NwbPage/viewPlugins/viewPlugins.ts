@@ -23,6 +23,7 @@ import TestVideoItemView from "./TestVideo/TestVideoItemView"
 import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
 import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
+import CEBRAView from "./CEBRA/CEBRAView"
 
 type Props = {
     width: number,
@@ -204,6 +205,7 @@ viewPlugins.push({
         'https://neurosift.app/?p=/nwb&dandisetId=000568&dandisetVersion=0.230705.1633&url=https://api.dandiarchive.org/api/assets/72bebc59-e73e-4d6b-b4ab-086d054583d6/download/&tab=neurodata-item:/processing/behavior/RewardEventsLinearTrack|LabeledEvents'
     ]
 })
+
 // viewPlugins.push({
 //     name: 'HelloWorld',
 //     neurodataType: 'LabeledEvents', // hi-jacking this type for now
@@ -243,6 +245,15 @@ viewPlugins.push({
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=000946&dandisetVersion=draft&url=https://api.dandiarchive.org/api/assets/3764f5c5-0d06-4f24-9bf2-d2849b1e9d0c/download/&tab=view:RasterPlot|/units'
     ]
+})
+// CEBRA
+viewPlugins.push({
+    name: 'CEBRA',
+    neurodataType: 'Units',
+    defaultForNeurodataType: false,
+    component: CEBRAView,
+    isTimeView: true,
+    testLinks: []
 })
 viewPlugins.push({
     name: 'AverageWaveforms',
