@@ -1,14 +1,18 @@
+import { Hyperlink } from "@fi-sci/misc"
 import { RemoteH5File } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
 import EmbeddingPlot from "./EmbeddingPlot"
 import LossPlot from "./LossPlot"
-import { Hyperlink } from "@fi-sci/misc"
+import getIntrinsicDimensionMarkdown from "./getIntrinsicDimensionMarkdown"
+import Markdown from "../../../../Markdown/Markdown"
+import getPowerSpectrumMarkdown from "./getPowerSpectrumMarkdown"
 
 type CEBRAOutputViewProps = {
     cebraOutputUrl: string
+    binSizeMsec: number
 }
 
-const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputUrl }) => {
+const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputUrl, binSizeMsec }) => {
     const outputFile = useRemoteH5File(cebraOutputUrl)
     const loss = useLoss(outputFile)
     const embedding = useEmebdding(outputFile)
@@ -38,6 +42,16 @@ const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputU
             ) : (
                 <div style={{position: 'relative', width: 800, height: 400}}>Loading loss data...</div>
             )}
+            <div>&nbsp;</div>
+            <hr />
+            <Markdown
+                source={getIntrinsicDimensionMarkdown(cebraOutputUrl)}
+            />
+            <div>&nbsp;</div>
+            <hr />
+            <Markdown
+                source={getPowerSpectrumMarkdown(cebraOutputUrl, binSizeMsec)}
+            />
         </div>
     )
 }

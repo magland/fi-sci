@@ -76,8 +76,18 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         const jobDefinitionEncoded = encodeURIComponent(JSON.stringify(jobDefinition))
         const title='Neurosift: CEBRA Embedding'
         const notes = window.location.href
-        return `https://pairio.vercel.app/playground?service=${serviceName}&app=${appName}&processor=${processorName}&job_definition=${jobDefinitionEncoded}&title=${encodeURIComponent(title)}&notes=${encodeURIComponent(notes)}`
-    }, [jobDefinition])
+        const queryStrings = [
+            `service=${serviceName}`,
+            `app=${appName}`,
+            `processor=${processorName}`,
+            `job_definition=${jobDefinitionEncoded}`,
+            job ? `job=${job.jobId || ''}` : '',
+            `title=${encodeURIComponent(title)}`,
+            `notes=${encodeURIComponent(notes)}`
+        ].filter(s => (s.length > 0))
+        const q = queryStrings.join('&')
+        return `https://pairio.vercel.app/playground?${q}`
+    }, [jobDefinition, job])
 
     const cebraOutputUrl = useMemo(() => {
         if (!job) return undefined
@@ -151,6 +161,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                 cebraOutputUrl && (
                     <CEBRAOutputView
                         cebraOutputUrl={cebraOutputUrl}
+                        binSizeMsec={binSizeMsec}
                     />
                 )
             }
