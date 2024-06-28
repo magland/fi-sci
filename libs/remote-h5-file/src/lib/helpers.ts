@@ -37,7 +37,6 @@ class RemoteH5WorkerWrapper {
     // this.#worker = createWorker('https://cdn.jsdelivr.net/gh/magland/remote-h5-worker@0.1.2/dist/RemoteH5Worker.js');
 
     // but maybe it's faster and more reliable to load from cloudflare
-    console.log('------------ abc')
     this.#worker = createWorker('https://tempory.net/js/RemoteH5Worker.js')
   }
   get numRunningRequests() {

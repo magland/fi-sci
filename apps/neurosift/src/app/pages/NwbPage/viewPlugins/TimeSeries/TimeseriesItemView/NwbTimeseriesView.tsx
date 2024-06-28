@@ -302,10 +302,10 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
             style={{position: 'absolute', width, height}}
             onKeyDown={handleKeyDown2}
         >
-            <div style={{position: 'absolute', width, height}}>
+            <div style={{position: 'absolute', width, height: height}}>
                 <TimeScrollView2
                     width={width}
-                    height={height - timeSelectionBarHeight}
+                    height={height}
                     onCanvasElement={setCanvasElement}
                     gridlineOpts={gridlineOpts}
                     yAxisInfo={yAxisInfo}

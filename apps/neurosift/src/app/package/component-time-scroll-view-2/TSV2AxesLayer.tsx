@@ -24,12 +24,14 @@ const TSV2AxesLayer: FunctionComponent<TSV2AxesLayerProps> = (props) => {
     }, [props])
 
     return (
-        <BaseCanvas
-            width={width}
-            height={height}
-            draw={paint}
-            drawData={emptyDrawData}
-        />
+        <span className="TSV2AxesLayer">
+            <BaseCanvas
+                width={width}
+                height={height}
+                draw={paint}
+                drawData={emptyDrawData}
+            />
+        </span>
     )
 }
 

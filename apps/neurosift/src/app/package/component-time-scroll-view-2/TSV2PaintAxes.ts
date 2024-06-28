@@ -44,7 +44,11 @@ const paintYTicks = (context: CanvasRenderingContext2D, tickSet: TickSet, xAxisY
     context.textBaseline = 'middle'
     ticks.forEach(tick => {
         if (!tick.pixelValue) return
-        const pixelValueWithMargin = tick.pixelValue + topMargin
+
+        // Fixed this issue on 6/28/2024
+        // const pixelValueWithMargin = tick.pixelValue + topMargin
+        const pixelValueWithMargin = tick.pixelValue
+
         context.strokeStyle = tick.isMajor ? 'gray' : 'lightgray'
         context.fillStyle = tick.isMajor ? 'black' : 'gray'
         const rightPixel = !o.hideGridlines ? plotRightPx : yAxisXCoordinate
