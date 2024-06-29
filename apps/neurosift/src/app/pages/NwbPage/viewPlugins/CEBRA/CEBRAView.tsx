@@ -1,4 +1,4 @@
-import { FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, isFindJobByDefinitionResponse } from "../../../../pairio/types"
+import { FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isFindJobByDefinitionResponse } from "../../../../pairio/types"
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
@@ -31,6 +31,8 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
     const [maxIterations, setMaxIterations] = useState<MaxIterationsChoice>(1000)
     const [binSizeMsec, setBinSizeMsec] = useState<BinSizeMsecChoice>(20)
     const [outputDimensions, setOutputDimensions] = useState<OutputDimensionsChoice>(10)
+
+    const [requireGpu, setRequireGpu] = useState<boolean>(true)
 
     const nwbUrl = useMemo(() => {
         return nwbFile.getUrls()[0]
@@ -66,6 +68,13 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         }]
     } : undefined), [maxIterations, binSizeMsec, outputDimensions, nwbUrl, path])
 
+    const requiredResources: PairioJobRequiredResources = useMemo(() => ({
+        numCpus: 4,
+        numGpus: requireGpu ? 1 : 0,
+        memoryGb: 8,
+        timeSec: 60 * 50
+    }), [requireGpu])
+
     const { job, refreshJob } = useJob(jobDefinition)
 
     const pairioPlaygroundJobUrl = useMemo(() => {
@@ -74,6 +83,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         const appName = 'hello_cebra'
         const processorName = 'cebra_nwb_embedding_5'
         const jobDefinitionEncoded = encodeURIComponent(JSON.stringify(jobDefinition))
+        const requiredResourcesEncoded = encodeURIComponent(JSON.stringify(requiredResources))
         const title='Neurosift: CEBRA Embedding'
         const notes = window.location.href
         const queryStrings = [
@@ -81,13 +91,14 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
             `app=${appName}`,
             `processor=${processorName}`,
             `job_definition=${jobDefinitionEncoded}`,
+            `required_resources=${requiredResourcesEncoded}`,
             job ? `job=${job.jobId || ''}` : '',
             `title=${encodeURIComponent(title)}`,
             `notes=${encodeURIComponent(notes)}`
         ].filter(s => (s.length > 0))
         const q = queryStrings.join('&')
         return `https://pairio.vercel.app/playground?${q}`
-    }, [jobDefinition, job])
+    }, [jobDefinition, job, requiredResources])
 
     const cebraOutputUrl = useMemo(() => {
         if (!job) return undefined
@@ -127,6 +138,14 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                         </td>
                         <td>
                             <OutputDimensionsSelector value={outputDimensions} setValue={setOutputDimensions} choices={[1, 2, 3, 4, 5, 10, 20]} />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Require GPU:
+                        </td>
+                        <td>
+                            <input type="checkbox" checked={requireGpu} onChange={(e) => setRequireGpu(e.target.checked)} />
                         </td>
                     </tr>
                 </tbody>
