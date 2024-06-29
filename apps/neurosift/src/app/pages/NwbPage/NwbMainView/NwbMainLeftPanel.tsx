@@ -139,7 +139,7 @@ type DatasetDataViewProps = {
 
 const DatasetDataView: FunctionComponent<DatasetDataViewProps> = ({nwbFile, path, renderer}) => {
     const {data: datasetData} = useDatasetData(nwbFile, path)
-    if (!datasetData) return <span>Loading...</span>
+    if (datasetData === undefined) return <span>Loading...</span>
     if ((typeof(datasetData) === 'string') && (datasetData.length > 500)) {
         return (
             <div style={{height: 100, overflowY: 'auto'}}>
