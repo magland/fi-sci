@@ -15,7 +15,7 @@ import lindi
 url = "${cebraOutputUrl}"
 bin_size_msec = ${binSizeMsec}
 
-f = lindi.LindiH5pyFile.from_hdf5_file(url)
+f = lindi.LindiH5pyFile.from_lindi_file(url)
 embedding = f['embedding'][()]
 
 def power_spectrum(data, fs):

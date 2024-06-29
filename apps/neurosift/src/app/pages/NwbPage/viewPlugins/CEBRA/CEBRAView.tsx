@@ -38,7 +38,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
 
     const jobDefinition: PairioJobDefinition | undefined = useMemo(() => (nwbUrl ? {
         appName: 'hello_cebra',
-        processorName: 'cebra_nwb_embedding_4',
+        processorName: 'cebra_nwb_embedding_5',
         inputFiles: [{
             name: 'input',
             fileBaseName: nwbUrl.endsWith('.lindi.json') ? 'input.lindi.json' : 'input.nwb',
@@ -46,7 +46,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         }],
         outputFiles: [{
             name: 'output',
-            fileBaseName: 'cebra.h5'
+            fileBaseName: 'cebra.lindi.json',
         }],
         parameters: [{
             name: 'max_iterations',
@@ -72,7 +72,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         if (!jobDefinition) return undefined
         const serviceName = 'hello_world_service'
         const appName = 'hello_cebra'
-        const processorName = 'cebra_nwb_embedding_4'
+        const processorName = 'cebra_nwb_embedding_5'
         const jobDefinitionEncoded = encodeURIComponent(JSON.stringify(jobDefinition))
         const title='Neurosift: CEBRA Embedding'
         const notes = window.location.href
@@ -143,7 +143,12 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                                     Job not found. {refreshJobButton}
                                 </div>
                                 <div>
-                                    {pairioPlaygroundJobUrl && <a href={pairioPlaygroundJobUrl} target="_blank" rel="noreferrer">Create job</a>}
+                                    {pairioPlaygroundJobUrl && <a href={pairioPlaygroundJobUrl} target="_blank" rel="noreferrer">Submit job</a>}
+                                </div>
+                                <div>
+                                    <p>
+                                        This job has not yet been submitted. Click the "Submit job" link above to be taken to the Pairio web site to submit the job.
+                                    </p>
                                 </div>
                             </div>
                         ) : (

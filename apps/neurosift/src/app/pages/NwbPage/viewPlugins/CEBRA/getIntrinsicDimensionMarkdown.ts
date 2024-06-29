@@ -12,7 +12,7 @@ import lindi
 
 url = "${cebraOutputUrl}"
 
-f = lindi.LindiH5pyFile.from_hdf5_file(url)
+f = lindi.LindiH5pyFile.from_lindi_file(url)
 embedding = f['embedding'][()]
 
 num_timepoints = embedding.shape[0]

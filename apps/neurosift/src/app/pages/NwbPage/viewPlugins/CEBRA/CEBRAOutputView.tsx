@@ -1,12 +1,12 @@
 import { Hyperlink } from "@fi-sci/misc"
-import { RemoteH5File } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileLindi, RemoteH5FileX, getRemoteH5FileLindi } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
+import Markdown from "../../../../Markdown/Markdown"
 import EmbeddingPlot3D from "./EmbeddingPlot3D"
+import EmbeddingTimePlot from "./EmbeddingTimePlot"
 import LossPlot from "./LossPlot"
 import getIntrinsicDimensionMarkdown from "./getIntrinsicDimensionMarkdown"
-import Markdown from "../../../../Markdown/Markdown"
 import getPowerSpectrumMarkdown from "./getPowerSpectrumMarkdown"
-import EmbeddingTimePlot from "./EmbeddingTimePlot"
 
 type CEBRAOutputViewProps = {
     cebraOutputUrl: string
@@ -14,7 +14,7 @@ type CEBRAOutputViewProps = {
 }
 
 const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputUrl, binSizeMsec }) => {
-    const outputFile = useRemoteH5File(cebraOutputUrl)
+    const outputFile = useRemoteH5FileLindi(cebraOutputUrl)
     const loss = useLoss(outputFile)
     const embedding = useEmebdding(outputFile)
 
@@ -67,7 +67,7 @@ const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputU
     )
 }
 
-const useLoss = (h5: RemoteH5File | null) => {
+const useLoss = (h5: RemoteH5FileX | null) => {
     const [loss, setLoss] = useState<any | null>(null)
     useEffect(() => {
         let canceled = false
@@ -83,7 +83,7 @@ const useLoss = (h5: RemoteH5File | null) => {
     return loss
 }
 
-const useEmebdding = (h5: RemoteH5File | null) => {
+const useEmebdding = (h5: RemoteH5FileX | null) => {
     const [embedding, setEmbedding] = useState<number[][] | null>(null)
     useEffect(() => {
         let canceled = false
@@ -119,13 +119,13 @@ const reshape2D = (data: any, shape: [number, number]) => {
 }
 
 
-const useRemoteH5File = (url: string) => {
-    const [file, setFile] = useState<RemoteH5File | null>(null)
+const useRemoteH5FileLindi = (url: string) => {
+    const [file, setFile] = useState<RemoteH5FileLindi | null>(null)
     useEffect(() => {
         let canceled = false
         ;(async () => {
             setFile(null)
-            const f = new RemoteH5File(url, {chunkSize: 1024 * 1024 * 2}) // use larger chunk size than default
+            const f = await getRemoteH5FileLindi(url)
             if (canceled) return
             setFile(f)
         })()

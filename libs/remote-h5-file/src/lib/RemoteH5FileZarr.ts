@@ -79,7 +79,7 @@ class RemoteH5FileZarr {
   async getGroup(path: string): Promise<RemoteH5Group | undefined> {
     if (path === '') path = '/';
     let group: RemoteH5Group | undefined;
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     let zgroup: ZMetaDataZGroup | undefined
     let zattrs: ZMetaDataZAttrs | undefined
     if (path === '/') {
@@ -131,7 +131,7 @@ class RemoteH5FileZarr {
     return group;
   }
   async getDataset(path: string): Promise<RemoteH5Dataset | undefined> {
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     const zarray = this.zmetadata.metadata[pathWithoutBeginningSlash + '/.zarray'] as ZMetaDataZArray;
     const zattrs = (this.zmetadata.metadata[pathWithoutBeginningSlash + '/.zattrs'] || {}) as ZMetaDataZAttrs;
     let dataset: RemoteH5Dataset | undefined;

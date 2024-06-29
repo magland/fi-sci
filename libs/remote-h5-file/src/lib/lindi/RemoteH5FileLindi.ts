@@ -56,7 +56,7 @@ class RemoteH5FileLindi {
   async getGroup(path: string): Promise<RemoteH5Group | undefined> {
     if (path === '') path = '/';
     let group: RemoteH5Group | undefined;
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     let zgroup: ZMetaDataZGroup | undefined
     let zattrs: ZMetaDataZAttrs | undefined
     if (path === '/') {
@@ -110,7 +110,7 @@ class RemoteH5FileLindi {
     return group;
   }
   async getDataset(path: string): Promise<RemoteH5Dataset | undefined> {
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     const zarray = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray;
     const zattrs = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zattrs') as ZMetaDataZAttrs;
     let dataset: RemoteH5Dataset | undefined;
@@ -151,7 +151,7 @@ class RemoteH5FileLindi {
       throw Error(`For now, you can't slice more than three dimensions at a time. You tried to slice ${o.slice.length} dimensions for ${path}.`);
     }
 
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     const zarray = await this.lindiFileSystemClient.readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray | undefined;
     if (!zarray) {
       console.warn('No .zarray for', path);
@@ -200,7 +200,7 @@ class RemoteH5FileLindi {
     return this.lindiFileSystemClient;
   }
   async getLindiZarray(path: string): Promise<ZMetaDataZArray | undefined> {
-    const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+    const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
     return await this.lindiFileSystemClient
       .readJson(pathWithoutBeginningSlash + '/.zarray') as ZMetaDataZArray | undefined;
   }

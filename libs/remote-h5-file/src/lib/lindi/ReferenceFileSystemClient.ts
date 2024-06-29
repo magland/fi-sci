@@ -16,6 +16,7 @@ export class ReferenceFileSystemClient {
   constructor(private obj: ReferenceFileSystemObject) {
   }
   async readJson(path: string): Promise<{[key: string]: any} | undefined> {
+    console.log('---- obj', this.obj, path, this.obj.refs[path])
     const buf = await this.readBinary(path, {decodeArray: false});
     if (!buf) return undefined;
     const text = new TextDecoder().decode(buf);

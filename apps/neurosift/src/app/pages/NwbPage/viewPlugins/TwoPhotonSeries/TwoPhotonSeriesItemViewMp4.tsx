@@ -19,7 +19,7 @@ const TwoPhotonSeriesItemViewMp4: FunctionComponent<TwoPhotonSeriesItemViewMp4Pr
         }
         const client = nwbFile._lindiFileSystemClient
             ; (async () => {
-                const pathWithoutBeginningSlash = path === '/' ? '' : path.slice(1);
+                const pathWithoutBeginningSlash = path.startsWith('/') ? path.slice(1) : path;
                 const zarray = await client.readJson(pathWithoutBeginningSlash + '/data/.zarray');
                 const compressor = zarray?.compressor
                 if (!compressor) throw Error('No compressor')
