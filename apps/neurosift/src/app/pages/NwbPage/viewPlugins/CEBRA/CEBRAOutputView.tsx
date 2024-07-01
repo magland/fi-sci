@@ -1,4 +1,3 @@
-import { Hyperlink } from "@fi-sci/misc"
 import { RemoteH5FileLindi, RemoteH5FileX, getRemoteH5FileLindi } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useEffect, useState } from "react"
 import Markdown from "../../../../Markdown/Markdown"
@@ -23,8 +22,6 @@ const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputU
     }
     return (
         <div>
-            <ShowOutputUrl url={cebraOutputUrl} />
-            <div>&nbsp;</div>
             {embedding ? (
                 <EmbeddingPlot3D
                     embedding={embedding}
@@ -63,6 +60,10 @@ const CEBRAOutputView: FunctionComponent<CEBRAOutputViewProps> = ({ cebraOutputU
             <Markdown
                 source={getPowerSpectrumMarkdown(cebraOutputUrl, binSizeMsec)}
             />
+            <hr />
+            <div>
+                Embedding URL: {cebraOutputUrl}
+            </div>
         </div>
     )
 }
@@ -133,23 +134,6 @@ const useRemoteH5FileLindi = (url: string) => {
     }, [url])
 
     return file
-}
-
-type ShowOutputUrlProps = {
-    url: string
-}
-
-const ShowOutputUrl: FunctionComponent<ShowOutputUrlProps> = ({ url }) => {
-    const [visible, setVisible] = useState(false)
-    return (
-        <div>
-            <Hyperlink onClick={() => setVisible(v => !v)}>
-                {visible ? 'Hide' : 'Show'} embedding URL</Hyperlink>
-            {visible && (
-                <div>{url}</div>
-            )}
-        </div>
-    )
 }
 
 export default CEBRAOutputView

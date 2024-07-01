@@ -1,8 +1,8 @@
-import { FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isFindJobByDefinitionResponse } from "../../../../pairio/types"
+import { CreateJobRequest, FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isCreateJobResponse, isFindJobByDefinitionResponse } from "../../../../pairio/types"
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
 import { useNwbFile } from "../../NwbFileContext"
 import { useGroup } from "../../NwbMainView/NwbMainView"
-import { SmallIconButton } from "@fi-sci/misc"
+import { Hyperlink, SmallIconButton } from "@fi-sci/misc"
 import { Refresh } from "@mui/icons-material"
 import CEBRAOutputView from "./CEBRAOutputView"
 
@@ -32,7 +32,10 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
     const [binSizeMsec, setBinSizeMsec] = useState<BinSizeMsecChoice>(20)
     const [outputDimensions, setOutputDimensions] = useState<OutputDimensionsChoice>(10)
 
-    const [requireGpu, setRequireGpu] = useState<boolean>(true)
+    const [requireGpu, setRequireGpu] = useState<boolean>(false)
+
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+    const { pairioApiKey, setPairioApiKey } = usePairioApiKey()
 
     const nwbUrl = useMemo(() => {
         return nwbFile.getUrls()[0]
@@ -77,29 +80,6 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
 
     const { job, refreshJob } = useJob(jobDefinition)
 
-    const pairioPlaygroundJobUrl = useMemo(() => {
-        if (!jobDefinition) return undefined
-        const serviceName = 'hello_world_service'
-        const appName = 'hello_cebra'
-        const processorName = 'cebra_nwb_embedding_5'
-        const jobDefinitionEncoded = encodeURIComponent(JSON.stringify(jobDefinition))
-        const requiredResourcesEncoded = encodeURIComponent(JSON.stringify(requiredResources))
-        const title='Neurosift: CEBRA Embedding'
-        const notes = window.location.href
-        const queryStrings = [
-            `service=${serviceName}`,
-            `app=${appName}`,
-            `processor=${processorName}`,
-            `job_definition=${jobDefinitionEncoded}`,
-            `required_resources=${requiredResourcesEncoded}`,
-            job ? `job=${job.jobId || ''}` : '',
-            `title=${encodeURIComponent(title)}`,
-            `notes=${encodeURIComponent(notes)}`
-        ].filter(s => (s.length > 0))
-        const q = queryStrings.join('&')
-        return `https://pairio.vercel.app/playground?${q}`
-    }, [jobDefinition, job, requiredResources])
-
     const cebraOutputUrl = useMemo(() => {
         if (!job) return undefined
         if (job.status !== 'completed') return undefined
@@ -109,6 +89,56 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
     }, [job])
 
     const refreshJobButton = <SmallIconButton icon={<Refresh />} onClick={refreshJob} />
+
+    const handleSubmitJob = useCallback(async () => {
+        if (!jobDefinition) return
+        try {
+            const req: CreateJobRequest = {
+                type: 'createJobRequest',
+                serviceName: 'hello_world_service',
+                userId: '',
+                batchId: '',
+                tags: [],
+                jobDefinition,
+                requiredResources,
+                secrets: [],
+                jobDependencies: [],
+                skipCache: false,
+                rerunFailing: true,
+                deleteFailing: true
+            }
+            const headers = {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + pairioApiKey
+            }
+            const resp = await fetch('https://pairio.vercel.app/api/createJob', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(req)
+            })
+            if (!resp.ok) {
+                console.error('Error submitting job:', resp)
+                return
+            }
+            const rr = await resp.json()
+            if (!isCreateJobResponse(rr)) {
+                console.error('Unexpected response:', rr)
+                alert('Unexpected response')
+                return
+            }
+            console.info('Submitted job:', rr.job)
+        }
+        finally {
+            setIsSubmitting(false)
+            refreshJob()
+        }
+    }, [jobDefinition, requiredResources, refreshJob, pairioApiKey])
+
+    useEffect(() => {
+        setIsSubmitting(false)
+    }, [jobDefinition])
+
+    const jobUrl = job ? `https://pairio.vercel.app/job/${job.jobId}` : undefined
 
     // just display the contents
     return (
@@ -140,14 +170,6 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                             <OutputDimensionsSelector value={outputDimensions} setValue={setOutputDimensions} choices={[1, 2, 3, 4, 5, 10, 20]} />
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            Require GPU:
-                        </td>
-                        <td>
-                            <input type="checkbox" checked={requireGpu} onChange={(e) => setRequireGpu(e.target.checked)} />
-                        </td>
-                    </tr>
                 </tbody>
             </table>
             <hr />
@@ -162,21 +184,41 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                                     Job not found. {refreshJobButton}
                                 </div>
                                 <div>
-                                    {pairioPlaygroundJobUrl && <a href={pairioPlaygroundJobUrl} target="_blank" rel="noreferrer">Submit job</a>}
+                                    {jobDefinition && <Hyperlink onClick={() => setIsSubmitting(true)}>Submit job</Hyperlink>}
                                 </div>
                                 <div>
                                     <p>
-                                        This job has not yet been submitted. Click the "Submit job" link above to be taken to the Pairio web site to submit the job.
+                                        This job has not yet been submitted.
                                     </p>
                                 </div>
                             </div>
                         ) : (
                             <div>
-                                <a href={pairioPlaygroundJobUrl} target="_blank" rel="noreferrer">
-                                    Job: {job.status}
-                                </a> {refreshJobButton}
+                                {jobUrl ? (
+                                    <a href={jobUrl} target="_blank" rel="noopener noreferrer">Job {job.status}</a>
+                                ) : <span>Job {job.status}</span>}
+                                &nbsp;{refreshJobButton}
                             </div>
                         )
+                    )
+                }
+            </div>
+            <div>
+                {
+                    isSubmitting && (
+                        <div>
+                            <div><SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} /></div>
+                            <div>
+                                Require GPU: <input type="checkbox" checked={requireGpu} onChange={(e) => setRequireGpu(e.target.checked)} />
+                            </div>
+                            <div>
+                                <button onClick={handleSubmitJob}>SUBMIT</button>
+                            </div>
+                            &nbsp;
+                            <div>
+                                <button onClick={() => setIsSubmitting(false)}>CANCEL</button>
+                            </div>
+                        </div>
                     )
                 }
             </div>
@@ -189,6 +231,30 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                     />
                 )
             }
+        </div>
+    )
+}
+
+const usePairioApiKey = () => {
+    // save in local storage
+    const [pairioApiKey, setPairioApiKey] = useState<string>('')
+    useEffect(() => {
+        const storedPairioApiKey = localStorage.getItem('pairioApiKey')
+        if (storedPairioApiKey) {
+            setPairioApiKey(storedPairioApiKey)
+        }
+    }, [])
+    useEffect(() => {
+        localStorage.setItem('pairioApiKey', pairioApiKey)
+    }, [pairioApiKey])
+    return { pairioApiKey, setPairioApiKey }
+}
+
+const SelectPairioApiKeyComponent: FunctionComponent<{value: string, setValue: (value: string) => void}> = ({value, setValue}) => {
+    return (
+        <div>
+            <label>Pairio API key:</label>
+            <input type="password" value={value} onChange={(e) => setValue(e.target.value)} />
         </div>
     )
 }
