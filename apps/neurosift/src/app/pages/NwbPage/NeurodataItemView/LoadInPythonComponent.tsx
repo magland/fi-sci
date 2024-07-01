@@ -127,7 +127,7 @@ import lindi
 url = '${url}'
 
 # Load the remote file
-f = lindi.LindiH5pyFile.from_reference_file_system(url)
+f = lindi.LindiH5pyFile.from_lindi_file(url)
 
 # load the neurodata object
 X = f['${path}']

@@ -1,11 +1,8 @@
-import { CreateJobRequest, FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isCreateJobResponse, isFindJobByDefinitionResponse } from "../../../../pairio/types"
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
+import { FunctionComponent, useMemo, useState } from "react"
+import { PairioJob, PairioJobDefinition } from "../../../../pairio/types"
 import { useNwbFile } from "../../NwbFileContext"
-import { useGroup } from "../../NwbMainView/NwbMainView"
-import { Hyperlink, SmallIconButton } from "@fi-sci/misc"
-import { Refresh } from "@mui/icons-material"
 import CEBRAOutputView from "./CEBRAOutputView"
-
+import { JobSubmitComponent, MultipleChoiceNumberSelector, getJobOutputUrl, removeLeadingSlash } from "./PairioHelpers"
 
 type Props = {
     width: number
@@ -19,23 +16,16 @@ const maxIterationsChoices: MaxIterationsChoice[] = [100, 1000, 10000]
 type BinSizeMsecChoice = 10 | 20 | 50 | 100 | 200 | 500 | 1000
 const binSizeMsecChoices: BinSizeMsecChoice[] = [10, 20, 50, 100, 200, 500, 1000]
 type OutputDimensionsChoice = 1 | 2 | 3 | 4 | 5 | 10 | 20
+const outputDimensionsChoices: OutputDimensionsChoice[] = [1, 2, 3, 4, 5, 10, 20]
 
 const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)')
 
-    // Get the group of the item to be viewed
-    const group = useGroup(nwbFile, path)
-    console.info('Group:', group)
-
     const [maxIterations, setMaxIterations] = useState<MaxIterationsChoice>(1000)
     const [binSizeMsec, setBinSizeMsec] = useState<BinSizeMsecChoice>(20)
     const [outputDimensions, setOutputDimensions] = useState<OutputDimensionsChoice>(10)
-
-    const [requireGpu, setRequireGpu] = useState<boolean>(false)
-
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-    const { pairioApiKey, setPairioApiKey } = usePairioApiKey()
+    const [job, setJob] = useState<PairioJob | undefined | null>(undefined)
 
     const nwbUrl = useMemo(() => {
         return nwbFile.getUrls()[0]
@@ -71,76 +61,8 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
         }]
     } : undefined), [maxIterations, binSizeMsec, outputDimensions, nwbUrl, path])
 
-    const requiredResources: PairioJobRequiredResources = useMemo(() => ({
-        numCpus: 4,
-        numGpus: requireGpu ? 1 : 0,
-        memoryGb: 8,
-        timeSec: 60 * 50
-    }), [requireGpu])
+    const cebraOutputUrl = getJobOutputUrl(job || undefined, 'output')
 
-    const { job, refreshJob } = useJob(jobDefinition)
-
-    const cebraOutputUrl = useMemo(() => {
-        if (!job) return undefined
-        if (job.status !== 'completed') return undefined
-        const oo = job.outputFileResults.find(r => (r.name === 'output'))
-        if (!oo) return undefined
-        return oo.url
-    }, [job])
-
-    const refreshJobButton = <SmallIconButton icon={<Refresh />} onClick={refreshJob} />
-
-    const handleSubmitJob = useCallback(async () => {
-        if (!jobDefinition) return
-        try {
-            const req: CreateJobRequest = {
-                type: 'createJobRequest',
-                serviceName: 'hello_world_service',
-                userId: '',
-                batchId: '',
-                tags: [],
-                jobDefinition,
-                requiredResources,
-                secrets: [],
-                jobDependencies: [],
-                skipCache: false,
-                rerunFailing: true,
-                deleteFailing: true
-            }
-            const headers = {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + pairioApiKey
-            }
-            const resp = await fetch('https://pairio.vercel.app/api/createJob', {
-                method: 'POST',
-                headers,
-                body: JSON.stringify(req)
-            })
-            if (!resp.ok) {
-                console.error('Error submitting job:', resp)
-                return
-            }
-            const rr = await resp.json()
-            if (!isCreateJobResponse(rr)) {
-                console.error('Unexpected response:', rr)
-                alert('Unexpected response')
-                return
-            }
-            console.info('Submitted job:', rr.job)
-        }
-        finally {
-            setIsSubmitting(false)
-            refreshJob()
-        }
-    }, [jobDefinition, requiredResources, refreshJob, pairioApiKey])
-
-    useEffect(() => {
-        setIsSubmitting(false)
-    }, [jobDefinition])
-
-    const jobUrl = job ? `https://pairio.vercel.app/job/${job.jobId}` : undefined
-
-    // just display the contents
     return (
         <div style={{position: 'absolute', width, height, overflowY: 'auto'}}>
             <h3>CEBRA Embedding</h3>
@@ -151,7 +73,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                             Max. iterations:
                         </td>
                         <td>
-                            <MaxIterationsSelector value={maxIterations} setValue={setMaxIterations} choices={maxIterationsChoices} />
+                            <MultipleChoiceNumberSelector value={maxIterations} setValue={x => setMaxIterations(x as any)} choices={maxIterationsChoices} />
                         </td>
                     </tr>
                     <tr>
@@ -159,7 +81,7 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                             Bin size (msec):
                         </td>
                         <td>
-                            <BinSizeMsecSelector value={binSizeMsec} setValue={setBinSizeMsec} choices={binSizeMsecChoices} />
+                            <MultipleChoiceNumberSelector value={binSizeMsec} setValue={x => setBinSizeMsec(x as any)} choices={binSizeMsecChoices} />
                         </td>
                     </tr>
                     <tr>
@@ -167,61 +89,17 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
                             Output dimensions:
                         </td>
                         <td>
-                            <OutputDimensionsSelector value={outputDimensions} setValue={setOutputDimensions} choices={[1, 2, 3, 4, 5, 10, 20]} />
+                            <MultipleChoiceNumberSelector value={outputDimensions} setValue={x => setOutputDimensions(x as any)} choices={outputDimensionsChoices} />
                         </td>
                     </tr>
                 </tbody>
             </table>
             <hr />
-            <div>
-                {
-                    nwbUrl && jobDefinition && (
-                        job === undefined ? (
-                            <div>Loading job...</div>
-                        ) : job === null ? (
-                            <div>
-                                <div>
-                                    Job not found. {refreshJobButton}
-                                </div>
-                                <div>
-                                    {jobDefinition && <Hyperlink onClick={() => setIsSubmitting(true)}>Submit job</Hyperlink>}
-                                </div>
-                                <div>
-                                    <p>
-                                        This job has not yet been submitted.
-                                    </p>
-                                </div>
-                            </div>
-                        ) : (
-                            <div>
-                                {jobUrl ? (
-                                    <a href={jobUrl} target="_blank" rel="noopener noreferrer">Job {job.status}</a>
-                                ) : <span>Job {job.status}</span>}
-                                &nbsp;{refreshJobButton}
-                            </div>
-                        )
-                    )
-                }
-            </div>
-            <div>
-                {
-                    isSubmitting && (
-                        <div>
-                            <div><SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} /></div>
-                            <div>
-                                Require GPU: <input type="checkbox" checked={requireGpu} onChange={(e) => setRequireGpu(e.target.checked)} />
-                            </div>
-                            <div>
-                                <button onClick={handleSubmitJob}>SUBMIT</button>
-                            </div>
-                            &nbsp;
-                            <div>
-                                <button onClick={() => setIsSubmitting(false)}>CANCEL</button>
-                            </div>
-                        </div>
-                    )
-                }
-            </div>
+            {jobDefinition && <JobSubmitComponent
+                jobDefinition={jobDefinition}
+                setJob={setJob}
+                gpuMode="optional"
+            />}
             <hr />
             {
                 cebraOutputUrl && (
@@ -235,107 +113,5 @@ const CEBRAView: FunctionComponent<Props> = ({width, height, path}) => {
     )
 }
 
-const usePairioApiKey = () => {
-    // save in local storage
-    const [pairioApiKey, setPairioApiKey] = useState<string>('')
-    useEffect(() => {
-        const storedPairioApiKey = localStorage.getItem('pairioApiKey')
-        if (storedPairioApiKey) {
-            setPairioApiKey(storedPairioApiKey)
-        }
-    }, [])
-    useEffect(() => {
-        localStorage.setItem('pairioApiKey', pairioApiKey)
-    }, [pairioApiKey])
-    return { pairioApiKey, setPairioApiKey }
-}
-
-const SelectPairioApiKeyComponent: FunctionComponent<{value: string, setValue: (value: string) => void}> = ({value, setValue}) => {
-    return (
-        <div>
-            <label>Pairio API key:</label>
-            <input type="password" value={value} onChange={(e) => setValue(e.target.value)} />
-        </div>
-    )
-}
-
-const useJob = (jobDefinition: PairioJobDefinition | undefined) => {
-    const [job, setJob] = useState<PairioJob | undefined | null>(undefined)
-    const [refreshCode, setRefreshCode] = useState(0)
-    useEffect(() => {
-        let canceled = false
-        ;(async () => {
-            if (!jobDefinition) {
-                setJob(undefined)
-                return
-            }
-            setJob(undefined)
-            const req: FindJobByDefinitionRequest = {
-                type: 'findJobByDefinitionRequest',
-                serviceName: 'hello_world_service',
-                jobDefinition
-            }
-            const resp = await fetch('https://pairio.vercel.app/api/findJobByDefinition', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(req)
-            })
-            if (!resp.ok) {
-                console.error('Error fetching job:', resp)
-                return
-            }
-            const data = await resp.json()
-            if (!isFindJobByDefinitionResponse(data)) {
-                console.error('Unexpected response:', data)
-                return
-            }
-            if (canceled) return
-            if (data.found) {
-                setJob(data.job)
-            }
-            else {
-                setJob(null)
-            }
-        })()
-        return () => { canceled = true }
-    }, [jobDefinition, refreshCode])
-    const refreshJob = useCallback(() => {
-        setRefreshCode(c => (c + 1))
-    }, [])
-    return { job, refreshJob }
-}
-
-const MaxIterationsSelector: FunctionComponent<{value: MaxIterationsChoice, setValue: (value: MaxIterationsChoice) => void, choices: MaxIterationsChoice[]}> = ({value, setValue, choices}) => {
-    return (
-        <select value={value} onChange={(e) => setValue(parseInt(e.target.value) as MaxIterationsChoice)}>
-            {choices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
-        </select>
-    )
-}
-
-const BinSizeMsecSelector: FunctionComponent<{value: BinSizeMsecChoice, setValue: (value: BinSizeMsecChoice) => void, choices: BinSizeMsecChoice[]}> = ({value, setValue, choices}) => {
-    return (
-        <select value={value} onChange={(e) => setValue(parseInt(e.target.value) as BinSizeMsecChoice)}>
-            {choices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
-        </select>
-    )
-}
-
-const OutputDimensionsSelector: FunctionComponent<{value: OutputDimensionsChoice, setValue: (value: OutputDimensionsChoice) => void, choices: OutputDimensionsChoice[]}> = ({value, setValue, choices}) => {
-    return (
-        <select value={value} onChange={(e) => setValue(parseInt(e.target.value) as OutputDimensionsChoice)}>
-            {choices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
-        </select>
-    )
-}
-
-const removeLeadingSlash = (path: string) => {
-    if (path.startsWith('/')) {
-        return path.slice(1)
-    }
-    return path
-}
 
 export default CEBRAView

@@ -120,7 +120,7 @@ const reshape2D = (data: any, shape: [number, number]) => {
 }
 
 
-const useRemoteH5FileLindi = (url: string) => {
+export const useRemoteH5FileLindi = (url: string) => {
     const [file, setFile] = useState<RemoteH5FileLindi | null>(null)
     useEffect(() => {
         let canceled = false
