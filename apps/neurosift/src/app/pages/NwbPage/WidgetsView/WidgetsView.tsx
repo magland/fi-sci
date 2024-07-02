@@ -138,16 +138,19 @@ const ViewPluginView: FunctionComponent<ViewPluginViewProps> = ({ plugin, neurod
                 style={{cursor: 'pointer', padding: 10, marginTop: 10, background: expanded ? '#336' : '#aac', color: expanded ? '#fff' : '#000', border: 'solid 1px black'}}
                 onClick={() => setExpanded(!expanded)}
             >
-                {expanded ? '▼' : '►'} {plugin.name} ({items.length})
+                {expanded ? '▼' : '►'} {plugin.name}{plugin.usesPairio ? '*' : ''} ({items.length})
             </div>
             {
                 expanded && (
                     <>{
                         items.map((item, i) => (
                             <div style={{marginLeft: 10}}>
-                                <Hyperlink onClick={() => {
-                                    onOpenTab(item.itemTabString)
-                                }}>
+                                <Hyperlink
+                                    onClick={() => {
+                                        onOpenTab(item.itemTabString)
+                                    }}
+                                    color={plugin.usesPairio ? 'darkgreen' : undefined}
+                                >
                                     {item.label}
                                 </Hyperlink>
                             </div>

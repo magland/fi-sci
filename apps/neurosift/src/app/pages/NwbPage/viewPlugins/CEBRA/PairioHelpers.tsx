@@ -1,21 +1,24 @@
 import { Hyperlink, SmallIconButton } from "@fi-sci/misc"
-import { CreateJobRequest, FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isCreateJobResponse, isFindJobByDefinitionResponse } from "../../../../pairio/types"
-import { FunctionComponent, useCallback, useEffect, useMemo, useState } from "react"
+import { CreateJobRequest, FindJobByDefinitionRequest, PairioJob, PairioJobDefinition, PairioJobRequiredResources, isCreateJobResponse, isFindJobByDefinitionResponse, GetJobsRequest, isGetJobsResponse, GetJobRequest, isGetJobResponse } from "../../../../pairio/types"
+import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useMemo, useState } from "react"
 import { Refresh } from "@mui/icons-material"
+import { timeAgoString } from "../../../../timeStrings"
 
 type JobSubmitComponentProps = {
     jobDefinition: PairioJobDefinition
-    setJob: (job: PairioJob | undefined | null) => void
+    job: PairioJob | undefined | null
+    refreshJob: () => void
+    selectedJobId: string | undefined
+    setSelectedJobId: (selectedJobId: string | undefined) => void
     gpuMode: 'required' | 'optional' | 'none'
     cpuRequiredResources?: PairioJobRequiredResources
     gpuRequiredResources?: PairioJobRequiredResources
 }
 
-export const JobSubmitComponent: FunctionComponent<JobSubmitComponentProps> = ({ jobDefinition, setJob, gpuMode, cpuRequiredResources, gpuRequiredResources }) => {
+export const JobSubmitComponent: FunctionComponent<JobSubmitComponentProps> = ({ job, refreshJob, jobDefinition, selectedJobId, setSelectedJobId, gpuMode, cpuRequiredResources, gpuRequiredResources }) => {
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [requireGpu, setRequireGpu] = useState<boolean>(false)
     const { pairioApiKey, setPairioApiKey } = usePairioApiKey()
-    const { job, refreshJob } = useJob(jobDefinition)
     const refreshJobButton = <SmallIconButton icon={<Refresh />} onClick={refreshJob} />
 
     useEffect(() => {
@@ -92,12 +95,6 @@ export const JobSubmitComponent: FunctionComponent<JobSubmitComponentProps> = ({
         setIsSubmitting(false)
     }, [jobDefinition])
 
-    useEffect(() => {
-        if (job) {
-            setJob(job)
-        }
-    }, [job, setJob])
-
     return (
         <div>
             <div>
@@ -153,7 +150,55 @@ export const JobSubmitComponent: FunctionComponent<JobSubmitComponentProps> = ({
     )
 }
 
-const usePairioApiKey = () => {
+export const useAllJobs = (o: {appName?: string, processorName?: string, inputFileUrl?: string}) => {
+    const {appName, processorName, inputFileUrl} = o
+    const [allJobs, setAllJobs] = useState<PairioJob[] | undefined | null>(undefined)
+    const [refreshCode, setRefreshCode] = useState(0)
+    const refreshAllJobs = useCallback(() => {
+        setRefreshCode(c => (c + 1))
+    }, [])
+    useEffect(() => {
+        let canceled = false
+        if (!appName) return undefined
+        if (!processorName) return undefined
+        if (!inputFileUrl) return undefined;
+        (async () => {
+            setAllJobs(undefined)
+            const req: GetJobsRequest = {
+                type: 'getJobsRequest',
+                serviceName: 'hello_world_service',
+                appName,
+                processorName,
+                inputFileUrl
+            }
+            const headers = {
+                'Content-Type': 'application/json',
+            }
+            const resp = await fetch('https://pairio.vercel.app/api/getJobs', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(req)
+            })
+            if (canceled) return
+            if (!resp.ok) {
+                console.error('Error fetching jobs:', resp)
+                setAllJobs(null)
+                return undefined
+            }
+            const rr = await resp.json()
+            if (!isGetJobsResponse(rr)) {
+                console.error('Unexpected response:', rr)
+                setAllJobs(null)
+                return undefined
+            }
+            setAllJobs(rr.jobs)
+        })()
+        return () => { canceled = true }
+    }, [appName, processorName, inputFileUrl, refreshCode])
+    return {allJobs, refreshAllJobs}
+}
+
+export const usePairioApiKey = () => {
     // save in local storage
     const [pairioApiKey, setPairioApiKey] = useState<string>('')
     useEffect(() => {
@@ -168,7 +213,7 @@ const usePairioApiKey = () => {
     return { pairioApiKey, setPairioApiKey }
 }
 
-const SelectPairioApiKeyComponent: FunctionComponent<{value: string, setValue: (value: string) => void}> = ({value, setValue}) => {
+export const SelectPairioApiKeyComponent: FunctionComponent<{value: string, setValue: (value: string) => void}> = ({value, setValue}) => {
     return (
         <div>
             <label>
@@ -184,17 +229,60 @@ const SelectPairioApiKeyComponent: FunctionComponent<{value: string, setValue: (
     )
 }
 
-const useJob = (jobDefinition: PairioJobDefinition | undefined) => {
-    const [job, setJob] = useState<PairioJob | undefined | null>(undefined)
+export const useJob = (jobId: string | undefined) => {
+    const [job, setJob] = useState<PairioJob | undefined>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
+    const refreshJob = useCallback(() => {
+        setRefreshCode(c => (c + 1))
+    }, [])
+    useEffect(() => {
+        if (!jobId) {
+            setJob(undefined)
+            return
+        }
+        let canceled = false
+        ;(async () => {
+            setJob(undefined)
+            const req: GetJobRequest = {
+                type: 'getJobRequest',
+                jobId,
+                includePrivateKey: false
+            }
+            const headers = {
+                'Content-Type': 'application/json',
+            }
+            const resp = await fetch('https://pairio.vercel.app/api/getJob', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify(req)
+            })
+            if (canceled) return
+            if (!resp.ok) {
+                console.error('Error fetching job:', resp)
+                return
+            }
+            const data = await resp.json()
+            if (!isGetJobResponse(data)) {
+                console.error('Unexpected response:', data)
+                return
+            }
+            setJob(data.job)
+        })()
+        return () => { canceled = true }
+    }, [jobId, refreshCode])
+    return { job, refreshJob }
+}
+
+export const useFindJobByDefinition = (jobDefinition: PairioJobDefinition | undefined) => {
+    const [jobId, setJobId] = useState<string | undefined | null>(undefined)
     useEffect(() => {
         let canceled = false
         ;(async () => {
             if (!jobDefinition) {
-                setJob(undefined)
+                setJobId(undefined)
                 return
             }
-            setJob(undefined)
+            setJobId(undefined)
             const req: FindJobByDefinitionRequest = {
                 type: 'findJobByDefinitionRequest',
                 serviceName: 'hello_world_service',
@@ -218,18 +306,15 @@ const useJob = (jobDefinition: PairioJobDefinition | undefined) => {
             }
             if (canceled) return
             if (data.found) {
-                setJob(data.job)
+                setJobId(data.job?.jobId)
             }
             else {
-                setJob(null)
+                setJobId(null)
             }
         })()
         return () => { canceled = true }
-    }, [jobDefinition, refreshCode])
-    const refreshJob = useCallback(() => {
-        setRefreshCode(c => (c + 1))
-    }, [])
-    return { job, refreshJob }
+    }, [jobDefinition])
+    return jobId
 }
 
 const getJobUrl = (job: PairioJob | undefined) => {
@@ -258,4 +343,129 @@ export const getJobOutputUrl = (job: PairioJob | undefined, outputName: string) 
     const oo = job.outputFileResults.find(r => (r.name === outputName))
     if (!oo) return undefined
     return oo.url
+}
+
+export const getJobParameterValue = (job: PairioJob | undefined, parameterName: string) => {
+    if (!job) return undefined
+    const pp = job.jobDefinition.parameters.find(pp => (pp.name === parameterName))
+    if (!pp) return undefined
+    return pp.value
+}
+
+type AllJobsViewProps = {
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
+    allJobs: PairioJob[] | undefined
+    refreshAllJobs: () => void
+    parameterNames: string[]
+    selectedJobId: string | undefined
+    onJobClicked: (jobId: string) => void
+}
+
+export const AllJobsView: FunctionComponent<AllJobsViewProps> = ({expanded, setExpanded, allJobs, refreshAllJobs, parameterNames, onJobClicked: jobClicked, selectedJobId}) => {
+    if (!allJobs) return <div></div>
+    return (
+        <Expandable
+            title={`View all jobs (${allJobs.length})`}
+            expanded={expanded}
+            setExpanded={setExpanded}
+        >
+            <AllJobsTable
+                allJobs={allJobs}
+                refreshAllJobs={refreshAllJobs}
+                parameterNames={parameterNames}
+                selectedJobId={selectedJobId}
+                onJobClicked={jobClicked}
+            />
+        </Expandable>
+    )
+}
+
+type AllJobsTableProps = {
+    allJobs: PairioJob[]
+    refreshAllJobs: () => void
+    parameterNames: string[]
+    selectedJobId: string | undefined
+    onJobClicked: (jobId: string) => void
+}
+
+const AllJobsTable: FunctionComponent<AllJobsTableProps> = ({allJobs, refreshAllJobs, parameterNames, selectedJobId, onJobClicked}) => {
+    return (
+        <div>
+            <div>
+                <SmallIconButton
+                    icon={<Refresh />}
+                    onClick={refreshAllJobs}
+                />
+            </div>
+            <table className="nwb-table">
+                <thead>
+                    <tr>
+                        <th>Job</th>
+                        <th>Status</th>
+                        {
+                            parameterNames.map(pn => (
+                                <th key={pn}>{pn}</th>
+                            ))
+                        }
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        allJobs.map(job => (
+                            <tr key={job.jobId} style={job.jobId === selectedJobId ? {background: '#afafaf'} : {}}>
+                                <td>
+                                    <Hyperlink onClick={() => onJobClicked(job.jobId)}>
+                                        SELECT
+                                    </Hyperlink>
+                                </td>
+                                <td>{job.status}</td>
+                                {
+                                    parameterNames.map(pn => (
+                                        <td key={pn}>{getJobParameter(job, pn)}</td>
+                                    ))
+                                }
+                                <td>
+                                    {timeAgoString(job.timestampCreatedSec)}
+                                </td>
+                            </tr>
+                        ))
+                    }
+                </tbody>
+            </table>
+        </div>
+    )
+}
+
+const getJobParameter = (job: PairioJob, parameterName: string) => {
+    const pp = job.jobDefinition.parameters.find(pp => (pp.name === parameterName))
+    if (!pp) return undefined
+    return pp.value
+}
+
+type ExpandableProps = {
+    title: string
+    expanded: boolean
+    setExpanded: (expanded: boolean) => void
+}
+
+const Expandable: FunctionComponent<PropsWithChildren<ExpandableProps>> = ({title, expanded, setExpanded, children}) => {
+    return (
+        <div>
+            <div
+                style={{cursor: 'pointer', padding: 10, background: '#f8f8f8', border: 'solid 1px #ccc'}}
+                onClick={() => setExpanded(!expanded)}
+            >
+                {expanded ? '▼' : '►'} {title}
+            </div>
+            {
+                expanded && (
+                    <div style={{padding: 10}}>
+                        {children}
+                    </div>
+                )
+            }
+        </div>
+    )
 }

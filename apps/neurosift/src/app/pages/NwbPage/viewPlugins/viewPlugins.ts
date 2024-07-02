@@ -24,7 +24,7 @@ import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecifi
 import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
 import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
 import CEBRAView from "./CEBRA/CEBRAView"
-import UnitsSummaryItemView from "./Units/UnitsSummaryItemView"
+// import UnitsSummaryItemView from "./Units/UnitsSummaryItemView"
 
 type Props = {
     width: number,
@@ -47,6 +47,7 @@ export type ViewPlugin = {
     checkEnabled?: (nwbFile: RemoteH5FileX, path: string) => Promise<boolean>
     isTimeView?: boolean
     usesState?: boolean
+    usesPairio?: boolean
     getCustomPythonCode?: (group: RemoteH5Group) => string
     testLinks?: string[]
 }
@@ -255,6 +256,7 @@ viewPlugins.push({
     defaultForNeurodataType: false,
     component: CEBRAView,
     isTimeView: true,
+    usesPairio: true,
     testLinks: []
 })
 viewPlugins.push({
@@ -303,15 +305,16 @@ viewPlugins.push({
         'https://neurosift.app/?p=/nwb&dandisetId=213569&dandisetVersion=draft&staging=1&url=https://api-staging.dandiarchive.org/api/assets/9b372ad4-a3f8-4d95-bda7-dc56637c8873/download/&st=lindi&tab=view:Autocorrelograms|/units'
     ]
 })
-viewPlugins.push({
-    name: 'UnitsSummary',
-    neurodataType: 'Units',
-    defaultForNeurodataType: false,
-    buttonLabel: 'units summary',
-    component: UnitsSummaryItemView,
-    isTimeView: false,
-    testLinks: []
-})
+// viewPlugins.push({
+//     name: 'UnitsSummary',
+//     neurodataType: 'Units',
+//     defaultForNeurodataType: false,
+//     buttonLabel: 'units summary',
+//     component: UnitsSummaryItemView,
+//     isTimeView: false,
+//     usesPairio: true,
+//     testLinks: []
+// })
 
 // viewPlugins.push({
 //     name: 'RasterPlot',

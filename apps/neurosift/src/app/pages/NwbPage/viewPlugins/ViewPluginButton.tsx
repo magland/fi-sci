@@ -49,8 +49,9 @@ const ViewPluginButton: FunctionComponent<Props> = ({viewPlugin, path}) => {
             &nbsp;
             <Hyperlink
                 onClick={handleClick}
+                color={viewPlugin.usesPairio ? 'darkgreen' : undefined}
             >
-                {buttonLabel || name}
+                {buttonLabel || name}{viewPlugin.usesPairio ? '*' : ''}
             </Hyperlink>
         </div>
     )

@@ -96,10 +96,6 @@ const TimeScrollView2: FunctionComponent<Props> = ({width, height, onCanvasEleme
     const timeTicks = useTimeTicks(canvasWidth, visibleStartTimeSec, visibleEndTimeSec, timeToPixel)
 
     const yTicks = useYAxisTicks({datamin: yAxisInfo?.yMin || 0, datamax: yAxisInfo?.yMax || 0, pixelHeight: canvasHeight - margins.left - margins.right})
-    console.log('----- yTicks.datamin / yticks.datamax', yTicks.datamin, yTicks.datamax)
-    console.log('---- yticks pixel at datamin', yToPixel(yTicks.datamin))
-    console.log('---- yticks pixel at datamax', yToPixel(yTicks.datamax))
-    console.log('---- yticks pixel at 0', yToPixel(0))
     const yTickSet: TickSet = useMemo(() => (
         {
             datamin: yTicks.datamin,
