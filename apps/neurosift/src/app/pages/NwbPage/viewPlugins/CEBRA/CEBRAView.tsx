@@ -113,6 +113,8 @@ const CEBRAView: FunctionComponent<Props> = ({ width, height, path }) => {
     return nwbFile.getUrls()[0];
   }, [nwbFile]);
 
+  const tags = useMemo(() => (['neurosift', 'CEBRA']), []);
+
   return (
     <PairioItemView
       width={width}
@@ -120,8 +122,9 @@ const CEBRAView: FunctionComponent<Props> = ({ width, height, path }) => {
       nwbUrl={nwbUrl}
       path={path}
       serviceName={serviceName}
-      appName={appName}
-      processorName={processorName}
+      appName={undefined} // go by tags instead of app/processor
+      processorName={undefined} // go by tags instead of app/processor
+      tags={tags}
       title={title}
       adjustableParameters={adjustableParameters}
       defaultAdjustableParameters={defaultAdjustableParameters}

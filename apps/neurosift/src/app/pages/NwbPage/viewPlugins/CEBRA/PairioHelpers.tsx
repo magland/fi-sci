@@ -1,34 +1,39 @@
 import { Hyperlink, SmallIconButton } from "@fi-sci/misc"
 import { Refresh } from "@mui/icons-material"
 import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useState } from "react"
-import { GetJobRequest, GetJobsRequest, PairioJob, isGetJobResponse, isGetJobsResponse } from "../../../../pairio/types"
+import { GetJobRequest, FindJobsRequest, PairioJob, isGetJobResponse, isFindJobsResponse } from "../../../../pairio/types"
 import { timeAgoString } from "../../../../timeStrings"
 
-export const useAllJobs = (o: {appName?: string, processorName?: string, inputFileUrl?: string}) => {
-    const {appName, processorName, inputFileUrl} = o
+export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: any, inputFileUrl?: string}) => {
+    const {appName, processorName, tags, inputFileUrl} = o
     const [allJobs, setAllJobs] = useState<PairioJob[] | undefined | null>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     const refreshAllJobs = useCallback(() => {
         setRefreshCode(c => (c + 1))
     }, [])
     useEffect(() => {
+        console.log('------------------- x')
         let canceled = false
-        if (!appName) return undefined
-        if (!processorName) return undefined
         if (!inputFileUrl) return undefined;
+        console.log('--------------- 1');
+        if ((!tags) && (!(processorName && appName))) return undefined;
+        console.log('--------------- 2');
         (async () => {
+            console.log('--------------- 3', appName, processorName, tags, inputFileUrl)
             setAllJobs(undefined)
-            const req: GetJobsRequest = {
-                type: 'getJobsRequest',
+            const req: FindJobsRequest = {
+                type: 'findJobsRequest',
                 serviceName: 'hello_world_service',
                 appName,
                 processorName,
+                tags: (tags && tags.length > 0) ? {'$all': tags} : undefined,
                 inputFileUrl
             }
             const headers = {
                 'Content-Type': 'application/json',
             }
-            const resp = await fetch('https://pairio.vercel.app/api/getJobs', {
+            console.log('--------------- 4')
+            const resp = await fetch('https://pairio.vercel.app/api/findJobs', {
                 method: 'POST',
                 headers,
                 body: JSON.stringify(req)
@@ -40,7 +45,7 @@ export const useAllJobs = (o: {appName?: string, processorName?: string, inputFi
                 return undefined
             }
             const rr = await resp.json()
-            if (!isGetJobsResponse(rr)) {
+            if (!isFindJobsResponse(rr)) {
                 console.error('Unexpected response:', rr)
                 setAllJobs(null)
                 return undefined
@@ -48,7 +53,7 @@ export const useAllJobs = (o: {appName?: string, processorName?: string, inputFi
             setAllJobs(rr.jobs)
         })()
         return () => { canceled = true }
-    }, [appName, processorName, inputFileUrl, refreshCode])
+    }, [appName, processorName, inputFileUrl, refreshCode, tags])
     return {allJobs, refreshAllJobs}
 }
 

@@ -45,8 +45,9 @@ type PairioItemViewProps = {
   nwbUrl: string;
   path: string;
   serviceName: string;
-  appName: string;
-  processorName: string;
+  appName?: string;
+  processorName?: string;
+  tags?: string[];
   title: string;
   adjustableParameters: { name: string; type: 'number'; choices: any[] }[];
   defaultAdjustableParameters: AdjustableParameterValues;
@@ -56,7 +57,7 @@ type PairioItemViewProps = {
   OutputComponent: FunctionComponent<{ job: PairioJob, width: number }>;
 };
 
-const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent }) => {
+const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent }) => {
   const [selectedJobId, setSelectedJobId] = useState<string | undefined>(undefined);
   const { job: selectedJob, refreshJob: refreshSelectedJob } = useJob(selectedJobId || undefined);
 
@@ -105,7 +106,8 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
     return getRequiredResources(requireGpu);
   }, [requireGpu, getRequiredResources]);
 
-  const { allJobs, refreshAllJobs } = useAllJobs({ appName, processorName, inputFileUrl });
+  // do not include service when we are finding all jobs
+  const { allJobs, refreshAllJobs } = useAllJobs({ appName, processorName, inputFileUrl, tags });
   useEffect(() => {
     if (!allJobs) return;
     if (allJobs.length === 0) {
@@ -135,7 +137,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
       serviceName,
       userId: '',
       batchId: '',
-      tags: ['neurosift'],
+      tags: tags ? tags : ['neurosift'],
       jobDefinition: newJobDefinition,
       requiredResources,
       secrets: [],
@@ -164,7 +166,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
     setSelectedJobId(rr.job.jobId);
     setAllJobsExpanded(false);
     refreshAllJobs();
-  }, [newJobDefinition, pairioApiKey, refreshAllJobs, requiredResources, serviceName]);
+  }, [newJobDefinition, pairioApiKey, refreshAllJobs, requiredResources, serviceName, tags]);
 
   return (
     <div style={{ position: 'absolute', width, height, overflowY: 'auto' }}>
@@ -172,18 +174,20 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
       {definingNewJob ? (
         <div>
           <table className="table" style={{ maxWidth: 300 }}>
-            {adjustableParameters.map((p) => (
-              <tr key={p.name}>
-                <td>{p.name}:</td>
-                <td>
-                  <MultipleChoiceNumberSelector
-                    value={adjustableParameterValues[p.name]}
-                    setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
-                    choices={p.choices}
-                  />
-                </td>
-              </tr>
-            ))}
+            <tbody>
+              {adjustableParameters.map((p) => (
+                <tr key={p.name}>
+                  <td>{p.name}:</td>
+                  <td>
+                    <MultipleChoiceNumberSelector
+                      value={adjustableParameterValues[p.name]}
+                      setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
+                      choices={p.choices}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
           <div>
             <button onClick={() => setSubmittingNewJob(true)}>SUBMIT JOB</button>
