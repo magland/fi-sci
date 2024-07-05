@@ -414,4 +414,15 @@ export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: Remot
     return {viewPlugins: viewPluginsRet, defaultViewPlugin}
 }
 
-export default viewPlugins
+const queryParams = new URLSearchParams(window.location.search)
+const uu = queryParams.get('url') || ''
+const urlIsLocal = uu.startsWith('http://localhost') || uu.startsWith('http://127.0.0.1')
+
+const viewPluginsFiltered = viewPlugins.filter(p => {
+    if (urlIsLocal) {
+        if (p.usesPairio) return false
+    }
+    return true
+})
+
+export default viewPluginsFiltered
