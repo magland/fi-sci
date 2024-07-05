@@ -191,6 +191,7 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
         width={Math.max(width - 100, 200)}
         height={250}
         nwbFile={nwbFile}
+        electricalSeriesPath={job.jobDefinition.parameters.find(p => (p.name === 'electrical_series_path'))?.value as string}
         colors={colors}
       />}
       {
@@ -265,8 +266,12 @@ const createBarElement = (value: number, maxValue: number) => {
 
 const colorsForEstimatedFiringRates = (values: number[], maxValue: number) => {
   return values.map(value => {
-    const hue = 240 * (1 - value / maxValue);
-    return `hsl(${hue}, 100%, 50%)`;
+    if (isNaN(value)) return 'rgb(0,0,0)'
+    const v = Math.min(1, value / maxValue);
+    const r = Math.floor(255 * v);
+    const g = Math.floor(255 * (1 - v));
+    const b = 0;
+    return `rgb(${r},${g},${b})`;
   });
 }
 

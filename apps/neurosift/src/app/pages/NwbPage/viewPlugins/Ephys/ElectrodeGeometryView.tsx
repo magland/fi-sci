@@ -6,14 +6,26 @@ type ElectrodeGeometryViewProps = {
     width: number
     height: number
     nwbFile: RemoteH5FileX
+    electricalSeriesPath: string
     colors?: string[]
 }
 
-const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({width, height, nwbFile, colors}) => {
+const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({width, height, nwbFile, electricalSeriesPath, colors}) => {
     const [electrodeLocations, setElectrodeLocations] = useState<ElectrodeLocation[] | undefined>(undefined)
     useEffect(() => {
         (async () => {
             setElectrodeLocations(undefined)
+            const esGrp = await nwbFile.getGroup(electricalSeriesPath)
+            if (!esGrp) {
+                console.error(`Unable to load group: ${electricalSeriesPath}`)
+                return
+            }
+            const esElectrodeIndices = await nwbFile.getDatasetData(`${electricalSeriesPath}/electrodes`, {})
+            if (!esElectrodeIndices) {
+                console.error(`Unable to load dataset: ${electricalSeriesPath}/electrodes`)
+                return
+            }
+            const electrodeIndices = Array.from(esElectrodeIndices)
             const grp = await nwbFile.getGroup('/general/extracellular_ephys/electrodes')
             if (!grp) {
                 console.error('Unable to load group: /general/extracellular_ephys/electrodes')
@@ -51,13 +63,12 @@ const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({w
                 return
             }
             const locations: ElectrodeLocation[] = []
-            for (let i = 0; i < x.length; i++) {
-                locations.push({x: x[i], y: y[i]})
+            for (let i = 0; i < electrodeIndices.length; i++) {
+                locations.push({x: x[electrodeIndices[i]], y: y[electrodeIndices[i]]})
             }
-            console.log('---- setting electrode locations', locations)
             setElectrodeLocations(locations)
         })()
-    }, [nwbFile])
+    }, [nwbFile, electricalSeriesPath])
     if (!electrodeLocations) return <div />
     return (
         <ElectrodeGeometryWidget

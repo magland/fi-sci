@@ -18,7 +18,6 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
   electrodeLocations,
   colors
 }) => {
-  console.log('--- colors', colors)
   const [hoveredElectrodeIndex, setHoveredElectrodeIndex] = useState<number | undefined>(undefined);
 
   const locations2: ElectrodeLocation[] = useMemo(() => {
@@ -115,6 +114,7 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
         }
       }
     }
+    ctx.fillStyle = 'black';
     function drawScaleBar() {
       if (!ctx) return;
       const { yp: yMaxP } = coordToPixel(0, ymax);
@@ -147,6 +147,7 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
     isotropicScale,
     coordToPixel,
     ymax,
+    colors
   ]);
 
   const handleMouseMove = useCallback(
@@ -203,7 +204,9 @@ const medianDistanceToNearestNeighbor = (locations: ElectrodeLocation[]) => {
       const loc2 = locations[j];
       if ((isNaN(loc2.x)) || (isNaN(loc2.y))) continue;
       const dist = Math.sqrt(Math.pow(loc1.x - loc2.x, 2) + Math.pow(loc1.y - loc2.y, 2));
-      minDist = Math.min(minDist, dist);
+      if (dist > 0) {
+        minDist = Math.min(minDist, dist);
+      }
     }
     distances.push(minDist);
   }
