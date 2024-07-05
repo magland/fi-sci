@@ -11,6 +11,7 @@ import {
 import {
   AllJobsView,
   MultipleChoiceNumberSelector,
+  MultipleChoiceStringSelector,
   SelectPairioApiKeyComponent,
   getJobParameterValue,
   useAllJobs,
@@ -49,7 +50,7 @@ type PairioItemViewProps = {
   processorName?: string;
   tags?: string[];
   title: string;
-  adjustableParameters: { name: string; type: 'number'; choices: any[] }[];
+  adjustableParameters: { name: string; type: 'number' | 'string'; choices: any[] }[];
   defaultAdjustableParameters: AdjustableParameterValues;
   getJobDefinition: (adjustableParameterValues: AdjustableParameterValues, inputFileUrl: string, path: string) => PairioJobDefinition;
   getRequiredResources: (requireGpu: boolean) => PairioJobRequiredResources;
@@ -179,11 +180,20 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
                 <tr key={p.name}>
                   <td>{p.name}:</td>
                   <td>
-                    <MultipleChoiceNumberSelector
-                      value={adjustableParameterValues[p.name]}
-                      setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
-                      choices={p.choices}
-                    />
+                    {
+                      p.type === 'number' ? (
+                        <MultipleChoiceNumberSelector
+                          value={adjustableParameterValues[p.name]}
+                          setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
+                          choices={p.choices}
+                        />
+                      ) : p.type === 'string' ? (
+                        <MultipleChoiceStringSelector
+                          value={adjustableParameterValues[p.name]}
+                          setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
+                          choices={p.choices} />
+                      ) : <span />
+                    }
                   </td>
                 </tr>
               ))}
@@ -225,7 +235,11 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
       {selectedJob && (
         <div>
             <JobInfoView job={selectedJob} onRefreshJob={refreshSelectedJob} parameterNames={parameterNames} />
-            <OutputComponent job={selectedJob} width={width} />
+            {
+              selectedJob && (selectedJob.status === 'completed') && (
+                <OutputComponent job={selectedJob} width={width} />
+              )
+            }
         </div>
       )}
     </div>

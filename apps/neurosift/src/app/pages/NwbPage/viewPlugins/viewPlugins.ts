@@ -25,6 +25,7 @@ import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
 import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
 import CEBRAView from "./CEBRA/CEBRAView"
 import UnitsSummaryItemView from "./Units/UnitsSummaryItemView"
+import EphysSummaryItemView from "./Ephys/EphysSummaryItemView"
 
 type Props = {
     width: number,
@@ -195,6 +196,17 @@ viewPlugins.push({
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=000957&dandisetVersion=0.240407.0142&url=https://api.dandiarchive.org/api/assets/d4bd92fc-4119-4393-b807-f007a86778a1/download/'
     ]
+})
+
+// EphysSummary
+viewPlugins.push({
+    name: 'EphysSummary',
+    neurodataType: 'ElectricalSeries',
+    defaultForNeurodataType: false,
+    component: EphysSummaryItemView,
+    isTimeView: false,
+    usesPairio: true,
+    testLinks: []
 })
 
 // LabeledEvents

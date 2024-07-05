@@ -193,10 +193,21 @@ const useUnitIds = (h5: RemoteH5FileX | null) => {
       let canceled = false
       ;(async () => {
           if (!h5) return
-          const dsData = await h5.getDatasetData('unit_ids', {})
-          if (canceled) return
-          if (!dsData) return
-          setData(dsData as any as any[])
+          const rootGroup = await h5.getGroup('/')
+          if (!rootGroup) return
+          if (rootGroup.attrs['channel_ids']) {
+            // new method
+            const channelIds = rootGroup.attrs['channel_ids']
+            if (canceled) return
+            setData(channelIds as any as string[])
+          }
+          else {
+            // old method (support first created output files)
+            const dsData = await h5.getDatasetData('unit_ids', {})
+            if (canceled) return
+            if (!dsData) return
+            setData(dsData as any as any[])
+          }
       })()
       return () => { canceled = true }
   }, [h5])

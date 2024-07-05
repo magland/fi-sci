@@ -12,14 +12,10 @@ export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: 
         setRefreshCode(c => (c + 1))
     }, [])
     useEffect(() => {
-        console.log('------------------- x')
         let canceled = false
         if (!inputFileUrl) return undefined;
-        console.log('--------------- 1');
         if ((!tags) && (!(processorName && appName))) return undefined;
-        console.log('--------------- 2');
         (async () => {
-            console.log('--------------- 3', appName, processorName, tags, inputFileUrl)
             setAllJobs(undefined)
             const req: FindJobsRequest = {
                 type: 'findJobsRequest',
@@ -32,7 +28,6 @@ export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: 
             const headers = {
                 'Content-Type': 'application/json',
             }
-            console.log('--------------- 4')
             const resp = await fetch('https://pairio.vercel.app/api/findJobs', {
                 method: 'POST',
                 headers,
@@ -135,6 +130,14 @@ export const useJob = (jobId: string | undefined) => {
 export const MultipleChoiceNumberSelector: FunctionComponent<{value: number, setValue: (value: number) => void, choices: number[]}> = ({value, setValue, choices}) => {
     return (
         <select value={value} onChange={(e) => setValue(parseInt(e.target.value))}>
+            {choices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
+        </select>
+    )
+}
+
+export const MultipleChoiceStringSelector: FunctionComponent<{value: string, setValue: (value: string) => void, choices: string[]}> = ({value, setValue, choices}) => {
+    return (
+        <select value={value} onChange={(e) => setValue(e.target.value)}>
             {choices.map(choice => <option key={choice} value={choice}>{choice}</option>)}
         </select>
     )
