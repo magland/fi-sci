@@ -18,6 +18,8 @@ import {
   useJob,
   usePairioApiKey
 } from './PairioHelpers';
+import { RemoteH5FileX } from '@fi-sci/remote-h5-file';
+import { useNwbFile } from '../../NwbFileContext';
 
 type AdjustableParameterValues = { [key: string]: any };
 
@@ -55,7 +57,7 @@ type PairioItemViewProps = {
   getJobDefinition: (adjustableParameterValues: AdjustableParameterValues, inputFileUrl: string, path: string) => PairioJobDefinition;
   getRequiredResources: (requireGpu: boolean) => PairioJobRequiredResources;
   gpuMode: 'optional' | 'required' | 'forbidden';
-  OutputComponent: FunctionComponent<{ job: PairioJob, width: number }>;
+  OutputComponent: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }>;
 };
 
 const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent }) => {
@@ -63,6 +65,8 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
   const { job: selectedJob, refreshJob: refreshSelectedJob } = useJob(selectedJobId || undefined);
 
   const inputFileUrl = nwbUrl;
+
+  const nwbFile = useNwbFile();
 
   // new job definition parameters
   const [adjustableParameterValues, adjustableParameterValuesDispatch] = useReducer(
@@ -237,7 +241,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
             <JobInfoView job={selectedJob} onRefreshJob={refreshSelectedJob} parameterNames={parameterNames} />
             {
               selectedJob && (selectedJob.status === 'completed') && (
-                <OutputComponent job={selectedJob} width={width} />
+                <OutputComponent job={selectedJob} width={width} nwbFile={nwbFile} />
               )
             }
         </div>

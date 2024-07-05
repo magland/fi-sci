@@ -113,7 +113,7 @@ const UnitsSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
   );
 };
 
-const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number }> = ({ job, width }) => {
+const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }> = ({ job, width }) => {
   const unitsSummaryOutputUrl = getJobOutputUrl(job, 'output');
   const outputFile = useRemoteH5FileLindi(unitsSummaryOutputUrl);
   const dd = useAutocorrelogramsArray(outputFile);

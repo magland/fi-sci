@@ -5,6 +5,7 @@ import { useNwbFile } from '../../NwbFileContext';
 import { getJobOutputUrl, removeLeadingSlash } from '../CEBRA/PairioHelpers';
 import PairioItemView from '../CEBRA/PairioItemView';
 import LazyPlotlyPlot from '../CEBRA/LazyPlotlyPlot';
+import ElectrodeGeometryView from './ElectrodeGeometryView';
 
 type Props = {
   width: number;
@@ -159,7 +160,7 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
 //   return choices;
 // }
 
-const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number }> = ({ job, width }) => {
+const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }> = ({ job, width, nwbFile }) => {
   const unitsSummaryOutputUrl = getJobOutputUrl(job, 'output');
   const outputFile = useRemoteH5FileLindi(unitsSummaryOutputUrl);
   const estimatedFiringRates = useEstimatedChannelFiringRatesArray(outputFile);
@@ -169,6 +170,11 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
     if (!estimatedFiringRates) return 0;
     return Math.max(...estimatedFiringRates);
   }, [estimatedFiringRates]);
+
+  const colors = useMemo(() => {
+    if (!estimatedFiringRates) return [];
+    return colorsForEstimatedFiringRates(estimatedFiringRates, maxEstimatedFiringRate);
+  }, [estimatedFiringRates, maxEstimatedFiringRate]);
 
   if (!estimatedFiringRates) {
     return <div>Loading estimated firing rates...</div>;
@@ -180,7 +186,13 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
   return (
     <div>
       <h3>Estimated channel firing rates</h3>
-      <BarGraph values={estimatedFiringRates} />
+      <BarGraph width={Math.min(800, width)} values={estimatedFiringRates} />
+      {outputFile && nwbFile && <ElectrodeGeometryView
+        width={Math.max(width - 100, 200)}
+        height={250}
+        nwbFile={nwbFile}
+        colors={colors}
+      />}
       {
         <div>
           <table className='nwb-table'>
@@ -210,10 +222,11 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
 };
 
 type BarGraphProps = {
+  width: number;
   values: number[];
 };
 
-const BarGraph: FunctionComponent<BarGraphProps> = ({ values }) => {
+const BarGraph: FunctionComponent<BarGraphProps> = ({ values, width }) => {
   const data = useMemo(() => (
     [{
       x: [...new Array(values.length).keys()].map(i => (i + 1)),
@@ -223,7 +236,7 @@ const BarGraph: FunctionComponent<BarGraphProps> = ({ values }) => {
   ), [values]);
 
   const layout = useMemo(() => ({
-    width: 800,
+    width,
     height: 400,
     title: 'Estimated channel firing rates',
     yaxis: { title: 'Estimated firing rate (Hz)' },
@@ -232,7 +245,7 @@ const BarGraph: FunctionComponent<BarGraphProps> = ({ values }) => {
       t: 30, b: 40, r: 0
     },
     showlegend: false
-  }), []);
+  }), [width]);
 
   return (
     <LazyPlotlyPlot
@@ -248,6 +261,13 @@ const createBarElement = (value: number, maxValue: number) => {
   return (
     <div style={{ width: pixels, height: 10, backgroundColor: 'blue' }}></div>
   );
+}
+
+const colorsForEstimatedFiringRates = (values: number[], maxValue: number) => {
+  return values.map(value => {
+    const hue = 240 * (1 - value / maxValue);
+    return `hsl(${hue}, 100%, 50%)`;
+  });
 }
 
 export const useRemoteH5FileLindi = (url: string | undefined) => {
@@ -283,7 +303,7 @@ const useEstimatedChannelFiringRatesArray = (h5: RemoteH5FileX | null) => {
           if (canceled) return
           const e = await h5.getDatasetData('estimated_channel_firing_rates', {})
           if (canceled) return
-          setData(e as any as number[])
+          setData(Array.from(e as any as number[]))
       })()
       return () => { canceled = true }
   }, [h5])

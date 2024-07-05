@@ -136,7 +136,7 @@ const CEBRAView: FunctionComponent<Props> = ({ width, height, path }) => {
   );
 };
 
-const CEBRAJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number }> = ({ job }) => {
+const CEBRAJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }> = ({ job }) => {
   const cebraOutputUrl = getJobOutputUrl(job, 'output');
   const outputFile = useRemoteH5FileLindi(cebraOutputUrl);
   const loss = useLoss(outputFile);

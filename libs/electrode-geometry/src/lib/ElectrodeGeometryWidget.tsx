@@ -4,6 +4,7 @@ type ElectrodeGeometryWidgetProps = {
   width: number;
   height: number;
   electrodeLocations: ElectrodeLocation[];
+  colors?: string[];
 };
 
 export type ElectrodeLocation = {
@@ -15,7 +16,9 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
   width,
   height,
   electrodeLocations,
+  colors
 }) => {
+  console.log('--- colors', colors)
   const [hoveredElectrodeIndex, setHoveredElectrodeIndex] = useState<number | undefined>(undefined);
 
   const locations2: ElectrodeLocation[] = useMemo(() => {
@@ -98,8 +101,18 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
       ctx.arc(xp, yp, markerPixelRadius, 0, 2 * Math.PI);
       ctx.stroke();
       if (i === hoveredElectrodeIndex) {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.fill();
+      }
+      else {
+        if (colors) {
+          ctx.fillStyle = colors[i];
+          ctx.fill();
+        }
+        else {
+          ctx.fillStyle = 'white';
+          ctx.fill();
+        }
       }
     }
     function drawScaleBar() {
@@ -150,7 +163,7 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
   }, []);
 
   return (
-    <div style={{ position: 'absolute', width, height }} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
+    <div style={{ position: 'relative', width, height }} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave}>
       <canvas ref={(elmt) => elmt && setCanvasElement(elmt)} width={width} height={height} />
     </div>
   );
@@ -158,17 +171,19 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
 
 const getBounds = (locations: ElectrodeLocation[]) => {
   if (locations.length === 0) return { xmin: 0, xmax: 0, ymin: 0, ymax: 0 };
-  let xmin = locations[0].x;
-  let xmax = locations[0].x;
-  let ymin = locations[0].y;
-  let ymax = locations[0].y;
+  let xmin: number | undefined
+  let xmax: number | undefined
+  let ymin: number | undefined
+  let ymax: number | undefined
   for (const loc of locations) {
-    xmin = Math.min(xmin, loc.x);
-    xmax = Math.max(xmax, loc.x);
-    ymin = Math.min(ymin, loc.y);
-    ymax = Math.max(ymax, loc.y);
+    if ((!isNaN(loc.x)) && (!isNaN(loc.y))) {
+      xmin = xmin === undefined ? loc.x : Math.min(xmin, loc.x);
+      xmax = xmax === undefined ? loc.x : Math.max(xmax, loc.x);
+      ymin = ymin === undefined ? loc.y : Math.min(ymin, loc.y);
+      ymax = ymax === undefined ? loc.y : Math.max(ymax, loc.y);
+    }
   }
-  return { xmin, xmax, ymin, ymax };
+  return { xmin: xmin || 0, xmax: xmax || 0, ymin: ymin || 0, ymax: ymax || 0 };
 };
 
 const shouldTranspose = (xspan: number, yspan: number, width: number, height: number) => {
@@ -181,10 +196,12 @@ const medianDistanceToNearestNeighbor = (locations: ElectrodeLocation[]) => {
   const distances: number[] = [];
   for (let i = 0; i < locations.length; i++) {
     const loc1 = locations[i];
+    if ((isNaN(loc1.x)) || (isNaN(loc1.y))) continue;
     let minDist = Infinity;
     for (let j = 0; j < locations.length; j++) {
       if (i === j) continue;
       const loc2 = locations[j];
+      if ((isNaN(loc2.x)) || (isNaN(loc2.y))) continue;
       const dist = Math.sqrt(Math.pow(loc1.x - loc2.x, 2) + Math.pow(loc1.y - loc2.y, 2));
       minDist = Math.min(minDist, dist);
     }
