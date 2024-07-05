@@ -84,7 +84,7 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
     // if (!electricalSeriesPathChoices) return ({ adjustableParameters: undefined, defaultAdjustableParameters: undefined });
     const adjustableParameters: { name: string; type: 'number' | 'string'; choices: any[] }[] = [
       { name: 'segment_start_time_sec', type: 'number', choices: [0] },
-      { name: 'segment_duration_sec', type: 'number', choices: [60, 60 * 5, 60 * 20] }
+      { name: 'segment_duration_sec', type: 'number', choices: [60] }
     ];
 
     const defaultAdjustableParameters = {
