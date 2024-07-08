@@ -221,12 +221,12 @@ const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
       </Expandable>
       <h2>Channel power spectra</h2>
       {
-        channelPowerSpectra && (
+        channelPowerSpectra ? (
           <ChannelPowerSpectraView
             freqs={channelPowerSpectra.freqs}
             powerSpectra={channelPowerSpectra.powerSpectra}
           />
-        )
+        ) : <span>Not found</span>
       }
     </div>
   );
