@@ -156,7 +156,7 @@ const EcephysSummaryView: FunctionComponent<EcephysSummaryViewProps> = ({ width,
     })();
 
     return () => { canceled = true; }
-  }, [arrayToUse, canvasElement, coordToPix, data.numChannels, maxVal, visibleStartTimeSec, visibleEndTimeSec]);
+  }, [arrayToUse, canvasElement, coordToPix, data.numChannels, maxVal, visibleStartTimeSec, visibleEndTimeSec, canvasWidth, canvasHeight]);
 
   useEffect(() => {
     reportTotalTimeRange(0, data.numFrames / data.samplingFrequency);

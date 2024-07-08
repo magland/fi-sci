@@ -1,5 +1,5 @@
 import { RemoteH5FileLindi, RemoteH5FileX, getRemoteH5FileLindi } from '@fi-sci/remote-h5-file';
-import { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { FunctionComponent, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { PairioJob, PairioJobDefinition, PairioJobRequiredResources } from '../../../../pairio/types';
 import { useNwbFile } from '../../NwbFileContext';
 import { getJobOutputUrl, removeLeadingSlash } from '../CEBRA/PairioHelpers';
@@ -121,7 +121,7 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
       getJobDefinition={getJobDefinition}
       getRequiredResources={getRequiredResources}
       gpuMode={gpuMode}
-      OutputComponent={UnitsSummaryJobOutputWidget}
+      OutputComponent={EphysSummaryJobOutputWidget}
     />
   );
 };
@@ -160,11 +160,12 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
 //   return choices;
 // }
 
-const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }> = ({ job, width, nwbFile }) => {
+const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }> = ({ job, width, nwbFile }) => {
   const unitsSummaryOutputUrl = getJobOutputUrl(job, 'output');
   const outputFile = useRemoteH5FileLindi(unitsSummaryOutputUrl);
   const estimatedFiringRates = useEstimatedChannelFiringRatesArray(outputFile);
   const channelIds = useChannelIds(outputFile);
+  const channelPowerSpectra = useChannelPowerSpectra(outputFile);
 
   const maxEstimatedFiringRate = useMemo(() => {
     if (!estimatedFiringRates) return 0;
@@ -185,7 +186,7 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
 
   return (
     <div>
-      <h3>Estimated channel firing rates</h3>
+      <h2>Estimated channel firing rates</h2>
       <BarGraph width={Math.min(800, width)} values={estimatedFiringRates} />
       {outputFile && nwbFile && <ElectrodeGeometryView
         width={Math.max(width - 100, 200)}
@@ -194,7 +195,7 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
         electricalSeriesPath={job.jobDefinition.parameters.find(p => (p.name === 'electrical_series_path'))?.value as string}
         colors={colors}
       />}
-      {
+      <Expandable title="table" defaultExpanded={false}>
         <div>
           <table className='nwb-table'>
             <thead>
@@ -217,8 +218,76 @@ const UnitsSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
             </tbody>
           </table>
         </div>
+      </Expandable>
+      <h2>Channel power spectra</h2>
+      {
+        channelPowerSpectra && (
+          <ChannelPowerSpectraView
+            freqs={channelPowerSpectra.freqs}
+            powerSpectra={channelPowerSpectra.powerSpectra}
+          />
+        )
       }
     </div>
+  );
+};
+
+type ExpandableProps = {
+  title: string;
+  defaultExpanded: boolean;
+};
+
+const Expandable: FunctionComponent<PropsWithChildren<ExpandableProps>> = ({ title, defaultExpanded, children }) => {
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  return (
+    <div>
+      <div style={{ cursor: 'pointer' }} onClick={() => setExpanded(!expanded)}>{expanded ? '▼' : '▶'} {title}</div>
+      {expanded && children}
+    </div>
+  );
+}
+
+type ChannelPowerSpectraViewProps = {
+  freqs: number[];
+  powerSpectra: number[][];
+};
+
+const ChannelPowerSpectraView: FunctionComponent<ChannelPowerSpectraViewProps> = ({ freqs, powerSpectra }) => {
+  const numChannels = powerSpectra.length;
+
+  const heatmap: number[][] = useMemo(() => {
+    // log of power
+    const logPowerSpectra = powerSpectra.map(row => row.map(v => Math.log10(v + 1)));
+    return logPowerSpectra;
+  }, [powerSpectra]);
+
+  const data = useMemo(() => (
+    [{
+      x: freqs,
+      y: [...new Array(powerSpectra.length).keys()],
+      z: heatmap,
+      type: 'heatmap' as any,
+      colorscale: 'Viridis',
+    }]
+  ), [powerSpectra, freqs, heatmap]);
+
+  const layout = useMemo(() => ({
+    width: 800,
+    height: Math.max(400, numChannels * 3),
+    title: 'Channel log power spectra',
+    yaxis: { title: 'Channel' },
+    xaxis: { title: 'Frequency (Hz)' },
+    margin: {
+      t: 30, b: 40, r: 0
+    },
+    showlegend: false
+  }), [numChannels]);
+
+  return (
+    <LazyPlotlyPlot
+      data={data}
+      layout={layout}
+    />
   );
 };
 
@@ -267,11 +336,9 @@ const createBarElement = (value: number, maxValue: number) => {
 const colorsForEstimatedFiringRates = (values: number[], maxValue: number) => {
   return values.map(value => {
     if (isNaN(value)) return 'rgb(0,0,0)'
-    const v = Math.min(1, value / maxValue);
-    const r = Math.floor(255 * v);
-    const g = Math.floor(255 * (1 - v));
-    const b = 0;
-    return `rgb(${r},${g},${b})`;
+    const frac = value / maxValue;
+    const v = Math.min(255, Math.round(255 * frac));
+    return `rgb(${255}, ${255 - v}, ${255 - v})`;
   });
 }
 
@@ -332,5 +399,48 @@ const useChannelIds = (h5: RemoteH5FileX | null) => {
   }, [h5])
   return data
 }
+
+const useChannelPowerSpectra = (h5: RemoteH5FileX | null) => {
+  const [data, setData] = useState<{
+    freqs: number[],
+    powerSpectra: number[][]
+  } | null>(null)
+  useEffect(() => {
+      let canceled = false
+      ;(async () => {
+          if (!h5) return
+          const freqDs = await h5.getDataset('channel_power_spectra/freq')
+          if (!freqDs) return
+          if (canceled) return
+          const freqs = await h5.getDatasetData('channel_power_spectra/freq', {})
+          if (canceled) return
+          const powerSpectraDs = await h5.getDataset('channel_power_spectra/ps')
+          if (!powerSpectraDs) return
+          if (canceled) return
+          const powerSpectra = await h5.getDatasetData('channel_power_spectra/ps', {})
+          if (canceled) return
+          setData({
+            freqs: Array.from(freqs as any as number[]),
+            powerSpectra: reshape2D(powerSpectra, [powerSpectraDs.shape[0], powerSpectraDs.shape[1]])
+          })
+      })()
+      return () => { canceled = true }
+  }, [h5])
+  return data
+}
+
+const reshape2D = (data: any, shape: [number, number]) => {
+  const rows = shape[0];
+  const cols = shape[1];
+  const ret = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(data[i * cols + j]);
+    }
+    ret.push(row);
+  }
+  return ret;
+};
 
 export default EphysSummaryItemView;
