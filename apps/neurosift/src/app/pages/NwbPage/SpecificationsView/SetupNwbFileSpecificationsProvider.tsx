@@ -145,9 +145,13 @@ const loadSpecifications = async (nwbFile: RemoteH5FileX): Promise<NwbFileSpecif
             for (const itemDataset of y.datasets) {
                 const data = await nwbFile.getDatasetData(`/specifications/${sg.name}/${vx.name}/${itemDataset.name}`, {})
                 if (!data) throw Error(`No data for /specifications/${sg.name}/${vx.name}/${itemDataset.name}`)
-                if (!(typeof data === 'string')) throw Error(`Data for /specifications/${sg.name}/${vx.name}/${itemDataset.name} is not a string`)
-                const value = JSON.parse(data)
-                B.items.push({ name: itemDataset.name, value })
+                if ((typeof data === 'string')) {
+                    const value = JSON.parse(data)
+                    B.items.push({ name: itemDataset.name, value })
+                }
+                else {
+                    console.warn(`Data for /specifications/${sg.name}/${vx.name}/${itemDataset.name} is not a string`)
+                }
             }
             A.versions.push(B)
         }
