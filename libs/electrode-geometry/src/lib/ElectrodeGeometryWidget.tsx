@@ -4,6 +4,7 @@ type ElectrodeGeometryWidgetProps = {
   width: number;
   height: number;
   electrodeLocations: ElectrodeLocation[];
+  electrodeRegions?: string[];
   colors?: string[];
 };
 
@@ -16,9 +17,22 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
   width,
   height,
   electrodeLocations,
+  electrodeRegions,
   colors
 }) => {
   const [hoveredElectrodeIndex, setHoveredElectrodeIndex] = useState<number | undefined>(undefined);
+
+  const outlineColors = useMemo(() => {
+    if (!electrodeRegions) return undefined;
+    const uniqueRegions = Array.from(new Set(electrodeRegions));
+    uniqueRegions.sort();
+    const regionIndices: number[] = [];
+    for (let i = 0; i < electrodeRegions.length; i++) {
+      const region = electrodeRegions[i];
+      regionIndices.push(uniqueRegions.indexOf(region));
+    }
+    return regionIndices.map((i) => (getColorForIndex(i)));
+  }, [electrodeRegions]);
 
   const locations2: ElectrodeLocation[] = useMemo(() => {
     const { xmin, xmax, ymin, ymax } = getBounds(electrodeLocations);
@@ -96,6 +110,9 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
     for (let i = 0; i < locations2.length; i++) {
       const loc = locations2[i];
       const { xp, yp } = coordToPixel(loc.x, loc.y);
+      if (outlineColors) {
+        ctx.strokeStyle = outlineColors[i];
+      }
       ctx.beginPath();
       ctx.arc(xp, yp, markerPixelRadius, 0, 2 * Math.PI);
       ctx.stroke();
@@ -114,6 +131,7 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
         }
       }
     }
+    ctx.strokeStyle = 'black';
     ctx.fillStyle = 'black';
     function drawScaleBar() {
       if (!ctx) return;
@@ -147,7 +165,8 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
     isotropicScale,
     coordToPixel,
     ymax,
-    colors
+    colors,
+    outlineColors
   ]);
 
   const handleMouseMove = useCallback(
@@ -222,5 +241,20 @@ const getElectrodeIndexAt = (locations: ElectrodeLocation[], x: number, y: numbe
   }
   return undefined;
 };
+
+const getColorForIndex = (i: number) => {
+  const colors = [
+    'black',
+    'darkred',
+    'darkgreen',
+    'darkblue',
+    'darkorange',
+    'darkcyan',
+    'darkmagenta',
+    'darkyellow',
+    'darkviolet'
+  ];
+  return colors[i % colors.length];
+}
 
 export default ElectrodeGeometryWidget;

@@ -12,6 +12,7 @@ type ElectrodeGeometryViewProps = {
 
 const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({width, height, nwbFile, electricalSeriesPath, colors}) => {
     const [electrodeLocations, setElectrodeLocations] = useState<ElectrodeLocation[] | undefined>(undefined)
+    // const [electrodeRegions, setElectrodeRegions] = useState<string[] | undefined>(undefined)
     useEffect(() => {
         (async () => {
             setElectrodeLocations(undefined)
@@ -37,13 +38,16 @@ const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({w
             }
             let xDatasetPath = ''
             let yDatasetPath = ''
+            let zDatasetPath = ''
             if (grp.datasets.find(ds => (ds.name === 'rel_x'))) {
                 xDatasetPath = '/general/extracellular_ephys/electrodes/rel_x'
                 yDatasetPath = '/general/extracellular_ephys/electrodes/rel_y'
+                zDatasetPath = '/general/extracellular_ephys/electrodes/rel_z'
             }
             else if (grp.datasets.find(ds => (ds.name === 'x'))) {
                 xDatasetPath = '/general/extracellular_ephys/electrodes/x'
                 yDatasetPath = '/general/extracellular_ephys/electrodes/y'
+                zDatasetPath = '/general/extracellular_ephys/electrodes/z'
             }
             else {
                 console.error('No x/y or rel_x/rel_y datasets found in group: /general/extracellular_ephys/electrodes')
@@ -57,24 +61,39 @@ const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({w
                 console.error(`Unable to load dataset: ${xDatasetPath}`)
                 return
             }
-            const y = await nwbFile.getDatasetData(yDatasetPath, {})
+            let y = await nwbFile.getDatasetData(yDatasetPath, {})
             if (!y) {
                 console.error(`Unable to load dataset: ${yDatasetPath}`)
                 return
+            }
+            const z = await nwbFile.getDatasetData(zDatasetPath, {})
+            // sometimes y is all zeros, so we use z instead
+            if ((z) && (Array.from(y).every(v => v === 0)) && (!Array.from(z).every(v => v === 0))){
+                console.info('Using z instead of y')
+                y = z
             }
             const locations: ElectrodeLocation[] = []
             for (let i = 0; i < electrodeIndices.length; i++) {
                 locations.push({x: x[electrodeIndices[i]], y: y[electrodeIndices[i]]})
             }
             setElectrodeLocations(locations)
+            // const xx = await nwbFile.getDatasetData('/general/extracellular_ephys/electrodes/location', {})
+            // if (xx) {
+            //     setElectrodeRegions(xx as any as string[])
+            // }
+            // else {
+            //     setElectrodeRegions(undefined)
+            // }
         })()
     }, [nwbFile, electricalSeriesPath])
+    console.info('Electrode locations:', electrodeLocations)
     if (!electrodeLocations) return <div />
     return (
         <ElectrodeGeometryWidget
             width={width}
             height={height}
             electrodeLocations={electrodeLocations}
+            // electrodeRegions={electrodeRegions}
             colors={colors}
         />
     )
