@@ -9,16 +9,16 @@ const LazyPlotlyPlot: FunctionComponent<PlotParams> = ({ data, layout }) => {
 	// tab Widgets, the mouse mode of the plotly plot interferes with the other
 	// tabs
 	return (
-		<ReactVisibilitySensor>
-			{({isVisible}: {isVisible: boolean}) => (isVisible && (
-				<Suspense fallback={<div>Loading plotly</div>}>
+		<Suspense fallback={<div>Loading plotly</div>}>
+			<ReactVisibilitySensor partialVisibility>
+				{({isVisible}: {isVisible: boolean}) => (isVisible ? (
 					<Plot
 						data={data}
 						layout={layout}
-					/>
-				</Suspense>
-			))}
-		</ReactVisibilitySensor>
+					/>) : (<div style={{height: layout.height, width: layout.width}}></div>)
+				)}
+			</ReactVisibilitySensor>
+		</Suspense>
 	)
 }
 
