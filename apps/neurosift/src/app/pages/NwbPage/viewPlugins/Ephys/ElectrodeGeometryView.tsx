@@ -8,9 +8,10 @@ type ElectrodeGeometryViewProps = {
     nwbFile: RemoteH5FileX
     electricalSeriesPath: string
     colors?: string[]
+    deadElectrodeIndices?: number[]
 }
 
-const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({width, height, nwbFile, electricalSeriesPath, colors}) => {
+const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({width, height, nwbFile, electricalSeriesPath, colors, deadElectrodeIndices}) => {
     const [electrodeLocations, setElectrodeLocations] = useState<ElectrodeLocation[] | undefined>(undefined)
     // const [electrodeRegions, setElectrodeRegions] = useState<string[] | undefined>(undefined)
     useEffect(() => {
@@ -86,7 +87,6 @@ const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({w
             // }
         })()
     }, [nwbFile, electricalSeriesPath])
-    console.info('Electrode locations:', electrodeLocations)
     if (!electrodeLocations) return <div />
     return (
         <ElectrodeGeometryWidget
@@ -95,6 +95,7 @@ const ElectrodeGeometryView: FunctionComponent<ElectrodeGeometryViewProps> = ({w
             electrodeLocations={electrodeLocations}
             // electrodeRegions={electrodeRegions}
             colors={colors}
+            deadElectrodeIndices={deadElectrodeIndices}
         />
     )
 }

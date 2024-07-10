@@ -6,6 +6,7 @@ type ElectrodeGeometryWidgetProps = {
   electrodeLocations: ElectrodeLocation[];
   electrodeRegions?: string[];
   colors?: string[];
+  deadElectrodeIndices?: number[];
 };
 
 export type ElectrodeLocation = {
@@ -18,7 +19,8 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
   height,
   electrodeLocations,
   electrodeRegions,
-  colors
+  colors,
+  deadElectrodeIndices
 }) => {
   const [hoveredElectrodeIndex, setHoveredElectrodeIndex] = useState<number | undefined>(undefined);
 
@@ -113,6 +115,7 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
       if (outlineColors) {
         ctx.strokeStyle = outlineColors[i];
       }
+      ctx.strokeStyle = 'black';
       ctx.beginPath();
       ctx.arc(xp, yp, markerPixelRadius, 0, 2 * Math.PI);
       ctx.stroke();
@@ -129,6 +132,19 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
           ctx.fillStyle = 'white';
           ctx.fill();
         }
+      }
+      if (deadElectrodeIndices && deadElectrodeIndices.includes(i)) {
+        console.log('---- x')
+        ctx.strokeStyle = 'gray';
+        ctx.lineWidth = 2;
+        const dd = 1;
+        ctx.beginPath();
+        ctx.moveTo(xp - markerPixelRadius - dd, yp - markerPixelRadius - dd);
+        ctx.lineTo(xp + markerPixelRadius + dd, yp + markerPixelRadius + dd);
+        ctx.moveTo(xp - markerPixelRadius - dd, yp + markerPixelRadius + dd);
+        ctx.lineTo(xp + markerPixelRadius + dd, yp - markerPixelRadius - dd);
+        ctx.stroke();
+        ctx.lineWidth = 1;
       }
     }
     ctx.strokeStyle = 'black';

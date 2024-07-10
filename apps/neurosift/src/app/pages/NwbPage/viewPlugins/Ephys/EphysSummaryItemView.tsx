@@ -166,6 +166,7 @@ const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
   const estimatedFiringRates = useEstimatedChannelFiringRatesArray(outputFile);
   const channelIds = useChannelIds(outputFile);
   const channelPowerSpectra = useChannelPowerSpectra(outputFile);
+  const deadChannelIndices = useDeadChannelIndices(channelPowerSpectra);
 
   const maxEstimatedFiringRate = useMemo(() => {
     if (!estimatedFiringRates) return 0;
@@ -193,6 +194,7 @@ const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
         height={250}
         nwbFile={nwbFile}
         electricalSeriesPath={job.jobDefinition.parameters.find(p => (p.name === 'electrical_series_path'))?.value as string}
+        deadElectrodeIndices={deadChannelIndices}
         colors={colors}
       />}
       <Expandable title="table" defaultExpanded={false}>
@@ -427,6 +429,35 @@ const useChannelPowerSpectra = (h5: RemoteH5FileX | null) => {
       return () => { canceled = true }
   }, [h5])
   return data
+}
+
+const useDeadChannelIndices = (channelPowerSpectra?: { freqs: number[], powerSpectra: number[][] } | null) => {
+  const maxima = useMemo(() => {
+    if (!channelPowerSpectra) return undefined
+    // skip the first few frequencies when computing maxima
+    return channelPowerSpectra.powerSpectra.map(row => Math.max(...row.slice(6)))
+  }, [channelPowerSpectra])
+  const deadChannelIndices = useMemo(() => {
+    // the dead channels are the outliers with the lowest maxima
+    if (!maxima) return []
+    const medianPeakPower = median(maxima)
+    const robustStdDev = 1.4826 * median(maxima.map(v => Math.abs(v - medianPeakPower)))
+    // this threshold is pretty arbitrary
+    const threshold = medianPeakPower - 25 * robustStdDev
+    return maxima.map((v, i) => (v < threshold) ? i : -1).filter(i => (i >= 0))
+  }, [maxima])
+  return deadChannelIndices
+}
+
+const median = (values: number[]) => {
+  const sorted = values.slice().sort((a, b) => a - b)
+  const n = sorted.length
+  if (n % 2 === 0) {
+    return (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+  }
+  else {
+    return sorted[(n - 1) / 2]
+  }
 }
 
 const reshape2D = (data: any, shape: [number, number]) => {
