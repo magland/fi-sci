@@ -361,6 +361,7 @@ const parseSearchString = (search: string) => {
         const b = s.split('=')
         const key = b[0]
         let value = b.slice(1).join('=')
+        value = decodeURIComponent(value)
         if (value.startsWith('"')) {
             value = value.slice(1)
         }
