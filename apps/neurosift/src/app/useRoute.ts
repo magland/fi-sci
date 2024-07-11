@@ -47,6 +47,7 @@ const useRoute = () => {
     const search = location.search
     const query = useMemo(() => (parseSearchString(search)), [search])
     const p = query.p || '/'
+    console.log('--- query', query)
     const route: Route = useMemo(() => {
         if (typeof p !== 'string') {
             console.warn('Unexpected type for p', typeof p)
@@ -360,7 +361,7 @@ const parseSearchString = (search: string) => {
     for (const s of a) {
         const b = s.split('=')
         const key = b[0]
-        const value = b[1]
+        const value = b.slice(1).join('=')
         if ((key in query) && (query[key])) {
             if (Array.isArray(query[key])) {
                 (query[key] as string[]).push(value)
