@@ -214,7 +214,7 @@ const EphysSummaryElectricalSeriesView: FunctionComponent<EphsSummaryElectricalS
             <h3>{electricalSeriesPath}</h3>
             <EphysSummaryItemView
                 width={width}
-                height={undefined}
+                height={0} // 0 here means don't impose a height
                 path={electricalSeriesPath}
                 compact={true}
             />

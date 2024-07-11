@@ -44,7 +44,7 @@ const adjustableParametersReducer = (
 
 type PairioItemViewProps = {
   width: number;
-  height?: number;
+  height: number;
   nwbUrl: string;
   path: string;
   serviceName: string;
@@ -180,7 +180,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
   }, [allJobs]);
 
   return (
-    <div style={{ position: 'relative', width, height, overflowY: 'auto' }}>
+    <div style={{ position: 'relative', width, height: height || undefined, overflowY: 'auto' }}>
       {!compact && (<>
         <h3>{title}</h3>
         {definingNewJob ? (

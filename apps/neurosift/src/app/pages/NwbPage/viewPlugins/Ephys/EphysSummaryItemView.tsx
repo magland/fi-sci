@@ -9,7 +9,7 @@ import ElectrodeGeometryView from './ElectrodeGeometryView';
 
 type Props = {
   width: number;
-  height?: number;
+  height: number;
   path: string;
   condensed?: boolean;
 

@@ -99,14 +99,14 @@ const TopLevelHeadingView: FunctionComponent<TopLevelHeadingViewProps> = ({nwbFi
     // const titlePanelColor = expanded ? '#336' : '#669'
     const titlePanelColor = expanded ? '#a67c00' : '#feb'
     const titleColor = expanded ? '#feb' : '#865c00'
-    const expandable = !!heading.groupPath
+    const expandable = !!heading.groupPath && group && (group.subgroups.length + group.datasets.length > 0)
     return (
         <div style={{marginLeft: 10}}>
             <div
                 style={{cursor: 'pointer', paddingTop: 10, paddingBottom: 10, marginTop: 10, background: titlePanelColor, color: titleColor, border: 'solid 1px black'}}
-                onClick={() => setExpanded(!expanded)}
+                onClick={() => expandable && setExpanded(!expanded)}
             >
-                {expandable ? (expanded ? '▼' : '►') : <span>&nbsp;</span>} {heading.label} <TopLevelTitlePanelText heading={heading} group={group} nwbFile={nwbFile} />
+                {expandable ? (expanded ? '▼' : '►') : <span>&nbsp;&nbsp;&nbsp;</span>} {heading.label} <TopLevelTitlePanelText heading={heading} group={group} nwbFile={nwbFile} />
             </div>
             {
                 expanded && group && (

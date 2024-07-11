@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { RemoteH5Dataset, RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
+import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { FunctionComponent, useState } from "react"
 import { useNwbFile } from "../NwbFileContext"
-import { useDataset, useDatasetData, useGroup } from "../NwbMainView/NwbMainView"
+import { useGroup } from "../NwbMainView/NwbMainView"
 import TopLevelGroupContentPanel from "./TopLevelGroupContentPanel"
 import './nwb-attributes-table.css'
 
@@ -74,13 +74,14 @@ const TopLevelGroupView: FunctionComponent<TopLevelGroupViewProps> = ({nwbFile, 
     const group = useGroup(nwbFile, '/' + name)
     const titlePanelBackgroundColor = expanded ? '#797' : '#8a8'
     const titlePanelTextColor = expanded ? 'white' : '#fff'
+    const expandable = group && (group.subgroups.length > 0 || group.datasets.length > 0)
     return (
         <div style={{marginLeft: 10}}>
             <div
                 style={{cursor: 'pointer', paddingTop: 10, paddingBottom: 10, marginTop: 10, background: titlePanelBackgroundColor, color: titlePanelTextColor, border: 'solid 1px black'}}
-                onClick={() => setExpanded(!expanded)}
+                onClick={() => expandable && setExpanded(!expanded)}
             >
-                {expanded ? '▼' : '►'} {name} <GroupTitlePanelText name={name} group={group} nwbFile={nwbFile} />
+                {expandable ? (expanded ? '▼' : '►') : <>&nbsp;&nbsp;&nbsp;</>} {name} <GroupTitlePanelText name={name} group={group} nwbFile={nwbFile} />
             </div>
             {
                 expanded && group && (
@@ -91,32 +92,32 @@ const TopLevelGroupView: FunctionComponent<TopLevelGroupViewProps> = ({nwbFile, 
     )
 }
 
-type TopLevelDatasetViewProps = {
-    nwbFile: RemoteH5FileX
-    name: string
-}
+// type TopLevelDatasetViewProps = {
+//     nwbFile: RemoteH5FileX
+//     name: string
+// }
 
-const TopLevelDatasetView: FunctionComponent<TopLevelDatasetViewProps> = ({nwbFile, name}) => {
-    const [expanded, setExpanded] = useState(false)
-    const dataset = useDataset(nwbFile, '/' + name)
-    const titlePanelBackgroundColor = expanded ? '#666' : '#777'
-    const titlePanelTextColor = expanded ? 'white' : '#fff'
-    return (
-        <div style={{marginLeft: 10}}>
-            <div
-                style={{cursor: 'pointer', paddingTop: 10, paddingBottom: 10, marginTop: 10, background: titlePanelBackgroundColor, color: titlePanelTextColor, border: 'solid 1px black'}}
-                onClick={() => setExpanded(!expanded)}
-            >
-                {expanded ? '▼' : '►'} {name} <DatasetTitlePanelText name={name} dataset={dataset} nwbFile={nwbFile} />
-            </div>
-            {
-                expanded && dataset && (
-                    <TopLevelDatasetContentPanel name={name} dataset={dataset} nwbFile={nwbFile} />
-                )
-            }
-        </div>
-    )
-}
+// const TopLevelDatasetView: FunctionComponent<TopLevelDatasetViewProps> = ({nwbFile, name}) => {
+//     const [expanded, setExpanded] = useState(false)
+//     const dataset = useDataset(nwbFile, '/' + name)
+//     const titlePanelBackgroundColor = expanded ? '#666' : '#777'
+//     const titlePanelTextColor = expanded ? 'white' : '#fff'
+//     return (
+//         <div style={{marginLeft: 10}}>
+//             <div
+//                 style={{cursor: 'pointer', paddingTop: 10, paddingBottom: 10, marginTop: 10, background: titlePanelBackgroundColor, color: titlePanelTextColor, border: 'solid 1px black'}}
+//                 onClick={() => setExpanded(!expanded)}
+//             >
+//                 {expanded ? '▼' : '►'} {name} <DatasetTitlePanelText name={name} dataset={dataset} nwbFile={nwbFile} />
+//             </div>
+//             {
+//                 expanded && dataset && (
+//                     <TopLevelDatasetContentPanel name={name} dataset={dataset} nwbFile={nwbFile} />
+//                 )
+//             }
+//         </div>
+//     )
+// }
 
 type GroupTitlePanelTextProps = {
     name: string
@@ -129,65 +130,65 @@ const GroupTitlePanelText: FunctionComponent<GroupTitlePanelTextProps> = ({name,
     return <span>({group.subgroups.length + group.datasets.length})</span>
 }
 
-type DatasetTitlePanelTextProps = {
-    name: string
-    dataset: RemoteH5Dataset | undefined
-    nwbFile: RemoteH5FileX
-}
+// type DatasetTitlePanelTextProps = {
+//     name: string
+//     dataset: RemoteH5Dataset | undefined
+//     nwbFile: RemoteH5FileX
+// }
 
-const DatasetTitlePanelText: FunctionComponent<DatasetTitlePanelTextProps> = ({name, dataset, nwbFile}) => {
-    if (!dataset) return <span>-</span>
-    return <span> (dtype: {dataset.dtype}; shape: {valueToElement(dataset.shape)})</span>
-}
+// const DatasetTitlePanelText: FunctionComponent<DatasetTitlePanelTextProps> = ({name, dataset, nwbFile}) => {
+//     if (!dataset) return <span>-</span>
+//     return <span> (dtype: {dataset.dtype}; shape: {valueToElement(dataset.shape)})</span>
+// }
 
-type TopLevelDatasetContentPanelProps = {
-    name: string
-    dataset: RemoteH5Dataset
-    nwbFile: RemoteH5FileX
-}
+// type TopLevelDatasetContentPanelProps = {
+//     name: string
+//     dataset: RemoteH5Dataset
+//     nwbFile: RemoteH5FileX
+// }
 
-const TopLevelDatasetContentPanel: FunctionComponent<TopLevelDatasetContentPanelProps> = ({name, nwbFile, dataset}) => {
-    const shape = dataset ? dataset.shape : undefined
-    const {data} = useDatasetData(nwbFile, shape !== undefined && product(shape) <= 100 ? '/' + name : undefined)
-    return (
-        <div>
-            <div>&nbsp;</div>
-            {
-                data ? valueToElement(data) : ''
-            }
-            <hr />
-            <AttributesView
-                attrs={dataset.attrs}
-            />
-            <div>&nbsp;</div>
-        </div>
-    )
-}
+// const TopLevelDatasetContentPanel: FunctionComponent<TopLevelDatasetContentPanelProps> = ({name, nwbFile, dataset}) => {
+//     const shape = dataset ? dataset.shape : undefined
+//     const {data} = useDatasetData(nwbFile, shape !== undefined && product(shape) <= 100 ? '/' + name : undefined)
+//     return (
+//         <div>
+//             <div>&nbsp;</div>
+//             {
+//                 data ? valueToElement(data) : ''
+//             }
+//             <hr />
+//             <AttributesView
+//                 attrs={dataset.attrs}
+//             />
+//             <div>&nbsp;</div>
+//         </div>
+//     )
+// }
 
-const AttributesView: FunctionComponent<{attrs: {[key: string]: any}}>= ({attrs}) => {
-        return (
-            <div style={{marginLeft: 10, marginRight: 10}}>
-                <table className="nwb-attributes-table">
-                    <thead>
-                        <tr>
-                            <th>Attribute</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {
-                            Object.keys(attrs).sort().map((key: string) => (
-                                <tr key={key}>
-                                    <td>{key}</td>
-                                    <td>{valueToElement(attrs[key])}</td>
-                                </tr>
-                            ))
-                        }
-                    </tbody>
-                </table>
-            </div>
-        )
-}
+// const AttributesView: FunctionComponent<{attrs: {[key: string]: any}}>= ({attrs}) => {
+//         return (
+//             <div style={{marginLeft: 10, marginRight: 10}}>
+//                 <table className="nwb-attributes-table">
+//                     <thead>
+//                         <tr>
+//                             <th>Attribute</th>
+//                             <th>Value</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody>
+//                         {
+//                             Object.keys(attrs).sort().map((key: string) => (
+//                                 <tr key={key}>
+//                                     <td>{key}</td>
+//                                     <td>{valueToElement(attrs[key])}</td>
+//                                 </tr>
+//                             ))
+//                         }
+//                     </tbody>
+//                 </table>
+//             </div>
+//         )
+// }
 
 export const valueToElement = (val: any): any => {
     if (typeof(val) === 'string') {
@@ -245,13 +246,13 @@ export const ReferenceComponent: FunctionComponent<{value: ReferenceValue}> = ({
     )
 }
 
-const product = (arr: number[]) => {
-    let ret = 1
-    for (const val of arr) {
-        ret = ret * val
-    }
-    return ret
-}
+// const product = (arr: number[]) => {
+//     let ret = 1
+//     for (const val of arr) {
+//         ret = ret * val
+//     }
+//     return ret
+// }
 
 export const serializeBigInt = (val: any): any => {
     if (typeof(val) === 'bigint') {
