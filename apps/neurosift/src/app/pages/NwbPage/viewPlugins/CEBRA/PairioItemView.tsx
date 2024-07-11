@@ -44,7 +44,7 @@ const adjustableParametersReducer = (
 
 type PairioItemViewProps = {
   width: number;
-  height: number;
+  height?: number;
   nwbUrl: string;
   path: string;
   serviceName: string;
@@ -58,9 +58,10 @@ type PairioItemViewProps = {
   getRequiredResources: (requireGpu: boolean) => PairioJobRequiredResources;
   gpuMode: 'optional' | 'required' | 'forbidden';
   OutputComponent: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }>;
+  compact?: boolean;
 };
 
-const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent }) => {
+const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent, compact }) => {
   const [selectedJobId, setSelectedJobId] = useState<string | undefined>(undefined);
   const { job: selectedJob, refreshJob: refreshSelectedJob } = useJob(selectedJobId || undefined);
 
@@ -173,79 +174,91 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
     refreshAllJobs();
   }, [newJobDefinition, pairioApiKey, refreshAllJobs, requiredResources, serviceName, tags]);
 
+  const hasNoCompletedJobs = useMemo(() => {
+    if (!allJobs) return false;
+    return allJobs.filter((job) => job.status === 'completed').length === 0;
+  }, [allJobs]);
+
   return (
-    <div style={{ position: 'absolute', width, height, overflowY: 'auto' }}>
-      <h3>{title}</h3>
-      {definingNewJob ? (
-        <div>
-          <table className="table" style={{ maxWidth: 300 }}>
-            <tbody>
-              {adjustableParameters.map((p) => (
-                <tr key={p.name}>
-                  <td>{p.name}:</td>
-                  <td>
-                    {
-                      p.type === 'number' ? (
-                        <MultipleChoiceNumberSelector
-                          value={adjustableParameterValues[p.name]}
-                          setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
-                          choices={p.choices}
-                        />
-                      ) : p.type === 'string' ? (
-                        <MultipleChoiceStringSelector
-                          value={adjustableParameterValues[p.name]}
-                          setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
-                          choices={p.choices} />
-                      ) : <span />
-                    }
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <div style={{ position: 'relative', width, height, overflowY: 'auto' }}>
+      {!compact && (<>
+        <h3>{title}</h3>
+        {definingNewJob ? (
           <div>
-            <button onClick={() => setSubmittingNewJob(true)}>SUBMIT JOB</button>
-          </div>
-          {submittingNewJob && (
+            <table className="table" style={{ maxWidth: 300 }}>
+              <tbody>
+                {adjustableParameters.map((p) => (
+                  <tr key={p.name}>
+                    <td>{p.name}:</td>
+                    <td>
+                      {
+                        p.type === 'number' ? (
+                          <MultipleChoiceNumberSelector
+                            value={adjustableParameterValues[p.name]}
+                            setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
+                            choices={p.choices}
+                          />
+                        ) : p.type === 'string' ? (
+                          <MultipleChoiceStringSelector
+                            value={adjustableParameterValues[p.name]}
+                            setValue={(x) => adjustableParameterValuesDispatch({ type: 'set', key: p.name, value: x })}
+                            choices={p.choices} />
+                        ) : <span />
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
             <div>
-              <SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} />
-              {gpuMode === 'optional' && <div>
-                <RequireGpuSelector value={requireGpu} setValue={setRequireGpu} />
-              </div>}
-              <div>
-                <button onClick={handleSubmitNewJob} disabled={!pairioApiKey}>
-                  OK
-                </button>
-              </div>
+              <button onClick={() => setSubmittingNewJob(true)}>SUBMIT JOB</button>
             </div>
-          )}
-          <hr />
-        </div>
-      ) : (
+            {submittingNewJob && (
+              <div>
+                <SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} />
+                {gpuMode === 'optional' && <div>
+                  <RequireGpuSelector value={requireGpu} setValue={setRequireGpu} />
+                </div>}
+                <div>
+                  <button onClick={handleSubmitNewJob} disabled={!pairioApiKey}>
+                    OK
+                  </button>
+                </div>
+              </div>
+            )}
+            <hr />
+          </div>
+        ) : (
+          <div>
+            <Hyperlink onClick={() => setDefiningNewJob(true)}>Create new job</Hyperlink>
+          </div>
+        )}
+        <AllJobsView
+          expanded={allJobsExpanded}
+          setExpanded={setAllJobsExpanded}
+          allJobs={allJobs || undefined}
+          refreshAllJobs={refreshAllJobs}
+          selectedJobId={selectedJobId}
+          onJobClicked={setSelectedJobId}
+          parameterNames={parameterNames}
+        />
+        <hr />
+      </>)}
+      {selectedJob ? (
         <div>
-          <Hyperlink onClick={() => setDefiningNewJob(true)}>Create new job</Hyperlink>
-        </div>
-      )}
-      <AllJobsView
-        expanded={allJobsExpanded}
-        setExpanded={setAllJobsExpanded}
-        allJobs={allJobs || undefined}
-        refreshAllJobs={refreshAllJobs}
-        selectedJobId={selectedJobId}
-        onJobClicked={setSelectedJobId}
-        parameterNames={parameterNames}
-      />
-      <hr />
-      {selectedJob && (
-        <div>
-            <JobInfoView job={selectedJob} onRefreshJob={refreshSelectedJob} parameterNames={parameterNames} />
+            {!compact && <JobInfoView job={selectedJob} onRefreshJob={refreshSelectedJob} parameterNames={parameterNames} />}
             {
               selectedJob && (selectedJob.status === 'completed') && (
                 <OutputComponent job={selectedJob} width={width} nwbFile={nwbFile} />
               )
             }
         </div>
+      ) : hasNoCompletedJobs && (
+        <div>
+          <div>No completed jobs</div>
+        </div>
       )}
+      <hr />
     </div>
   );
 };

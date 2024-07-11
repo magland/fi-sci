@@ -9,9 +9,11 @@ import ElectrodeGeometryView from './ElectrodeGeometryView';
 
 type Props = {
   width: number;
-  height: number;
+  height?: number;
   path: string;
   condensed?: boolean;
+
+  compact?: boolean;
 };
 
 const serviceName = 'hello_world_service';
@@ -69,7 +71,7 @@ const gpuMode: 'optional' | 'required' | 'forbidden' = 'forbidden' as any;
 
 const title = 'Ephys Summary';
 
-const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path }) => {
+const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path, compact }) => {
   const nwbFile = useNwbFile();
   if (!nwbFile) throw Error('Unexpected: nwbFile is undefined (no context provider)');
 
@@ -122,6 +124,7 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path })
       getRequiredResources={getRequiredResources}
       gpuMode={gpuMode}
       OutputComponent={EphysSummaryJobOutputWidget}
+      compact={compact}
     />
   );
 };
@@ -187,7 +190,6 @@ const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
 
   return (
     <div>
-      <h2>Estimated channel firing rates</h2>
       <BarGraph width={Math.min(800, width)} values={estimatedFiringRates} />
       {outputFile && nwbFile && <ElectrodeGeometryView
         width={Math.max(width - 100, 200)}
@@ -221,25 +223,27 @@ const EphysSummaryJobOutputWidget: FunctionComponent<{ job: PairioJob, width: nu
           </table>
         </div>
       </Expandable>
-      <h2>Channel power spectra</h2>
       {
         channelPowerSpectra ? (
-          <ChannelPowerSpectraView
-            freqs={channelPowerSpectra.freqs}
-            powerSpectra={channelPowerSpectra.powerSpectra}
-          />
-        ) : <span>Not found</span>
+          <Expandable title="Channel power spectra" defaultExpanded={false}>
+            <ChannelPowerSpectraView
+              freqs={channelPowerSpectra.freqs}
+              powerSpectra={channelPowerSpectra.powerSpectra}
+            />
+          </Expandable>
+        ) : <span>Power spectra not found</span>
       }
+      <hr />
     </div>
   );
 };
 
 type ExpandableProps = {
-  title: string;
+  title: any;
   defaultExpanded: boolean;
 };
 
-const Expandable: FunctionComponent<PropsWithChildren<ExpandableProps>> = ({ title, defaultExpanded, children }) => {
+export const Expandable: FunctionComponent<PropsWithChildren<ExpandableProps>> = ({ title, defaultExpanded, children }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
   return (
     <div>
@@ -275,7 +279,7 @@ const ChannelPowerSpectraView: FunctionComponent<ChannelPowerSpectraViewProps> =
 
   const layout = useMemo(() => ({
     width: 800,
-    height: Math.max(400, numChannels * 3),
+    height: Math.max(400, numChannels * 2),
     title: 'Channel log power spectra',
     yaxis: { title: 'Channel' },
     xaxis: { title: 'Frequency (Hz)' },

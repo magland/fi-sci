@@ -12,6 +12,7 @@ import NeurosiftAnnotationsLoginPage from "./pages/NeurosiftAnnotationsLoginPage
 import DandiQueryPage from "./pages/DandiQueryPage/DandiQueryPage";
 import TestsPage from "./pages/TestsPage/TestsPage";
 import AnnotationsPage from "./pages/AnnotationsPage/AnnotationsPage";
+import PluginPage from "./pages/PluginPage/PluginPage";
 
 type Props = {
     // none
@@ -75,6 +76,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                         />
                     ) : route.page === 'neurosift-annotations-login' ? (
                         <NeurosiftAnnotationsLoginPage />
+                    ) : route.page === 'plugin' ? (
+                        <PluginPage
+                            width={width}
+                            height={H}
+                        />
                     ) : (
                         <div>404</div>
                     )

@@ -22,113 +22,24 @@ type DandisetViewProps = {
 
 const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandisetVersion, width, height, useStaging, onOpenAssets}) => {
     const {setRoute, route} = useRoute()
-    const [dandisetResponse, setDandisetResponse] = useState<DandisetSearchResultItem | null>(null)
-    const [dandisetVersionInfo, setDandisetVersionInfo] = useState<DandisetVersionInfo | null>(null)
-    const [assetsResponses, setAssetsResponses] = useState<AssetsResponse[]>([])
-    const [incomplete, setIncomplete] = useState(false)
-
-    const stagingStr = useStaging ? '-staging' : ''
     const stagingStr2 = useStaging ? 'gui-staging.' : ''
-
+    const dandisetResponse: DandisetSearchResultItem | null = useQueryDandiset(dandisetId, useStaging)
+    const dandisetVersionInfo: DandisetVersionInfo | null = useDandisetVersionInfo(dandisetId, dandisetVersion || '', useStaging, dandisetResponse)
     useEffect(() => {
-        let canceled = false
-        setDandisetResponse(null)
-        if (!dandisetId) return
-        ; (async () => {
-            const url = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}`
-            const authorizationHeader = getAuthorizationHeaderForUrl(url)
-            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
-            const response = await fetch(
-                url,
-                {
-                    headers
-                }
-            )
-            if (canceled) return
-            if (response.status === 200) {
-                const json = await response.json()
-                const dandisetResponse = json as DandisetSearchResultItem
-                setDandisetResponse(dandisetResponse)
-            }
-        })()
-        return () => {canceled = true}
-    }, [dandisetId, stagingStr, useStaging])
-
-    const {most_recent_published_version, draft_version} = dandisetResponse || {}
-    const V = most_recent_published_version || draft_version
-    const dsVersion = dandisetVersion || (V ? V.version : 'draft')
-
-    useEffect(() => {
-        if ((!dandisetVersion) && V?.version) {
+        // put the version in the route
+        if ((!dandisetVersion) && dandisetVersionInfo && dandisetVersionInfo.version) {
             setRoute({
                 page: 'dandiset',
                 dandisetId,
-                dandisetVersion: V.version,
+                dandisetVersion: dandisetVersionInfo.version,
                 staging: (route as any)['staging'] || false
             }, true)
         }
-    }, [dandisetVersion, V, dandisetId, setRoute, route])
-
-    useEffect(() => {
-        let canceled = false
-        setDandisetVersionInfo(null)
-        if (!dandisetResponse) return
-        ; (async () => {
-            const url = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${dsVersion}/info/`
-            const authorizationHeader = getAuthorizationHeaderForUrl(url)
-            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
-            const response = await fetch(
-                url,
-                {headers}
-            )
-            if (canceled) return
-            if (response.status === 200) {
-                const json = await response.json()
-                const dandisetVersionInfo = json as DandisetVersionInfo
-                setDandisetVersionInfo(dandisetVersionInfo)
-            }
-        })()
-        return () => {canceled = true}
-    }, [dandisetId, dandisetResponse, dsVersion, stagingStr, useStaging])
-
+    }, [dandisetVersion, dandisetVersionInfo, dandisetId, setRoute, route])
     const [maxNumPages, setMaxNumPages] = useState(1)
-    useEffect(() => {
-        let canceled = false
-        setAssetsResponses([])
-        setIncomplete(false)
-        if (!dandisetId) return
-        if (!dandisetResponse) return
-        if (!V) return
-        ; (async () => {
-            let rr: AssetsResponse[] = []
-            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${V.version}/assets/?page_size=1000&glob=*.nwb*`
-            const authorizationHeader = uu ? getAuthorizationHeaderForUrl(uu) : ''
-            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
-            let count = 0
-            while (uu) {
-                if (count >= maxNumPages) {
-                    setIncomplete(true)
-                    break
-                }
-                const rrr: any = await fetch( // don't know why typescript is telling me I need any type here
-                    uu,
-                    {headers}
-                )
-                if (canceled) return
-                if (rrr.status === 200) {
-                    const json = await rrr.json()
-                    rr = [...rr, json] // important to make a copy of rr
-                    uu = json.next
-                }
-                else uu = null
-                count += 1
-                setAssetsResponses(rr)
-            }
-        })()
-        return () => {canceled = true}
-    }, [dandisetId, dandisetResponse, V, stagingStr, useStaging, maxNumPages])
-
+    const {assetsResponses, incomplete} = useQueryAssets(dandisetId, maxNumPages, dandisetResponse, dandisetVersionInfo, useStaging)
     const allAssets = useMemo(() => {
+        if (!assetsResponses) return null;
         const rr: AssetsResponseItem[] = []
         assetsResponses.forEach(assetsResponse => {
             rr.push(...assetsResponse.results)
@@ -138,16 +49,6 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
 
     const [selectedAssets, selectedAssetsDispatch] = useReducer(selectedAssetsReducer, {assetPaths: []})
 
-    const assetUrlForPath = useMemo(() => (
-        (path: string) => {
-            // https://api.dandiarchive.org/api/assets/8931af87-ceb8-455c-b082-9feb520cd12e/download/
-            // or https://api-staging.dandiarchive.org/api/assets/8931af87-ceb8-455c-b082-9feb520cd12e/download/
-            const assetId = allAssets.find(asset => asset.path === path)?.asset_id
-            if (!assetId) throw Error('Unexpected missing assetId for path: ' + path)
-            return `https://api${stagingStr}.dandiarchive.org/api/assets/${assetId}/download/`
-        }
-    ), [allAssets, stagingStr])
-
     const specialChangesAsset = useMemo(() => {
         if (!allAssets) return undefined
         const a = allAssets.find(a => a.path === 'CHANGES')
@@ -155,22 +56,17 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
         return a
     }, [allAssets])
 
-    const [changesContent, setChangesContent] = useState<string | undefined>(undefined)
-    useEffect(() => {
-        if (!specialChangesAsset) return
-        const url = assetUrlForPath(specialChangesAsset.path)
-        ; (async () => {
-            const response = await fetch(url)
-            if (response.status === 200) {
-                const text = await response.text()
-                setChangesContent(text)
-            }
-        })()
-    }, [specialChangesAsset, assetUrlForPath])
+    const changesContent = useChangesContent(specialChangesAsset, allAssets, useStaging)
 
     const handleClickAsset = useCallback((asset: AssetsResponseItem) => {
-        if (onOpenAssets) onOpenAssets([assetUrlForPath(asset.path)], [asset.path])
-    }, [onOpenAssets, assetUrlForPath])
+        if (onOpenAssets) onOpenAssets([
+            assetUrlForPath(
+                asset.path,
+                allAssets || [],
+                useStaging
+            )
+        ], [asset.path])
+    }, [onOpenAssets, allAssets, useStaging])
 
     if (!dandisetResponse) return <div>Loading dandiset...</div>
     if (!dandisetVersionInfo) return <div>Loading dandiset info...</div>
@@ -186,7 +82,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                 {onOpenAssets && (
                     <button disabled={selectedAssets.assetPaths.length === 0} onClick={() => {
                         onOpenAssets(
-                            selectedAssets.assetPaths.map(p => assetUrlForPath(p)),
+                            selectedAssets.assetPaths.map(p => assetUrlForPath(p, allAssets || [], useStaging)),
                             selectedAssets.assetPaths
                         )
                     }}>Open selected assets</button>
@@ -214,11 +110,11 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                     </div>
                     {
                         <div style={{fontSize: 14, padding: 5}}>
-                            <span style={{color: 'gray'}}>Loaded {allAssets.length} assets</span>
+                            {allAssets && <span style={{color: 'gray'}}>Loaded {allAssets.length} assets</span>}
                         </div>
                     }
                     {
-                        incomplete && (
+                        incomplete && allAssets && (
                             <div style={{fontSize: 14, padding: 5}}>
                                 <span style={{color: 'red'}}>Warning: only showing first {allAssets.length} assets.</span>
                                 &nbsp;
@@ -226,7 +122,7 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                             </div>
                         )
                     }
-                    <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} onClickAsset={handleClickAsset} dandisetId={dandisetId} />
+                    {allAssets && <AssetsBrowser assetItems={allAssets} selectedAssets={selectedAssets} selectedAssetsDispatch={selectedAssetsDispatch} canSelect={true} onClickAsset={handleClickAsset} dandisetId={dandisetId} />}
                     {
                         changesContent && (
                             <div>
@@ -238,6 +134,131 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
             </div>
         </div>
     )
+}
+
+export const useQueryDandiset = (dandisetId: string | undefined, useStaging: boolean | undefined) => {
+    const [dandisetResponse, setDandisetResponse] = useState<DandisetSearchResultItem | null>(null)
+    useEffect(() => {
+        let canceled = false
+        setDandisetResponse(null)
+        if (!dandisetId) return
+        ; (async () => {
+            const stagingStr = useStaging ? '-staging' : ''
+            const url = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}`
+            const authorizationHeader = getAuthorizationHeaderForUrl(url)
+            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
+            const response = await fetch(
+                url,
+                {
+                    headers
+                }
+            )
+            if (canceled) return
+            if (response.status === 200) {
+                const json = await response.json()
+                const dandisetResponse = json as DandisetSearchResultItem
+                setDandisetResponse(dandisetResponse)
+            }
+        })()
+        return () => {canceled = true}
+    }, [dandisetId, useStaging])
+    return dandisetResponse
+}
+
+export const useDandisetVersionInfo = (dandisetId: string | undefined, dandisetVersion: string, useStaging: boolean | undefined, dandisetResponse: DandisetSearchResultItem | null) => {
+    const [dandisetVersionInfo, setDandisetVersionInfo] = useState<DandisetVersionInfo | null>(null)
+    useEffect(() => {
+        let canceled = false
+        setDandisetVersionInfo(null)
+        if (!dandisetResponse) return
+        ; (async () => {
+            const {most_recent_published_version, draft_version} = dandisetResponse || {}
+            const V = most_recent_published_version || draft_version
+            const dsVersion = dandisetVersion || (V ? V.version : 'draft')
+            const stagingStr = useStaging ? '-staging' : ''
+            const url = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${dsVersion}/info/`
+            const authorizationHeader = getAuthorizationHeaderForUrl(url)
+            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
+            const response = await fetch(
+                url,
+                {headers}
+            )
+            if (canceled) return
+            if (response.status === 200) {
+                const json = await response.json()
+                const dandisetVersionInfo = json as DandisetVersionInfo
+                setDandisetVersionInfo(dandisetVersionInfo)
+            }
+        })()
+        return () => {canceled = true}
+    }, [dandisetId, dandisetResponse, dandisetVersion, useStaging])
+    return dandisetVersionInfo
+}
+
+export const useQueryAssets = (dandisetId: string | undefined, maxNumPages: number, dandisetResponse: DandisetSearchResultItem | null, dandisetVersionInfo: DandisetVersionInfo | null, useStaging: boolean | undefined) => {
+    const [assetsResponses, setAssetsResponses] = useState<AssetsResponse[] | null>(null)
+    const [incomplete, setIncomplete] = useState(false)
+    useEffect(() => {
+        let canceled = false
+        setAssetsResponses(null)
+        setIncomplete(false)
+        if (!dandisetId) return
+        if (!dandisetResponse) return
+        if (!dandisetVersionInfo) return
+        ; (async () => {
+            let rr: AssetsResponse[] = []
+            const stagingStr = useStaging ? '-staging' : ''
+            let uu: string | null = `https://api${stagingStr}.dandiarchive.org/api/dandisets/${dandisetId}/versions/${dandisetVersionInfo.version}/assets/?page_size=1000&glob=*.nwb*`
+            const authorizationHeader = uu ? getAuthorizationHeaderForUrl(uu) : ''
+            const headers = authorizationHeader ? {Authorization: authorizationHeader} : undefined
+            let count = 0
+            while (uu) {
+                if (count >= maxNumPages) {
+                    setIncomplete(true)
+                    break
+                }
+                const rrr: any = await fetch( // don't know why typescript is telling me I need any type here
+                    uu,
+                    {headers}
+                )
+                if (canceled) return
+                if (rrr.status === 200) {
+                    const json = await rrr.json()
+                    rr = [...rr, json] // important to make a copy of rr
+                    uu = json.next
+                }
+                else uu = null
+                count += 1
+                setAssetsResponses(rr)
+            }
+        })()
+        return () => {canceled = true}
+    }, [dandisetId, dandisetResponse, useStaging, maxNumPages, dandisetVersionInfo, setIncomplete])
+    return {incomplete, assetsResponses}
+}
+
+export const assetUrlForPath = (path: string, allAssets: AssetsResponseItem[], useStaging: boolean | undefined) => {
+    // https://api.dandiarchive.org/api/assets/8931af87-ceb8-455c-b082-9feb520cd12e/download/
+    // or https://api-staging.dandiarchive.org/api/assets/8931af87-ceb8-455c-b082-9feb520cd12e/download/
+    const assetId = (allAssets || []).find(asset => asset.path === path)?.asset_id
+    if (!assetId) throw Error('Unexpected missing assetId for path: ' + path)
+    const stagingStr = useStaging ? '-staging' : ''
+    return `https://api${stagingStr}.dandiarchive.org/api/assets/${assetId}/download/`
+}
+const useChangesContent = (specialChangesAsset: AssetsResponseItem | undefined, allAssets: AssetsResponseItem[] | null, useStaging: boolean | undefined) => {
+    const [changesContent, setChangesContent] = useState<string | undefined>(undefined)
+    useEffect(() => {
+        if (!specialChangesAsset) return
+        const url = assetUrlForPath(specialChangesAsset.path, allAssets || [], useStaging)
+        ; (async () => {
+            const response = await fetch(url)
+            if (response.status === 200) {
+                const text = await response.text()
+                setChangesContent(text)
+            }
+        })()
+    }, [specialChangesAsset, allAssets, useStaging])
+    return changesContent
 }
 
 type ExpandedFoldersState = {

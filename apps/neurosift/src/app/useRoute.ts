@@ -39,7 +39,15 @@ export type Route = {
 } | {
     page: 'neurosift-annotations-login'
     accessToken: string
+} | {
+    page: 'plugin'
+    plugin: PluginName
+    dandisetId?: string
+    dandisetVersion?: string
+    staging?: boolean
 }
+
+type PluginName = 'EphysSummary'
 
 const useRoute = () => {
     const location = useLocation()
@@ -147,6 +155,15 @@ const useRoute = () => {
                 accessToken: query.access_token as string
             }
         }
+        else if (p === '/plugin') {
+            return {
+                page: 'plugin',
+                plugin: query.plugin as PluginName,
+                dandisetId: query.dandisetId ? query.dandisetId as string : undefined,
+                dandisetVersion: query.dandisetVersion ? query.dandisetVersion as string : undefined,
+                staging: query.staging === '1'
+            }
+        }
         else {
             return {
                 page: 'home'
@@ -155,7 +172,7 @@ const useRoute = () => {
     }, [p, query])
 
     const setRoute = useCallback((r: Route, replaceHistory?: boolean) => {
-        let newQuery = {...query}
+        let newQuery: { [key: string]: string | string[] } = {}
         if (r.page === 'home') {
             newQuery = {p: '/'}
         }
@@ -174,34 +191,14 @@ const useRoute = () => {
             if (r.dandisetId) {
                 newQuery.dandisetId = r.dandisetId
             }
-            else {
-                if (newQuery.dandisetId) {
-                    delete newQuery.dandisetId
-                }
-            }
             if (r.dandisetVersion) {
                 newQuery.dandisetVersion = r.dandisetVersion
-            }
-            else {
-                if (newQuery.dandisetVersion) {
-                    delete newQuery.dandisetVersion
-                }
             }
             if (r.dandiAssetId) {
                 newQuery.dandiAssetId = r.dandiAssetId
             }
-            else {
-                if (newQuery.dandiAssetId) {
-                    delete newQuery.dandiAssetId
-                }
-            }
             if (r.storageType.some(t => t !== 'h5')) { // if any of storageType is not h5
                 newQuery.st = r.storageType
-            }
-            else {
-                if (newQuery.storageType) {
-                    delete newQuery.storageType
-                }
             }
         }
         else if (r.page === 'dandiset') {
@@ -210,27 +207,8 @@ const useRoute = () => {
             if (r.dandisetVersion) {
                 newQuery.dandisetVersion = r.dandisetVersion
             }
-            else {
-                if (newQuery.dandisetVersion) {
-                    delete newQuery.dandisetVersion
-                }
-            }
-            if (newQuery.dandiAssetId) {
-                delete newQuery.dandiAssetId
-            }
             if (r.staging) {
                 newQuery.staging = '1'
-            }
-            else {
-                if (newQuery.staging) {
-                    delete newQuery.staging
-                }
-            }
-            if (newQuery.url) {
-                delete newQuery.url
-            }
-            if (newQuery.storageType) {
-                delete newQuery.storageType
             }
         }
         else if (r.page === 'dandi') {
@@ -238,99 +216,38 @@ const useRoute = () => {
             if (r.staging) {
                 newQuery.staging = '1'
             }
-            else {
-                if (newQuery.staging) {
-                    delete newQuery.staging
-                }
-            }
-            if (newQuery.url) {
-                delete newQuery.url
-            }
-            if (newQuery.dandisetId) {
-                delete newQuery.dandisetId
-            }
-            if (newQuery.dandisetVersion) {
-                delete newQuery.dandisetVersion
-            }
-            if (newQuery.dandiAssetId) {
-                delete newQuery.dandiAssetId
-            }
-            if (newQuery.storageType) {
-                delete newQuery.storageType
-            }
         }
         else if (r.page === 'annotations') {
             newQuery.p = '/annotations'
-            if (newQuery.staging) {
-                delete newQuery.staging
-            }
-            if (newQuery.url) {
-                delete newQuery.url
-            }
-            if (newQuery.dandisetId) {
-                delete newQuery.dandisetId
-            }
-            if (newQuery.dandisetVersion) {
-                delete newQuery.dandisetVersion
-            }
-            if (newQuery.dandiAssetId) {
-                delete newQuery.dandiAssetId
-            }
-            if (newQuery.storageType) {
-                delete newQuery.storageType
-            }
         }
         else if (r.page === 'dandi-query') {
             newQuery.p = '/dandi-query'
             if (r.staging) {
                 newQuery.staging = '1'
             }
-            else {
-                if (newQuery.staging) {
-                    delete newQuery.staging
-                }
-            }
-            if (newQuery.url) {
-                delete newQuery.url
-            }
-            if (newQuery.dandisetId) {
-                delete newQuery.dandisetId
-            }
-            if (newQuery.dandisetVersion) {
-                delete newQuery.dandisetVersion
-            }
-            if (newQuery.dandiAssetId) {
-                delete newQuery.dandiAssetId
-            }
-            if (newQuery.storageType) {
-                delete newQuery.storageType
-            }
         }
         else if (r.page === 'tests') {
             newQuery.p = '/tests'
-            if (newQuery.staging) {
-                delete newQuery.staging
-            }
-            if (newQuery.url) {
-                delete newQuery.url
-            }
-            if (newQuery.dandisetId) {
-                delete newQuery.dandisetId
-            }
-            if (newQuery.dandisetVersion) {
-                delete newQuery.dandisetVersion
-            }
-            if (newQuery.dandiAssetId) {
-                delete newQuery.dandiAssetId
-            }
-            if (newQuery.storageType) {
-                delete newQuery.storageType
-            }
         }
         else if (r.page === 'neurosift-annotations-login') {
             newQuery = {
                 p: '/neurosift-annotations-login',
                 access_token: r.accessToken
+            }
+        }
+        else if (r.page === 'plugin') {
+            newQuery = {
+                p: '/plugin',
+                plugin: r.plugin
+            }
+            if (r.dandisetId) {
+                newQuery.dandisetId = r.dandisetId
+            }
+            if (r.dandisetVersion) {
+                newQuery.dandisetVersion = r.dandisetVersion
+            }
+            if (r.staging) {
+                newQuery.staging = '1'
             }
         }
         // no longer supported
@@ -340,7 +257,7 @@ const useRoute = () => {
         // }
         const newSearch = queryToQueryString(newQuery)
         navigate(location.pathname + newSearch, {replace: replaceHistory})
-    }, [navigate, location.pathname, query])
+    }, [navigate, location.pathname])
 
     useEffect(() => {
         if (p === '/') {

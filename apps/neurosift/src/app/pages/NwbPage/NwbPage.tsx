@@ -401,7 +401,7 @@ const getResolvedUrl = async (url: string, storageType: StorageType, o: {dandise
     return {url, storageType}
 }
 
-const tryGetLindiUrl = async (url: string, dandisetId: string) => {
+export const tryGetLindiUrl = async (url: string, dandisetId: string) => {
     let assetId: string
     let staging: boolean
     if (url.startsWith('https://api-staging.dandiarchive.org/api/assets/')) {
