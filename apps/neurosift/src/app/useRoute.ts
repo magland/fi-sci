@@ -361,7 +361,13 @@ const parseSearchString = (search: string) => {
     for (const s of a) {
         const b = s.split('=')
         const key = b[0]
-        const value = b.slice(1).join('=')
+        let value = b.slice(1).join('=')
+        if (value.startsWith('"')) {
+            value = value.slice(1)
+        }
+        if (value.endsWith('"')) {
+            value = value.slice(0, -1)
+        }
         if ((key in query) && (query[key])) {
             if (Array.isArray(query[key])) {
                 (query[key] as string[]).push(value)
