@@ -223,7 +223,7 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
             else {
                 setLoadedSuccessfully(false)
                 const CORSIssueLikely = determineCORSIssueLikely(urlList[0] || '')
-                setInitialLoadError('Problem loading file. Unable to load root group.' + (CORSIssueLikely ? ' Thsi could be due to a CORS configuration issue.' : ''))
+                setInitialLoadError('Problem loading file. Unable to load root group.' + (CORSIssueLikely ? ' This could be due to a CORS configuration issue.' : ''))
             }
         }).catch(err => {
             console.error(err)
