@@ -179,6 +179,8 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
     return allJobs.filter((job) => job.status === 'completed').length === 0;
   }, [allJobs]);
 
+  console.log('--- allJobs', allJobs, hasNoCompletedJobs);
+
   return (
     <div style={{ position: 'relative', width, height: height || undefined, overflowY: 'auto' }}>
       {!compact && (<>
@@ -244,7 +246,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
         />
         <hr />
       </>)}
-      {selectedJob ? (
+      {selectedJob && (
         <div>
             {!compact && <JobInfoView job={selectedJob} onRefreshJob={refreshSelectedJob} parameterNames={parameterNames} />}
             {
@@ -253,7 +255,8 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
               )
             }
         </div>
-      ) : hasNoCompletedJobs && (
+      )}
+      {hasNoCompletedJobs && (
         <div>
           <div>No completed jobs</div>
         </div>
