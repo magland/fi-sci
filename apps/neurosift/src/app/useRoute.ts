@@ -47,7 +47,6 @@ const useRoute = () => {
     const search = location.search
     const query = useMemo(() => (parseSearchString(search)), [search])
     const p = query.p || '/'
-    console.log('--- query', query)
     const route: Route = useMemo(() => {
         if (typeof p !== 'string') {
             console.warn('Unexpected type for p', typeof p)

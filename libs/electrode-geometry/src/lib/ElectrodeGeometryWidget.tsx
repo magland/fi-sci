@@ -134,7 +134,6 @@ const ElectrodeGeometryWidget: FunctionComponent<ElectrodeGeometryWidgetProps> =
         }
       }
       if (deadElectrodeIndices && deadElectrodeIndices.includes(i)) {
-        console.log('---- x')
         ctx.strokeStyle = 'gray';
         ctx.lineWidth = 2;
         const dd = 1;
