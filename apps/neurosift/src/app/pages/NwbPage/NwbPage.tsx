@@ -211,6 +211,26 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
     const urlList = route.url
     const [nwbFile, setNwbFile] = useState<RemoteH5FileX | undefined>(undefined)
     const [selectedItemViewsState, selectedItemViewsDispatch] = useReducer(selectedItemViewsReducer, {selectedItemViews: []})
+    const [loadedSuccessfully, setLoadedSuccessfully] = useState<boolean | undefined>(undefined)
+    const [initialLoadError, setInitialLoadError] = useState<string | undefined>(undefined)
+
+    useEffect(() => {
+        if (!nwbFile) return
+        nwbFile.getGroup('/').then(grp => {
+            if (grp) {
+                setLoadedSuccessfully(true)
+            }
+            else {
+                setLoadedSuccessfully(false)
+                const CORSIssueLikely = determineCORSIssueLikely(urlList[0] || '')
+                setInitialLoadError('Problem loading file. Unable to load root group.' + (CORSIssueLikely ? ' Thsi could be due to a CORS configuration issue.' : ''))
+            }
+        }).catch(err => {
+            console.error(err)
+            setLoadedSuccessfully(false)
+            setInitialLoadError('Problem loading file. ' + err.message)
+        })
+    }, [nwbFile, urlList])
 
     const {supplementalFiles, selectedSupplementalFileIds} = useSupplementalDendroFiles()
 
@@ -296,6 +316,11 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
     }, [nwbFile])
 
     if ((!nwbFile) || (!nwbFileContextValue)) return <div>Loading {urlList}</div>
+
+    if (!loadedSuccessfully) {
+        return <div>Error loading file: {initialLoadError}</div>
+    }
+
     return (
         <NwbFileContext.Provider value={nwbFileContextValue}>
             <SelectedItemViewsContext.Provider value={{selectedItemViewsState, selectedItemViewsDispatch}}>
@@ -452,5 +477,12 @@ export const JSONStringifyDeterministic = (obj: any, space: string | number | un
     allKeys.sort();
     return JSON.stringify(obj, allKeys, space);
 };
+
+const determineCORSIssueLikely = (url: string) => {
+    if (!url) return false
+    if (url.startsWith('http://localhost')) return false
+    if (url.startsWith('https://api.dandiarchive.org')) return false
+    return true
+}
 
 export default NwbPage
