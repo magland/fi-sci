@@ -20,6 +20,12 @@ export type Route = {
     dandiAssetId?: string
     storageType: StorageType[]
 } | {
+    page: 'avi'
+    url: string
+    dandisetId?: string
+    dandisetVersion?: string
+    dandiAssetId?: string
+} | {
     page: 'dandiset'
     dandisetId: string
     dandisetVersion?: string
@@ -112,6 +118,15 @@ const useRoute = () => {
                 storageType
             }
         }
+        else if (p === '/avi') {
+            return {
+                page: 'avi',
+                url: query.url as string,
+                dandisetId: query.dandisetId ? query.dandisetId as string : undefined,
+                dandisetVersion: query.dandisetVersion ? query.dandisetVersion as string : undefined,
+                dandiAssetId: query.dandiAssetId ? query.dandiAssetId as string : undefined
+            }
+        }
         else if (p === '/dandiset') {
             return {
                 page: 'dandiset',
@@ -199,6 +214,19 @@ const useRoute = () => {
             }
             if (r.storageType.some(t => t !== 'h5')) { // if any of storageType is not h5
                 newQuery.st = r.storageType
+            }
+        }
+        else if (r.page === 'avi') {
+            newQuery.p = '/avi'
+            newQuery.url = r.url
+            if (r.dandisetId) {
+                newQuery.dandisetId = r.dandisetId
+            }
+            if (r.dandisetVersion) {
+                newQuery.dandisetVersion = r.dandisetVersion
+            }
+            if (r.dandiAssetId) {
+                newQuery.dandiAssetId = r.dandiAssetId
             }
         }
         else if (r.page === 'dandiset') {

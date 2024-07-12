@@ -179,8 +179,6 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
     return allJobs.filter((job) => job.status === 'completed').length === 0;
   }, [allJobs]);
 
-  console.log('--- allJobs', allJobs, hasNoCompletedJobs);
-
   return (
     <div style={{ position: 'relative', width, height: height || undefined, overflowY: 'auto' }}>
       {!compact && (<>
@@ -288,7 +286,7 @@ const getJobUrl = (jobId: string) => {
   return `https://pairio.vercel.app/job/${jobId}`
 }
 
-const JobInfoView: FunctionComponent<JobInfoViewProps> = ({ job, onRefreshJob, parameterNames }) => {
+export const JobInfoView: FunctionComponent<JobInfoViewProps> = ({ job, onRefreshJob, parameterNames }) => {
   const jobUrl = getJobUrl(job.jobId)
   return (
       <div>

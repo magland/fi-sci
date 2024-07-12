@@ -13,6 +13,7 @@ import DandiQueryPage from "./pages/DandiQueryPage/DandiQueryPage";
 import TestsPage from "./pages/TestsPage/TestsPage";
 import AnnotationsPage from "./pages/AnnotationsPage/AnnotationsPage";
 import PluginPage from "./pages/PluginPage/PluginPage";
+import AviPage from "./pages/AviPage/AviPage";
 
 type Props = {
     // none
@@ -49,6 +50,11 @@ const MainWindow: FunctionComponent<Props> = () => {
                     //         height={H}
                     //         url={route.url}
                     //     />
+                    ) : route.page === 'avi' ? (
+                        <AviPage
+                            width={width}
+                            height={H}
+                        />
                     ) : route.page === 'dandiset' ? (
                         <DandisetPage
                             width={width}
