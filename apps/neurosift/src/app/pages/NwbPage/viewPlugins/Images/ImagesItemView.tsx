@@ -79,6 +79,9 @@ const GrayscaleImageItem: FunctionComponent<GrayscaleImageItemProps> = ({ datase
 
     const [canvasElement, setCanvasElement] = useState<HTMLCanvasElement | null>(null)
 
+    const [brightness, setBrightness] = useState<number>(50) // brightness between -0 and 100
+    const [contrast, setContrast] = useState<number>(50) // contrast between 0 and 100
+
     const maxVal = useMemo(() => {
         let ret = 0
         for (let i = 0; i < W * H; i++) {
@@ -87,6 +90,16 @@ const GrayscaleImageItem: FunctionComponent<GrayscaleImageItemProps> = ({ datase
         }
         return ret
     }, [data, W, H])
+
+    const {windowMin, windowMax} = useMemo(() => {
+        // brightness 50 and contrast 50 corresponds to windowMin 0 and windowMax maxVal
+        const contrastScale = Math.exp((contrast - 50) / 50 * Math.log(10))
+        let windowMin = (maxVal / 2) - (maxVal / 2) / contrastScale
+        let windowMax = (maxVal / 2) + (maxVal / 2) / contrastScale
+        windowMin = windowMin - (brightness - 50) / 50 * maxVal
+        windowMax = windowMax - (brightness - 50) / 50 * maxVal
+        return {windowMin, windowMax}
+    }, [maxVal, brightness, contrast])
 
     useEffect(() => {
         if (!canvasElement) return
@@ -98,21 +111,28 @@ const GrayscaleImageItem: FunctionComponent<GrayscaleImageItemProps> = ({ datase
             for (let i = 0; i < W; i++) {
                 const val = data[i * H + (H - 1 - j)]
                 const ind = (i + j * W) * 4
-                buf[ind + 0] = val / maxVal * 255
-                buf[ind + 1] = val / maxVal * 255
-                buf[ind + 2] = val / maxVal * 255
+                const v = Math.min(Math.max(0, (val - windowMin) / (windowMax - windowMin) * 255), 255)
+                buf[ind + 0] = v
+                buf[ind + 1] = v
+                buf[ind + 2] = v
                 buf[ind + 3] = 255
             }
         }
         ctx.putImageData(imageData, 0, 0)
-    }, [canvasElement, W, H, data, maxVal])
+    }, [canvasElement, W, H, data, maxVal, windowMin, windowMax])
 
     return (
-        <canvas
-            ref={elmt => setCanvasElement(elmt)}
-            width={W}
-            height={H}
-        />
+        <div>
+            <canvas
+                ref={elmt => setCanvasElement(elmt)}
+                width={W}
+                height={H}
+            />
+            <div>
+                <BrightnessSelector value={brightness} onChange={setBrightness} />&nbsp;
+                <ContrastSelector value={contrast} onChange={setContrast} />
+            </div>
+        </div>
     )
 }
 
@@ -136,6 +156,44 @@ const RegularImageItem: FunctionComponent<RegularImageItemProps> = ({ dataset, d
             <div>Image not supported with shape: {dataset.shape.join(', ')}</div>
         )
     }
+}
+
+type BrightnessSelectorProps = {
+    value: number
+    onChange: (value: number) => void
+}
+
+const BrightnessSelector: FunctionComponent<BrightnessSelectorProps> = ({ value, onChange }) => {
+    // slider
+    return (
+        <input
+            type="range"
+            title="Brightness"
+            min={0}
+            max={100}
+            value={value}
+            onChange={e => onChange(Number(e.target.value))}
+        />
+    )
+}
+
+type ContrastSelectorProps = {
+    value: number
+    onChange: (value: number) => void
+}
+
+const ContrastSelector: FunctionComponent<ContrastSelectorProps> = ({ value, onChange }) => {
+    // slider
+    return (
+        <input
+            type="range"
+            title="Contrast"
+            min={0}
+            max={100}
+            value={value}
+            onChange={e => onChange(Number(e.target.value))}
+        />
+    )
 }
 
 export default ImagesItemView

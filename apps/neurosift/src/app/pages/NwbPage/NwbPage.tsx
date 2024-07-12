@@ -317,7 +317,7 @@ const NwbPageChild3: FunctionComponent<NwbPageChild3Props> = ({width, height}) =
 
     if ((!nwbFile) || (!nwbFileContextValue)) return <div>Loading {urlList}</div>
 
-    if (!loadedSuccessfully) {
+    if (loadedSuccessfully === false) {
         return <div>Error loading file: {initialLoadError}</div>
     }
 
