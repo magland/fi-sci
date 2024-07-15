@@ -47,7 +47,7 @@ const useMp4UrlForAviUrl = (aviUrl: string): {
     mp4Url: string | undefined,
     job: PairioJob | undefined | null, // undefined means loading, null means not found
     refreshAllJobs: () => void,
-    submitJob: (pairioApiKey: string) => void
+    submitJob: (pairioApiKey: string, durationSec: number) => void
 } => {
     const tags = useMemo(() => (['neurosift', 'avi_to_mp4']), [])
     const {allJobs, refreshAllJobs} = useAllJobs({

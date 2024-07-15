@@ -80,7 +80,10 @@ const SpecialTimeAlignedSeriesButton: FunctionComponent<SpecialTimeAlignedSeries
             roiResponseSeriesSelectedItem: undefined,
             timeIntervalsSelectedItem: undefined
         }
-        const roiResponseSeriesSelectedItemPath = selectedItemViews.find(a => a.endsWith('|RoiResponseSeries'))?.split('|')[0]?.split(':')[1]
+        const roiResponseSeriesSelectedItemPath = selectedItemViews.find(a => (
+            a.endsWith('|RoiResponseSeries') ||
+            a.endsWith('|FiberPhotometryResponseSeries')
+        ))?.split('|')[0]?.split(':')[1]
         const timeIntervalsSelectedItemPath = selectedItemViews.find(a => a.endsWith('|TimeIntervals'))?.split('|')[0]?.split(':')[1]
         return {roiResponseSeriesSelectedItemPath, timeIntervalsSelectedItemPath}
     }, [selectedItemViews])
