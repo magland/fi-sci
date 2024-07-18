@@ -277,11 +277,18 @@ const NwbTimeseriesView: FunctionComponent<Props> = ({ width, height, objectPath
         ]
     }, [handleOpenHelp])
 
-    const yAxisInfo = {
+    const yLabel = useMemo(() => {
+        if (!dataset) return ''
+        const yLabel = dataset.attrs['unit'] || ''
+        return yLabel
+    }, [dataset])
+
+    const yAxisInfo = useMemo(() => ({
         showTicks: true,
         yMin: valueRange?.min,
-        yMax: valueRange?.max
-    }
+        yMax: valueRange?.max,
+        yLabel
+    }), [valueRange, yLabel])
 
     const handleKeyDown2 = useCallback((e: React.KeyboardEvent) => {
         if ((e.shiftKey) && (e.key === 'O')) {

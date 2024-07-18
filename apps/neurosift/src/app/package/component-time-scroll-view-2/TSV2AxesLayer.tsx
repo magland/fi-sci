@@ -10,6 +10,7 @@ export type TSV2AxesLayerProps = {
     margins: {left: number, right: number, top: number, bottom: number}
     gridlineOpts?: {hideX: boolean, hideY: boolean}
     yTickSet?: TickSet
+    yLabel?: string
     width: number
     height: number
 }

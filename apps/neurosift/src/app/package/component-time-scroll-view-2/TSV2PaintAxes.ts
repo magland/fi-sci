@@ -3,7 +3,7 @@ import { TimeTick } from "./timeTicks";
 import { TSV2AxesLayerProps } from "./TSV2AxesLayer";
 
 export const paintAxes = (context: CanvasRenderingContext2D, props: TSV2AxesLayerProps) => {
-    const {width, height, margins, timeTicks, gridlineOpts, yTickSet} = props
+    const {width, height, margins, timeTicks, gridlineOpts, yTickSet, yLabel} = props
     context.clearRect(0, 0, context.canvas.width, context.canvas.height)
 
     const xAxisVerticalPosition = height - margins.bottom
@@ -12,6 +12,8 @@ export const paintAxes = (context: CanvasRenderingContext2D, props: TSV2AxesLaye
     drawLine(context, margins.left, xAxisVerticalPosition, width - margins.right, xAxisVerticalPosition)
 
     yTickSet && paintYTicks(context, yTickSet, xAxisVerticalPosition, margins.left, width - margins.right, margins.top, {hideGridlines: gridlineOpts?.hideY})
+
+    yLabel && paintYLabel(context, yLabel, margins.left, margins.bottom, margins.top, context.canvas.height)
 }
 
 const paintTimeTicks = (context: CanvasRenderingContext2D, timeTicks: TimeTick[], xAxisPixelHeight: number, plotTopPixelHeight: number, o: {hideGridlines?: boolean}) => {
@@ -55,6 +57,16 @@ const paintYTicks = (context: CanvasRenderingContext2D, tickSet: TickSet, xAxisY
         drawLine(context, gridlineLeftEdge, pixelValueWithMargin, rightPixel, pixelValueWithMargin)
         context.fillText(tick.label, labelRightEdge, pixelValueWithMargin) // TODO: Add a max width thingy
     })
+}
+
+const paintYLabel = (context: CanvasRenderingContext2D, label: string, leftMargin: number, bottomMargin: number, topMargin: number, canvasHeight: number) => {
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.save()
+    context.translate(10, (canvasHeight - bottomMargin - topMargin) / 2 + topMargin)
+    context.rotate(-Math.PI / 2)
+    context.fillText(label, 0, 0)
+    context.restore()
 }
 
 const drawLine = (context: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) => {

@@ -27,6 +27,7 @@ type Props = {
         showTicks: boolean
         yMin?: number
         yMax?: number
+        yLabel?: string
     }
     additionalToolbarItems?: ToolbarItem[]
     showTimeSelectionBar?: boolean
@@ -113,9 +114,10 @@ const TimeScrollView2: FunctionComponent<Props> = ({width, height, onCanvasEleme
                 margins={margins}
                 timeTicks={timeTicks}
                 yTickSet={yAxisInfo?.showTicks ? yTickSet : undefined}
+                yLabel={yAxisInfo?.yLabel}
                 gridlineOpts={gridlineOpts}
             />)
-    }, [gridlineOpts, canvasWidth, canvasHeight, timeRange, margins, timeTicks, yAxisInfo?.showTicks, yTickSet])
+    }, [gridlineOpts, canvasWidth, canvasHeight, timeRange, margins, timeTicks, yAxisInfo?.showTicks, yAxisInfo?.yLabel, yTickSet])
 
     const currentTimePixels = useMemo(() => (currentTime !== undefined ? timeToPixel(currentTime) : undefined), [currentTime, timeToPixel])
     const currentTimeIntervalPixels = useMemo(() => (currentTimeInterval !== undefined ? [timeToPixel(currentTimeInterval[0]), timeToPixel(currentTimeInterval[1])] as [number, number] : undefined), [currentTimeInterval, timeToPixel])
