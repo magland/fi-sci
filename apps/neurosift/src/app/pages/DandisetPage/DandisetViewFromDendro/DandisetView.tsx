@@ -8,6 +8,7 @@ import { Hyperlink } from "@fi-sci/misc";
 import useRoute from "../../../useRoute";
 import ViewObjectNotesIconThing from "../../NwbPage/ObjectNote/ViewObjectNotesIconThing";
 import ViewObjectAnalysesIconThing from "../../NwbPage/ObjectNote/ViewObjectAnalysesIconThing";
+import { pairioViewsEnabled } from "../../NwbPage/viewPlugins/viewPlugins";
 
 const applicationBarColorDarkened = '#546' // from dendro
 
@@ -88,18 +89,22 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
                     }}>Open selected assets</button>
                 )}
                 &nbsp;&nbsp;&nbsp;&nbsp;
-                <Hyperlink
-                    onClick={() => setRoute({
-                        page: 'plugin',
-                        plugin: 'EphysSummary',
-                        dandisetId: dandisetId,
-                        dandisetVersion: dandisetVersionInfo.version,
-                        staging: useStaging
-                    })}
-                    color="#546"
-                >
-                    Ephys Summary
-                </Hyperlink>
+                {
+                    pairioViewsEnabled && (
+                        <Hyperlink
+                            onClick={() => setRoute({
+                                page: 'plugin',
+                                plugin: 'EphysSummary',
+                                dandisetId: dandisetId,
+                                dandisetVersion: dandisetVersionInfo.version,
+                                staging: useStaging
+                            })}
+                            color="#546"
+                        >
+                            Ephys Summary
+                        </Hyperlink>
+                    )
+                }
             </div>
             <div style={{position: 'absolute', top: topBarHeight, width, height: height - topBarHeight, overflowY: 'auto'}}>
                 <div style={{padding: 20}}>
