@@ -419,9 +419,13 @@ const uu = queryParams.get('url') || ''
 const urlIsLocal = uu.startsWith('http://localhost') || uu.startsWith('http://127.0.0.1')
 export const pairioViewsEnabled = !urlIsLocal
 
+console.info(`Determining whether to enable pairio views: url: ${uu}, urlIsLocal: ${urlIsLocal}, pairioViewsEnabled: ${pairioViewsEnabled}`)
+
 const viewPluginsFiltered = viewPlugins.filter(p => {
     if (p.usesPairio && !pairioViewsEnabled) return false
     return true
 })
+
+console.info('View plugins', viewPluginsFiltered)
 
 export default viewPluginsFiltered
