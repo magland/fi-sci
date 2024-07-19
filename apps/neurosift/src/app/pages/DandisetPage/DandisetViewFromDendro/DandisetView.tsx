@@ -8,7 +8,6 @@ import { Hyperlink } from "@fi-sci/misc";
 import useRoute from "../../../useRoute";
 import ViewObjectNotesIconThing from "../../NwbPage/ObjectNote/ViewObjectNotesIconThing";
 import ViewObjectAnalysesIconThing from "../../NwbPage/ObjectNote/ViewObjectAnalysesIconThing";
-import { pairioViewsEnabled } from "../../NwbPage/viewPlugins/viewPlugins";
 
 const applicationBarColorDarkened = '#546' // from dendro
 
@@ -75,6 +74,8 @@ const DandisetView: FunctionComponent<DandisetViewProps> = ({dandisetId, dandise
     const X = dandisetVersionInfo
 
     const externalLink = `https://${stagingStr2}dandiarchive.org/dandiset/${dandisetId}/${X.version}`
+
+    const pairioViewsEnabled = true;
 
     const topBarHeight = onOpenAssets ? 30 : 0
     return (
