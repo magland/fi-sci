@@ -168,7 +168,7 @@ const GroupTableRow: FunctionComponent<GroupTableRowProps> = ({nwbFile, name, pa
     }, [nwbFile, group, path])
     const {openTab} = useNwbOpenTabs()
     const neurodataType = group ? group.attrs['neurodata_type'] : ''
-    const {viewPlugins, defaultViewPlugin} = useMemo(() => (specifications ? findViewPluginsForType(neurodataType, {nwbFile}, specifications) : {viewPlugins: [], defaultViewPlugin: undefined}), [neurodataType, nwbFile])
+    const {viewPlugins, defaultViewPlugin} = useMemo(() => (specifications ? findViewPluginsForType(neurodataType, {nwbFile}, specifications) : {viewPlugins: [], defaultViewPlugin: undefined}), [neurodataType, nwbFile, specifications])
     return (
         <tr>
             <td>

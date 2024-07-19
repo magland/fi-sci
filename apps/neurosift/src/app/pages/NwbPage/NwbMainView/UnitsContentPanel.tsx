@@ -1,8 +1,8 @@
 import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
-import { FunctionComponent } from "react"
+import { FunctionComponent, useMemo } from "react"
 import DynamicTableView from "../viewPlugins/DynamicTable/DynamicTableView"
 import ViewPluginButton from "../viewPlugins/ViewPluginButton"
-import viewPlugins from "../viewPlugins/viewPlugins"
+import { getViewPlugins } from "../viewPlugins/viewPlugins"
 
 type Props = {
     nwbFile: RemoteH5FileX
@@ -11,6 +11,9 @@ type Props = {
 }
 
 const UnitsContentPanel: FunctionComponent<Props> = ({nwbFile, group, width}) => {
+    const viewPlugins = useMemo(() => (
+        getViewPlugins({nwbUrl: nwbFile.getUrls()[0] || ''})
+    ), [nwbFile])
     return (
         <div>
             <div>&nbsp;</div>

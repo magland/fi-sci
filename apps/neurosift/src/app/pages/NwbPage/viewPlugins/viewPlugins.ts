@@ -396,13 +396,14 @@ viewPlugins.push({
 ///////////////////////////////////////////////////////////////////////////////////////
 
 export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: RemoteH5FileX}, specifications?: NwbFileSpecifications): {viewPlugins: ViewPlugin[], defaultViewPlugin: ViewPlugin | undefined} => {
+    const vp = getViewPlugins({nwbUrl: o.nwbFile.getUrls()[0] || ''})
     const inheritanceRaw = specifications ? getNeurodataTypeInheritanceRaw(specifications) : undefined
     const viewPluginsRet: ViewPlugin[] = []
     let defaultViewPlugin: ViewPlugin | undefined
     let nt: string | undefined = neurodataType
     while (nt) {
         const currentNt = nt; // Store the value of 'nt' in a temporary variable
-        const plugins = viewPlugins.filter(p => (p.neurodataType === currentNt)).filter(p => (!p.remoteDataOnly || o.nwbFile.dataIsRemote))
+        const plugins = vp.filter(p => (p.neurodataType === currentNt)).filter(p => (!p.remoteDataOnly || o.nwbFile.dataIsRemote))
         viewPluginsRet.push(...plugins)
         for (const p of plugins) {
             if (p.defaultForNeurodataType) {
@@ -414,18 +415,11 @@ export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: Remot
     return {viewPlugins: viewPluginsRet, defaultViewPlugin}
 }
 
-const queryParams = new URLSearchParams(window.location.search)
-const uu = queryParams.get('url') || ''
-const urlIsLocal = uu.startsWith('http://localhost') || uu.startsWith('http://127.0.0.1')
-export const pairioViewsEnabled = !urlIsLocal
-
-console.info(`Determining whether to enable pairio views: url: ${uu}, urlIsLocal: ${urlIsLocal}, pairioViewsEnabled: ${pairioViewsEnabled}`)
-
-const viewPluginsFiltered = viewPlugins.filter(p => {
-    if (p.usesPairio && !pairioViewsEnabled) return false
-    return true
-})
-
-console.info('View plugins', viewPluginsFiltered)
-
-export default viewPluginsFiltered
+export const getViewPlugins = (o: {nwbUrl: string}) => {
+    const urlIsLocal = o.nwbUrl.startsWith('http://localhost') || o.nwbUrl.startsWith('http://127.0.0.1')
+    const pairioViewsEnabled = !urlIsLocal
+    return viewPlugins.filter(p => {
+        if (p.usesPairio && !pairioViewsEnabled) return false
+        return true
+    })
+}

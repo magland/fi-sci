@@ -1,5 +1,5 @@
 import { FunctionComponent, useEffect, useMemo, useState } from "react"
-import viewPlugins, { ViewPlugin, findViewPluginsForType } from "../viewPlugins/viewPlugins"
+import { getViewPlugins, ViewPlugin, findViewPluginsForType } from "../viewPlugins/viewPlugins"
 import { useNwbFile } from "../NwbFileContext"
 import { RemoteH5FileX, RemoteH5Group } from "@fi-sci/remote-h5-file"
 import { Hyperlink } from "@fi-sci/misc"
@@ -13,6 +13,7 @@ type WidgetsViewProps = {
 
 const WidgetsView: FunctionComponent<WidgetsViewProps> = ({ width, height }) => {
     const nwbFile = useNwbFile()
+    const viewPlugins = useMemo(() => getViewPlugins({nwbUrl: nwbFile.getUrls()[0] || ''}), [nwbFile])
     const specifications = useNwbFileSpecifications()
     const [neurodataObjects, setNeurodataObjects] = useState<{
         group: RemoteH5Group,

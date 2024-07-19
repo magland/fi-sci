@@ -9,7 +9,7 @@ import { useNwbFile } from "./NwbFileContext";
 import NwbMainView from "./NwbMainView/NwbMainView";
 import { useNwbOpenTabs } from "./NwbOpenTabsContext";
 import TimeseriesAlignmentView from "./TimeseriesAlignmentView/TimeseriesAlignmentView";
-import viewPlugins, { findViewPluginsForType } from "./viewPlugins/viewPlugins";
+import { getViewPlugins, findViewPluginsForType } from "./viewPlugins/viewPlugins";
 import { useNwbFileSpecifications } from "./SpecificationsView/SetupNwbFileSpecificationsProvider";
 
 const NwbTabWidget: FunctionComponent<{width: number, height: number, usingLindi: boolean}> = ({width, height, usingLindi}) => {
@@ -59,6 +59,7 @@ type TabChildProps = {
 const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, condensed, initialTimeSelection, initialStateString, usingLindi, hidden}) => {
     const nwbFile = useNwbFile()
     if (!nwbFile) throw Error('Unexpected: nwbFile is undefined')
+    const viewPlugins = useMemo(() => getViewPlugins({nwbUrl: nwbFile.getUrls()[0] || ''}), [nwbFile])
     const specifications = useNwbFileSpecifications()
     const [unitSelection, unitSelectionDispatch] = useReducer(unitSelectionReducer, defaultUnitSelection)
     const {viewPlugin, itemPath, additionalItemPaths} = useMemo(() => {
@@ -81,7 +82,7 @@ const TabChild: FunctionComponent<TabChildProps> = ({tabName, width, height, con
             return {viewPlugin: defaultViewPlugin, itemPath, additionalItemPaths: undefined}
         }
         else return {viewPlugin: undefined, itemPath: undefined, additionalItemPaths: undefined}
-    }, [tabName, nwbFile, specifications])
+    }, [tabName, nwbFile, specifications, viewPlugins])
     if ((!viewPlugin) && (!specifications) && tabName.startsWith('neurodata-item:')) {
         // if the specifications are not loaded yet, we will still give it a chance to find an appropriate view plugin
         return <div>Loading NWB file specifications...</div>

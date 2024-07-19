@@ -1,12 +1,12 @@
 import { FunctionComponent } from "react"
-import viewPlugins from "../NwbPage/viewPlugins/viewPlugins"
-import { Hyperlink } from "@fi-sci/misc"
+import { getViewPlugins } from "../NwbPage/viewPlugins/viewPlugins"
 
 type TestsPageProps = {
     width: number
     height: number
 }
 
+const viewPlugins = getViewPlugins({nwbUrl: ''})
 const sortedViewPlugins = [...viewPlugins].sort((p1, p2) => {
     if (p1.name < p2.name) return -1
     if (p1.name > p2.name) return 1

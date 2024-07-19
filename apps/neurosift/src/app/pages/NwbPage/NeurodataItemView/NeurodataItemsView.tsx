@@ -3,7 +3,7 @@ import { Splitter } from "@fi-sci/splitter"
 import { FunctionComponent, useMemo } from "react"
 import { useNwbFile } from "../NwbFileContext"
 import TimeseriesSelectionWidget from "../viewPlugins/TimeSeries/TimeseriesItemView/TimeseriesSelectionWidget"
-import viewPlugins, { findViewPluginsForType } from "../viewPlugins/viewPlugins"
+import { findViewPluginsForType, getViewPlugins } from "../viewPlugins/viewPlugins"
 import ShareTabComponent from "./ShareTabComponent"
 import { NwbFileSpecifications, useNwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
 
@@ -126,6 +126,7 @@ const MainPanel: FunctionComponent<MainPanelProps> = ({width, height, items}) =>
 }
 
 const getViewPluginAndItemPath = (item: string, nwbFile: RemoteH5FileX, specifications: NwbFileSpecifications) => {
+    const viewPlugins = getViewPlugins({nwbUrl: nwbFile.getUrls()[0] || ''})
     if (item.startsWith('neurodata-item:')) {
         const itemPath = item.slice(`neurodata-item:`.length).split('|')[0]
         const neurodataType = item.slice(`neurodata-item:`.length).split('|')[1]
