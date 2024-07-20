@@ -4,7 +4,6 @@ import pako from "pako";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const zarrDecodeChunkArray = async (chunk: ArrayBuffer, dtype?: string, compressor?: any, filters?: any[], shape?: number[]): Promise<any> => {
     let ret: any = chunk;
-    console.log('---- zarrDecode')
     if (compressor) {
         if (compressor.id === 'blosc') {
             ret = await (new Blosc().decode(chunk));
