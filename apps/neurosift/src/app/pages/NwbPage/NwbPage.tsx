@@ -73,8 +73,7 @@ const NwbPageChild1: FunctionComponent<NwbPageChild1Props> = ({width, height}) =
             track('nwb-page-viewed', {
                 url: route.url[0] || '',
                 dandisetId: route.dandisetId || '',
-                dandisetVersion: route.dandisetVersion || '',
-                dandiAssetId: route.dandiAssetId || ''
+                dandisetVersion: route.dandisetVersion || ''
             })
         }, 500)
         return () => {canceled = true}
