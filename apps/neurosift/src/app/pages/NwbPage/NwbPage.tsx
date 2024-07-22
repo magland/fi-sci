@@ -13,6 +13,7 @@ import getAuthorizationHeaderForUrl from "./getAuthorizationHeaderForUrl"
 import { SupplementalDendroFilesContext, useSupplementalDendroFiles } from "./SupplementalDendroFilesContext"
 import { DendroFile } from "../../dendro/dendro-types"
 import { SetupNwbFileSpecificationsProvider } from "./SpecificationsView/SetupNwbFileSpecificationsProvider"
+import { track } from "@vercel/analytics/react"
 
 type Props = {
     width: number
@@ -62,6 +63,23 @@ type NwbPageChild1Props = {
 const NwbPageChild1: FunctionComponent<NwbPageChild1Props> = ({width, height}) => {
     const {route} = useRoute()
     if (route.page !== 'nwb') throw Error('Unexpected: route.page is not nwb')
+
+    useEffect(() => {
+        let canceled = false
+        // important to only call this once per route change
+        setTimeout(() => {
+            if (canceled) return
+            // important to wait until the analytics is ready
+            track('nwb-page-viewed', {
+                url: route.url[0] || '',
+                dandisetId: route.dandisetId || '',
+                dandisetVersion: route.dandisetVersion || '',
+                dandiAssetId: route.dandiAssetId || ''
+            })
+        }, 500)
+        return () => {canceled = true}
+    }, [route.url, route.dandisetId, route.dandisetVersion, route.dandiAssetId])
+
     const [dandiAssetContextValue, setDandiAssetContextValue] = useState<DandiAssetContextType>(defaultDandiAssetContext)
     useEffect(() => {
         let canceled = false;
