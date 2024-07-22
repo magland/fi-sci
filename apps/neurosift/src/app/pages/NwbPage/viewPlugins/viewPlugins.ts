@@ -5,27 +5,28 @@ import BehavioralEventsItemView from "./BehavioralEvents/BehavioralEventsItemVie
 import DynamicTableView from "./DynamicTable/DynamicTableView"
 import ImageSegmentationItemView from "./ImageSegmentation/ImageSegmentationItemView"
 // import ImageSeriesItemView from "./ImageSeries/ImageSeriesItemView"
+import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
+import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
+import CEBRAView from "./CEBRA/CEBRAView"
+import ElectricalSeriesItemView from "./ElectricalSeriesItemView/ElectricalSeriesItemView"
+import EphysSummaryItemView from "./Ephys/EphysSummaryItemView"
 import ImagesItemView from "./Images/ImagesItemView"
+import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
 import LabeledEventsItemView from "./LabeledEvents/LabeledEventsItemView"
 import PSTHItemView from "./PSTH/PSTHItemView"
 import NeurodataSpatialSeriesItemView from "./SpatialSeries/SpatialSeriesWidget/NeurodataSpatialSeriesItemView"
 import SpatialSeriesXYView from "./SpatialSeries/SpatialSeriesWidget/SpatialSeriesXYView"
+import TestVideoItemView from "./TestVideo/TestVideoItemView"
 import TimeAlignedSeriesItemView from "./TimeAlignedSeries/TimeAlignedSeriesItemView"
 import NeurodataTimeIntervalsItemView from "./TimeIntervals/NeurodataTimeIntervalsItemView"
-import { default as NeurodataTimeSeriesItemView, default as TimeSeriesItemView } from "./TimeSeries/NeurodataTimeSeriesItemView"
+import { default as NeurodataTimeSeriesItemView } from "./TimeSeries/NeurodataTimeSeriesItemView"
 import TwoPhotonSeriesItemView from "./TwoPhotonSeries/TwoPhotonSeriesItemView"
+import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView"
+import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
 import DirectRasterPlotUnitsItemView from "./Units/DirectRasterPlotUnitsItemView"
 import UnitsItemView from "./Units/UnitsItemView"
-import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
-import AverageWaveformsUnitsItemView from "./Units/AverageWaveformsUnitsItemView"
-import AutocorrelogramsUnitsItemView from "./Units/AutocorrelogramsUnitsItemView"
-import TestVideoItemView from "./TestVideo/TestVideoItemView"
-import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecificationsProvider"
-import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
-import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
-import CEBRAView from "./CEBRA/CEBRAView"
 import UnitsSummaryItemView from "./Units/UnitsSummaryItemView"
-import EphysSummaryItemView from "./Ephys/EphysSummaryItemView"
+import { getCustomPythonCodeForTimeIntervals, getCustomPythonCodeForTimeSeries, getCustomPythonCodeForUnits } from "./customPythonCode"
 
 type Props = {
     width: number,
@@ -190,23 +191,12 @@ viewPlugins.push({
     name: 'ElectricalSeries',
     neurodataType: 'ElectricalSeries',
     defaultForNeurodataType: true,
-    component: TimeSeriesItemView,
+    component: ElectricalSeriesItemView,
     isTimeView: true,
     getCustomPythonCode: getCustomPythonCodeForTimeSeries,
     testLinks: [
         'https://neurosift.app/?p=/nwb&dandisetId=000957&dandisetVersion=0.240407.0142&url=https://api.dandiarchive.org/api/assets/d4bd92fc-4119-4393-b807-f007a86778a1/download/'
     ]
-})
-
-// EphysSummary
-viewPlugins.push({
-    name: 'EphysSummary',
-    neurodataType: 'ElectricalSeries',
-    defaultForNeurodataType: false,
-    component: EphysSummaryItemView,
-    isTimeView: false,
-    usesPairio: true,
-    testLinks: []
 })
 
 // LabeledEvents
@@ -415,8 +405,12 @@ export const findViewPluginsForType = (neurodataType: string, o: {nwbFile: Remot
     return {viewPlugins: viewPluginsRet, defaultViewPlugin}
 }
 
+export const checkUrlIsLocal = (o: {nwbUrl: string}) => {
+    return o.nwbUrl.startsWith('http://localhost') || o.nwbUrl.startsWith('http://127.0.0.1')
+}
+
 export const getViewPlugins = (o: {nwbUrl: string}) => {
-    const urlIsLocal = o.nwbUrl.startsWith('http://localhost') || o.nwbUrl.startsWith('http://127.0.0.1')
+    const urlIsLocal = checkUrlIsLocal(o)
     const pairioViewsEnabled = !urlIsLocal
     return viewPlugins.filter(p => {
         if (p.usesPairio && !pairioViewsEnabled) return false
