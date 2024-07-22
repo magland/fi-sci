@@ -77,7 +77,7 @@ const NwbPageChild1: FunctionComponent<NwbPageChild1Props> = ({width, height}) =
             })
         }, 500)
         return () => {canceled = true}
-    }, [route.url, route.dandisetId, route.dandisetVersion, route.dandiAssetId])
+    }, [route.url, route.dandisetId, route.dandisetVersion])
 
     const [dandiAssetContextValue, setDandiAssetContextValue] = useState<DandiAssetContextType>(defaultDandiAssetContext)
     useEffect(() => {
