@@ -9,7 +9,6 @@ import { NwbFileSpecifications } from "../SpecificationsView/SetupNwbFileSpecifi
 import { getNeurodataTypeInheritanceRaw } from "../neurodataSpec"
 import CEBRAView from "./CEBRA/CEBRAView"
 import ElectricalSeriesItemView from "./ElectricalSeriesItemView/ElectricalSeriesItemView"
-import EphysSummaryItemView from "./Ephys/EphysSummaryItemView"
 import ImagesItemView from "./Images/ImagesItemView"
 import IntracellularRecordingsTableItemView from "./IntracellularRecordingsTable/IntracellularRecordingsTableItemView"
 import LabeledEventsItemView from "./LabeledEvents/LabeledEventsItemView"

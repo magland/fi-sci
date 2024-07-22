@@ -97,6 +97,14 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path, c
     return { adjustableParameters, defaultAdjustableParameters };
   }, []);
 
+  const jobFilter = useMemo(() => ((job: PairioJob) => {
+    // make sure electrical_series_path matches
+    const p = job.jobDefinition.parameters.find(p => (p.name === 'electrical_series_path'));
+    if (!p) return false;
+    if (p.value !== removeLeadingSlash(path)) return false;
+    return true;
+  }), [path]);
+
   // if (!electricalSeriesPathChoices) {
   //   return <div>Loading electrical series path choices...</div>;
   // }
@@ -125,6 +133,7 @@ const EphysSummaryItemView: FunctionComponent<Props> = ({ width, height, path, c
       gpuMode={gpuMode}
       OutputComponent={EphysSummaryJobOutputWidget}
       compact={compact}
+      jobFilter={jobFilter}
     />
   );
 };

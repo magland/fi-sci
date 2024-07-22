@@ -4,8 +4,8 @@ import { FunctionComponent, PropsWithChildren, useCallback, useEffect, useState 
 import { GetJobRequest, FindJobsRequest, PairioJob, isGetJobResponse, isFindJobsResponse } from "../../../../pairio/types"
 import { timeAgoString } from "../../../../timeStrings"
 
-export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: any, inputFileUrl?: string}) => {
-    const {appName, processorName, tags, inputFileUrl} = o
+export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: any, inputFileUrl?: string, jobFilter?: (job: PairioJob) => boolean}) => {
+    const {appName, processorName, tags, inputFileUrl, jobFilter} = o
     const [allJobs, setAllJobs] = useState<PairioJob[] | undefined | null>(undefined)
     const [refreshCode, setRefreshCode] = useState(0)
     const refreshAllJobs = useCallback(() => {
@@ -45,10 +45,11 @@ export const useAllJobs = (o: {appName?: string, processorName?: string, tags?: 
                 setAllJobs(null)
                 return undefined
             }
-            setAllJobs(rr.jobs)
+            const jobs = jobFilter ? rr.jobs.filter(jobFilter) : rr.jobs
+            setAllJobs(jobs)
         })()
         return () => { canceled = true }
-    }, [appName, processorName, inputFileUrl, refreshCode, tags])
+    }, [appName, processorName, inputFileUrl, refreshCode, tags, jobFilter])
     return {allJobs, refreshAllJobs}
 }
 

@@ -59,9 +59,10 @@ type PairioItemViewProps = {
   gpuMode: 'optional' | 'required' | 'forbidden';
   OutputComponent: FunctionComponent<{ job: PairioJob, width: number, nwbFile: RemoteH5FileX }>;
   compact?: boolean;
+  jobFilter?: (job: PairioJob) => boolean;
 };
 
-const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent, compact }) => {
+const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height, nwbUrl, path, serviceName, appName, processorName, tags, title, adjustableParameters, defaultAdjustableParameters, getJobDefinition, getRequiredResources, gpuMode, OutputComponent, compact, jobFilter }) => {
   const [selectedJobId, setSelectedJobId] = useState<string | undefined>(undefined);
   const { job: selectedJob, refreshJob: refreshSelectedJob } = useJob(selectedJobId || undefined);
 
@@ -113,7 +114,7 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
   }, [requireGpu, getRequiredResources]);
 
   // do not include service when we are finding all jobs
-  const { allJobs, refreshAllJobs } = useAllJobs({ appName, processorName, inputFileUrl, tags });
+  const { allJobs, refreshAllJobs } = useAllJobs({ appName, processorName, inputFileUrl, tags, jobFilter });
   useEffect(() => {
     if (!allJobs) return;
     if (allJobs.length === 0) {
