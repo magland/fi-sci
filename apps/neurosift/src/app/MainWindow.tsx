@@ -14,6 +14,7 @@ import TestsPage from "./pages/TestsPage/TestsPage";
 import AnnotationsPage from "./pages/AnnotationsPage/AnnotationsPage";
 import PluginPage from "./pages/PluginPage/PluginPage";
 import AviPage from "./pages/AviPage/AviPage";
+import { Analytics } from "@vercel/analytics/react";
 
 type Props = {
     // none
@@ -102,6 +103,7 @@ const MainWindow: FunctionComponent<Props> = () => {
                     </div>
                 )
             }
+            <Analytics />
         </div>
     )
 }
