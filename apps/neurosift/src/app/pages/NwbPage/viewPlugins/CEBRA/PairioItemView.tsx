@@ -211,18 +211,20 @@ const PairioItemView: FunctionComponent<PairioItemViewProps> = ({ width, height,
                 ))}
               </tbody>
             </table>
-            <div>
+            {!submittingNewJob && <div style={{paddingTop: 10}}>
               <button onClick={() => setSubmittingNewJob(true)}>SUBMIT JOB</button>
-            </div>
+            </div>}
             {submittingNewJob && (
               <div>
-                <SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} />
-                {gpuMode === 'optional' && <div>
+                <div style={{paddingTop: 10}}>
+                  <SelectPairioApiKeyComponent value={pairioApiKey} setValue={setPairioApiKey} />
+                </div>
+                {gpuMode === 'optional' && <div style={{paddingTop: 10}}>
                   <RequireGpuSelector value={requireGpu} setValue={setRequireGpu} />
                 </div>}
-                <div>
+                <div style={{paddingTop: 10}}>
                   <button onClick={handleSubmitNewJob} disabled={!pairioApiKey}>
-                    OK
+                    SUBMIT JOB
                   </button>
                 </div>
               </div>
