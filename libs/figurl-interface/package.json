@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@fi-sci/misc": "~0.0.9"
+    "@fi-sci/misc": "~0.0.10"
   },
   "peerDependencies": {
     "react": "*"
