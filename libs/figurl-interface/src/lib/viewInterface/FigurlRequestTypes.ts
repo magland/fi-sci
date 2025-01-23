@@ -288,6 +288,30 @@ export const isReadDirResponse = (x: any): x is ReadDirResponse => {
   });
 };
 
+// postMessageToParent
+
+export type PostMessageToParentRequest = {
+  type: 'postMessageToParent'
+  message: any
+}
+
+export const isPostMessageToParentRequest = (x: any): x is PostMessageToParentRequest => {
+  return validateObject(x, {
+      type: isEqualTo('postMessageToParent'),
+      message: () => (true)
+  })
+}
+
+export type PostMessageToParentResponse = {
+  type: 'postMessageToParent'
+}
+
+export const isPostMessageToParentResponse = (x: any): x is PostMessageToParentResponse => {
+  return validateObject(x, {
+      type: isEqualTo('postMessageToParent')
+  })
+}
+
 //////////////////////////////////////////////////////////////
 
 export type FigurlRequest =
@@ -298,7 +322,8 @@ export type FigurlRequest =
   | StoreGithubFileRequest
   | SetUrlStateRequest
   | ServiceQueryRequest
-  | ReadDirRequest;
+  | ReadDirRequest
+  | PostMessageToParentRequest;
 
 export const isFigurlRequest = (x: any): x is FigurlRequest => {
   return isOneOf([
@@ -310,6 +335,7 @@ export const isFigurlRequest = (x: any): x is FigurlRequest => {
     isSetUrlStateRequest,
     isServiceQueryRequest,
     isReadDirRequest,
+    isPostMessageToParentRequest
   ])(x);
 };
 
@@ -321,7 +347,8 @@ export type FigurlResponse =
   | StoreGithubFileResponse
   | SetUrlStateResponse
   | ServiceQueryResponse
-  | ReadDirResponse;
+  | ReadDirResponse
+  | PostMessageToParentResponse;
 
 export const isFigurlResponse = (x: any): x is FigurlResponse => {
   return isOneOf([
@@ -333,5 +360,6 @@ export const isFigurlResponse = (x: any): x is FigurlResponse => {
     isSetUrlStateResponse,
     isServiceQueryResponse,
     isReadDirResponse,
+    isPostMessageToParentResponse
   ])(x);
 };

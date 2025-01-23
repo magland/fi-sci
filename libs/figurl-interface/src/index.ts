@@ -13,3 +13,4 @@ export { default as readDir } from './lib/readDir';
 export { default as SetupUrlState } from './lib/SetupUrlState';
 export { useUrlState } from './lib/UrlStateContext';
 export { default as useSignedIn } from './lib/useSignedIn';
+export { default as postMessageToParent } from './lib/postMessageToParent';
