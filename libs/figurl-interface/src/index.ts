@@ -1,4 +1,5 @@
 export { default as startListeningToParent } from './lib/startListeningToParent';
+export { onMessageToFrontend, removeMessageToFrontendCallback } from './lib/startListeningToParent';
 
 export { default as getFigureData } from './lib/getFigureData';
 export {
