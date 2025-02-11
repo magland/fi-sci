@@ -31,6 +31,17 @@ const queryParams = parseQuery(window.location.href);
 //     document.body.appendChild(s);
 // }
 
+const messageToFrontendCallbacks: ((message: any) => void)[] = [];
+export const onMessageToFrontend = (callback: (message: any) => void) => {
+  messageToFrontendCallbacks.push(callback);
+};
+export const removeMessageToFrontendCallback = (callback: (message: any) => void) => {
+  const ind = messageToFrontendCallbacks.indexOf(callback);
+  if (ind >= 0) {
+    messageToFrontendCallbacks.splice(ind, 1);
+  }
+}
+
 const startListeningToParent = () => {
   window.addEventListener('message', (e) => {
     const msg = e.data;
@@ -51,6 +62,10 @@ const startListeningToParent = () => {
         });
       } else if (msg.type === 'reportUrlStateChange') {
         handleReportUrlStateChange(msg.state);
+      } else if (msg.type === 'messageToFrontend') {
+        for (const callback of messageToFrontendCallbacks) {
+          callback(msg.message);
+        }
       }
     } else if (isMessageToParent(msg)) {
       // this is relevant for standalone (self-contained) figures
