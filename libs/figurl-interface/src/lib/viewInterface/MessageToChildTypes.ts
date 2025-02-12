@@ -57,12 +57,14 @@ export const isFileDownloadProgressMessage = (x: any): x is FileDownloadProgress
 export type MessageToFrontendMessage = {
   type: 'messageToFrontend';
   message: any;
+  figureId?: string;
 };
 
 export const isMessageToFrontendMessage = (x: any): x is MessageToFrontendMessage => {
   return validateObject(x, {
     type: isEqualTo('messageToFrontend'),
     message: () => true,
+    figureId: optional(isString),
   });
 };
 
